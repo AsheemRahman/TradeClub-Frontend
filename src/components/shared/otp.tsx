@@ -1,21 +1,40 @@
 'use client';
 
-import { useState, useEffect, useRef, KeyboardEvent, FormEvent } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect, useRef, KeyboardEvent, FormEvent } from 'react';
 
-export default function OTPVerification() {
+import { verifyOtp } from '@/app/service/user/userApi';
+import { expertVerifyOtp } from '@/app/service/expert/expertApi';
+
+
+interface OTPProps {
+    role: 'user' | 'expert';
+}
+
+
+const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
     const [isLoading, setIsLoading] = useState(false);
-    const [timer, setTimer] = useState<number>(30);
+    const [timer, setTimer] = useState<number>(60);
     const [isResendDisabled, setIsResendDisabled] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
+    const [email, setEmail] = useState<string>('');
 
     const inputRefs = useRef<HTMLInputElement[]>([]);
     const router = useRouter();
+    const searchParams = useSearchParams();
 
     useEffect(() => {
+        const emailFromQuery = searchParams.get('email');
+        setEmail(emailFromQuery ?? '');
+
+        if (emailFromQuery) {
+            setTimer(60);
+            return;
+        }
+
         const interval = setInterval(() => {
             setTimer((prev) => {
                 if (prev <= 1) {
@@ -28,7 +47,7 @@ export default function OTPVerification() {
         }, 1000);
 
         return () => clearInterval(interval);
-    }, []);
+    }, [searchParams]);
 
     const handleChange = (index: number, value: string) => {
         if (!/^\d?$/.test(value)) return;
@@ -61,13 +80,11 @@ export default function OTPVerification() {
         }
 
         try {
-            // Replace this with your actual API call
             // const response = await verifyOtp(fullOtp);
-            // if (response.success) router.push('/dashboard');
-            // else setError(response.message || 'Invalid OTP');
+            const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
+            if (response.success) router.push('/dashboard');
+            else setError(response.message || 'Invalid OTP');
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            router.push('/dashboard');
         } catch (err) {
             setError('An error occurred. Please try again.');
             console.error(err);
@@ -176,3 +193,7 @@ export default function OTPVerification() {
         </>
     );
 }
+
+
+
+export default OTPVerification;

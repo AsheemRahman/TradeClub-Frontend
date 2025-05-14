@@ -48,13 +48,9 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
     matcher: [
-        '/login',
-        '/register',
-        '/expert/login',
-        '/expert/register',
-        '/admin/login',
         '/home',
-        '/expert/:path*',
-        '/admin/:path*',
+        '/profile',
+        '/expert/dashboard',
+        '/admin/dashboard',
     ],
 };

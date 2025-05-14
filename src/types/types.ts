@@ -14,10 +14,18 @@ export type adminloginType = {
 
 export type UserType = {
     _id: string;
-    firstName: string;
-    lastName: string;
+    fullName: string;
     email: string;
     password: string;
     phoneNumber?: string;
     createdAt: string;
+}
+
+
+export type RegisterFormData = {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    confirmPassword: string;
 }

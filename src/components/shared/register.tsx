@@ -3,9 +3,15 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
+import { RegisterFormData } from '@/types/types';
+import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
+
 import { Eye, EyeOff } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
+
+import { registerPost } from '@/app/service/user/userApi';
 
 
 interface RegisterPageProps {
@@ -14,53 +20,97 @@ interface RegisterPageProps {
 
 
 const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
-    console.log(role)
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [formData, setFormData] = useState<RegisterFormData>({
+        fullName: '',
+        email: '',
+        phoneNumber: '',
+        password: '',
+        confirmPassword: '',
+    });
+
+    const router = useRouter();
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (formData.password !== formData.confirmPassword) {
+            toast.error("Passwords do not match");
+            return;
+        }
+
+        const payload = {
+            fullName: formData.fullName,
+            email: formData.email,
+            phoneNumber: formData.phoneNumber,
+            password: formData.password,
+            role,
+        };
+        const res = await registerPost(payload);
+        console.log("response in register post",res)
+        if (res?.success) {
+            toast.success("Registration successful!");
+        }
+        if (role === 'user') {
+            window.history.replaceState(null, '', `/otp?email=${res.email}`);
+            router.push(`/verify-otp?email=${res.email}`);
+        } else {
+            window.history.replaceState(null, '', `/tutor/otp?email=${res.email}`);
+            router.push(`/expert/verify-otp?email=${res.email}`);
+        }
+    };
 
     return (
-        <div className="min-h-screen  flex items-center justify-center px-5">
+        <div className=" flex items-center justify-center px-5">
             <div className="flex bg-[#151231] rounded-[10px] overflow-hidden shadow-lg w-full ">
 
                 {/* Left Image Side */}
                 <div className="w-1/2 relative hidden md:block">
-                    <Image src="/images/expert-login.jpg" alt="Trade Image" fill className="object-cover h-full w-full" />
+                    <Image src={role === 'expert' ? "/images/expert-login1.jpg" : "/images/expert-login.jpg"} alt="Trade Image" fill className="object-cover h-full w-full" />
                     <div className="absolute top-4 right-4">
-                        <Link href="/">
+                        <Link href={role === 'expert' ? '/expert/dashboard' : '/'}>
                             <button className="bg-[#E54B00] text-white text-sm px-4 py-2 rounded-[10px] hover:bg-black">
                                 Back to website →
                             </button>
                         </Link>
                     </div>
-                    {/* <div className="absolute bottom-10 flex flex-col items-center w-full text-white font-bold text-2xl">
-                        <p className="text-[#E54B00] mt-2 text-5xl ">Learn knowledge</p>
-                        <p className="text-[#E54B00] mt-2 text-5xl ">Earn money</p>
-                    </div> */}
+                    {role === 'expert' ? (
+                        <div className="absolute bottom-10 flex flex-col items-center w-full text-white font-extrabold text-2xl">
+                            <p className="text-[#E54B00] mt-2 text-5xl ">Join</p>
+                            <p className="text-[#E54B00] mt-2 text-5xl ">As a Expert</p>
+                        </div>
+                    ) : (
+                        <div></div>
+                    )}
+
                 </div>
 
                 {/* Right Form Side */}
-                <div className="w-full md:w-1/2 p-8 md:p-12">
-                    <h2 className="text-white text-4xl font-bold mb-2">Be a Trade Expert</h2>
-                    <p className="text-gray-400 mb-6">
-                        Already have an account? <Link href="/login" className="text-blue-400 underline ml-2  hover:text-[#E54B00]">Login</Link>
+                <div className="w-full md:w-1/2 p-8 md:p-8">
+                    <h2 className="text-white text-4xl font-bold mb-2">
+                        {role === 'expert' ? 'Be a Trade Expert' : 'Join as a Trader'}
+                    </h2>
+                    <p className="text-gray-400 mb-4">
+                        Already have an account? <Link href={role === 'expert' ? '/expert/login' : '/login'} className="text-blue-400 underline ml-2  hover:text-[#E54B00]">Login</Link>
                     </p>
 
                     {/* Form Fields */}
-                    <form className="flex flex-col gap-4">
-                        <div className="flex gap-4">
-                            <input type="text" placeholder="First name" required
-                                className="w-1/2 p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                            <input type="text" placeholder="Last name" required
-                                className="w-1/2 p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                        </div>
-                        <input type="email" placeholder="Email" required
+                    <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
+                        <input name="fullName" type="text" placeholder="Full Name"required value={formData.fullName} onChange={handleChange}
+                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"/>
+                        <input name="email" type="email" placeholder="Email" required value={formData.email} onChange={handleChange}
                             className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                        <input type="tel" placeholder="Phone Number"
+                        <input name="phoneNumber" type="tel" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleChange}
                             className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
 
                         {/* Password Field */}
                         <div className="relative">
-                            <input type={showPassword ? "text" : "password"} placeholder="Enter your password" required className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                            <input name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Enter your password" required className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                             <button type="button" className="absolute top-3 right-4 text-gray-400" onClick={() => setShowPassword(!showPassword)}>
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
@@ -68,7 +118,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
 
                         {/* Confirm Password Field */}
                         <div className="relative">
-                            <input type={showConfirmPassword ? "text" : "password"} placeholder="Confirm password" required
+                            <input name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" required
                                 className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                             <button type="button" className="absolute top-3 right-4 text-gray-400" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -78,7 +128,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                         {/* Terms */}
                         <div className="my-3 flex items-center ">
                             <input type="checkbox" id="terms" className="h-6 w-6" required />
-                            <label htmlFor="terms" className="ml-2 text-l text-gray-300">
+                            <label htmlFor="terms" className="ml-4 text-m text-gray-300">
                                 By Creating An Account You Are Agreeing To Our{" "}
                                 <Link href="/terms" className="text-blue-500 hover:underline" >
                                     Terms of Service
@@ -90,7 +140,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                         </div>
 
                         {/* Submit Button */}
-                        <button type="submit" className="mt-4 bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg w-full">
+                        <button type="submit" className="bg-[#E54B00] hover:bg-[#e54c00d8] text-white font-bold py-3 rounded-lg w-full">
                             Register Now
                         </button>
                     </form>
