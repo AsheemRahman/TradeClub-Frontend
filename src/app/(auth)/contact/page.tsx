@@ -19,8 +19,7 @@ export default function ContactPage() {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        console.log('Form Data:', form);
-        // Here you can add logic to send data to backend
+        // console.log('Form Data:', form);
     };
 
     return (

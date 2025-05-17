@@ -20,6 +20,7 @@ interface RegisterPageProps {
 
 
 const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
+    const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [formData, setFormData] = useState<RegisterFormData>({
@@ -44,26 +45,22 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
             return;
         }
 
-        const payload = {
-            fullName: formData.fullName,
-            email: formData.email,
-            phoneNumber: formData.phoneNumber,
-            password: formData.password,
-            role,
+        setLoading(true);
+        try {
+            const payload = { ...formData, role };
+            const res = await registerPost(payload);
+            if (res?.email) {
+                toast.success(res.message || "Registration successful!");
+                const otpPath = role === 'user' ? '/verify-otp' : '/expert/verify-otp';
+                router.replace(`${otpPath}?email=${res.email}`);
+            }
+        } catch (err) {
+            console.log("error in register", err)
+            toast.error("Something went wrong during registration.");
+        } finally {
+            setLoading(false);
         };
-        const res = await registerPost(payload);
-        console.log("response in register post",res)
-        if (res?.success) {
-            toast.success("Registration successful!");
-        }
-        if (role === 'user') {
-            window.history.replaceState(null, '', `/otp?email=${res.email}`);
-            router.push(`/verify-otp?email=${res.email}`);
-        } else {
-            window.history.replaceState(null, '', `/tutor/otp?email=${res.email}`);
-            router.push(`/expert/verify-otp?email=${res.email}`);
-        }
-    };
+    }
 
     return (
         <div className=" flex items-center justify-center px-5">
@@ -87,7 +84,6 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                     ) : (
                         <div></div>
                     )}
-
                 </div>
 
                 {/* Right Form Side */}
@@ -101,8 +97,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
 
                     {/* Form Fields */}
                     <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-                        <input name="fullName" type="text" placeholder="Full Name"required value={formData.fullName} onChange={handleChange}
-                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"/>
+                        <input name="fullName" type="text" placeholder="Full Name" required value={formData.fullName} onChange={handleChange}
+                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                         <input name="email" type="email" placeholder="Email" required value={formData.email} onChange={handleChange}
                             className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                         <input name="phoneNumber" type="tel" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleChange}
@@ -140,8 +136,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                         </div>
 
                         {/* Submit Button */}
-                        <button type="submit" className="bg-[#E54B00] hover:bg-[#e54c00d8] text-white font-bold py-3 rounded-lg w-full">
-                            Register Now
+                        <button type="submit" disabled={loading} className={`bg-[#E54B00] text-white font-bold py-3 rounded-lg w-full ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#e54c00d8]'}`}>
+                            {loading ? 'Registering...' : 'Register Now'}
                         </button>
                     </form>
 

@@ -72,19 +72,20 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         setIsLoading(true);
         setError('');
 
-        const fullOtp = otp.join('');
-        if (fullOtp.length !== 6) {
+        const fullOtp = Number(otp.join(''));
+        if (fullOtp.toString().length !== 6) {
             setError('Please enter a 6-digit OTP');
             setIsLoading(false);
             return;
         }
 
         try {
-            // const response = await verifyOtp(fullOtp);
             const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
-            if (response.success) router.push('/dashboard');
-            else setError(response.message || 'Invalid OTP');
-
+            if (response.status) {
+                router.push('/login')
+            } else {
+                setError(response.message || 'Invalid OTP');
+            }
         } catch (err) {
             setError('An error occurred. Please try again.');
             console.error(err);

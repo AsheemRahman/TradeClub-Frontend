@@ -36,7 +36,7 @@ export const registerPost = async (userData: RegisterPayload) => {
 };
 
 
-export const verifyOtp = async (otp: string, email: string) => {
+export const verifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axios.post(`${API_URI}/user/verify-otp`, { otp, email });
         return response.data;

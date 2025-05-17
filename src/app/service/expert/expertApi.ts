@@ -15,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-export const expertVerifyOtp = async (otp: string, email: string) => {
+export const expertVerifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axios.post(`${API_URI}/expert/verify-otp`, { otp, email });
         return response.data;
