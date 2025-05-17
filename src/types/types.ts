@@ -6,7 +6,7 @@ export interface TokenPayload {
 }
 
 
-export type adminloginType = {
+export type loginType = {
     email: string,
     password: string
 }

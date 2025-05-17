@@ -9,7 +9,6 @@ export default function ForgotPassword() {
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // console.log("Email submitted:", email);
         // You can handle API logic here
     };
 

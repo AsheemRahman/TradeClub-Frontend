@@ -82,7 +82,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         try {
             const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
             if (response.status) {
-                router.push('/login')
+                router.replace('/login')
             } else {
                 setError(response.message || 'Invalid OTP');
             }

@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
 
+
 const API_URI = process.env.NEXT_PUBLIC_BACKEND_API;
 
 
@@ -15,7 +16,6 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-
 interface RegisterPayload {
     fullName: string;
     email: string;
@@ -23,6 +23,13 @@ interface RegisterPayload {
     password: string;
     role: 'user' | 'expert';
 }
+
+interface userloginType {
+    email: string;
+    password: string;
+    role: 'user' | 'expert';
+}
+
 
 export const registerPost = async (userData: RegisterPayload) => {
     try {
@@ -39,6 +46,16 @@ export const registerPost = async (userData: RegisterPayload) => {
 export const verifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axios.post(`${API_URI}/user/verify-otp`, { otp, email });
+        return response.data;
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+};
+
+
+export const userLoginPost = async (formData: userloginType) => {
+    try {
+        const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)

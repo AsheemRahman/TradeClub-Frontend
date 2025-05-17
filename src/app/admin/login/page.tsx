@@ -1,17 +1,19 @@
 "use client"
 
-import { useState, FormEvent } from 'react';
 import Head from 'next/head';
 import Image from 'next/image';
-import { loginPost } from '@/app/service/admin/adminApi';
-import { adminloginType } from '@/types/types';
 import { useRouter } from 'next/navigation';
+
+import { useState, FormEvent } from 'react';
+import { loginType } from '@/types/types';
 import { toast } from 'react-toastify';
+
+import { loginPost } from '@/app/service/admin/adminApi';
+
 
 const AdminLogin: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-    // const [showPassword, setShowPassword] = useState(false);
-    const [formData, setFormData] = useState<adminloginType>({
+    const [formData, setFormData] = useState<loginType>({
         email: "",
         password: ""
     });
@@ -28,9 +30,9 @@ const AdminLogin: React.FC = () => {
         setIsLoading(true);
         try {
             const response = await loginPost(formData);
-            if (response.successs) {
+            if (response.success) {
                 toast.success(response.message);
-                router.push('/admin/dashboard');
+                router.replace('/admin/dashboard');
             }
         } catch (error) {
             console.log("error occurred when fetching data", error);
