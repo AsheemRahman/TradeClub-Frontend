@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 
 import AdminNavbar from "@/components/admin/navbar";
 import Sidebar from "@/components/admin/sideBar";
-import Footer from "@/components/footer";
+import Footer from "@/components/shared/footer";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();

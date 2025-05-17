@@ -53,6 +53,16 @@ export const verifyOtp = async (otp: number, email: string) => {
 };
 
 
+export const resendOtp = async (email: string) => {
+    try {
+        const response = await axios.post(`${API_URI}/user/resend-otp`, { email })
+        return response.data;
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+}
+
+
 export const userLoginPost = async (formData: userloginType) => {
     try {
         const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });

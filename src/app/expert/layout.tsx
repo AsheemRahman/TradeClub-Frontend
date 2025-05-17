@@ -1,7 +1,7 @@
 "use client"
 
 import ExpertNavbar from "@/components/expert/navbar";
-import Footer from "@/components/footer";
+import Footer from "@/components/shared/footer";
 import { usePathname } from "next/navigation";
 
 export default function ExpertLayout({ children }: { children: React.ReactNode }) {

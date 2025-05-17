@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { loginType } from '@/types/types';
-import ImageSlider from '../ImageSlider';
+import ImageSlider from './ImageSlider';
 import { toast } from 'react-toastify';
 import { userLoginPost } from '@/app/service/user/userApi';
 import { expertLoginPost } from '@/app/service/expert/expertApi'; // Ensure this import exists

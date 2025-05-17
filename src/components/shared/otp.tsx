@@ -8,6 +8,9 @@ import { useState, useEffect, useRef, KeyboardEvent, FormEvent } from 'react';
 import { verifyOtp } from '@/app/service/user/userApi';
 import { expertVerifyOtp } from '@/app/service/expert/expertApi';
 
+import { resendOtp } from '@/app/service/user/userApi';
+import { resendExpertOtp } from '@/app/service/expert/expertApi';
+
 
 interface OTPProps {
     role: 'user' | 'expert';
@@ -17,7 +20,7 @@ interface OTPProps {
 const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
     const [isLoading, setIsLoading] = useState(false);
-    const [timer, setTimer] = useState<number>(60);
+    const [timer, setTimer] = useState<number>(120);
     const [isResendDisabled, setIsResendDisabled] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
     const [email, setEmail] = useState<string>('');
@@ -31,22 +34,20 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         setEmail(emailFromQuery ?? '');
 
         if (emailFromQuery) {
-            setTimer(60);
-            return;
+            setTimer(120);
+            setIsResendDisabled(true);
+            const interval = setInterval(() => {
+                setTimer((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        setIsResendDisabled(false);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+            return () => clearInterval(interval);
         }
-
-        const interval = setInterval(() => {
-            setTimer((prev) => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    setIsResendDisabled(false);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-
-        return () => clearInterval(interval);
     }, [searchParams]);
 
     const handleChange = (index: number, value: string) => {
@@ -82,7 +83,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         try {
             const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
             if (response.status) {
-                router.replace('/login')
+                router.replace(role === 'user' ? '/login' : '/expert/login');
             } else {
                 setError(response.message || 'Invalid OTP');
             }
@@ -97,8 +98,10 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const handleResendOTP = async () => {
         try {
             setIsResendDisabled(true);
-            setTimer(30);
+            setTimer(120);
+            setError('');
 
+            // Start the countdown timer again
             const interval = setInterval(() => {
                 setTimer((prev) => {
                     if (prev <= 1) {
@@ -109,13 +112,15 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                     return prev - 1;
                 });
             }, 1000);
-            setError('');
-        } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError('Failed to resend verification code');
+
+            // Call the resend OTP API based on the role
+            const response = await (role === 'user' ? resendOtp(email) : resendExpertOtp(email));
+            if (!response.status) {
+                setError(response.message || 'Failed to resend verification code');
             }
+        } catch (err) {
+            console.error(err);
+            setError('Failed to resend verification code');
             setIsResendDisabled(false);
         }
     };
@@ -134,7 +139,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                     </h1>
                     <div className="mt-2 text-center text-sm text-gray-600">
                         We sent a 6-digit code to
-                        <p className="font-medium text-indigo-600">{'your email'}</p>
+                        <p className="font-medium text-indigo-600">{email}</p>
                     </div>
                 </div>
 
@@ -158,9 +163,15 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                                 <div className="text-red-500 text-sm text-center">{error}</div>
                             )}
 
+                            {timer === 0 && (
+                                <p className="text-red-500 text-center text-sm mt-2">
+                                    OTP expired. Please resend a new code.
+                                </p>
+                            )}
+
                             <div>
-                                <button type="submit" disabled={isLoading}
-                                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                <button type="submit" disabled={isLoading || timer === 0}
+                                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${timer === 0 ? 'opacity-30 cursor-not-allowed': ''}  ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                     {isLoading ? (
                                         <>
                                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -178,13 +189,13 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
 
                         <div className="flex items-center justify-center mt-4">
                             <span className="text-sm text-gray-400">Didn’t receive a code?</span>
-                            <button type="button" onClick={handleResendOTP} disabled={isResendDisabled} className="ml-2 text-sm font-medium text-indigo-500 hover:text-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button type="button" onClick={handleResendOTP} disabled={isResendDisabled} className="ml-2 text-sm cursor-pointer font-medium text-indigo-500 hover:text-indigo-400 disabled:opacity-50 disabled:cursor-not-allowed">
                                 {isResendDisabled ? `Resend in ${timer}s` : 'Resend code'}
                             </button>
                         </div>
 
                         <div className="mt-6 text-center">
-                            <Link href="/expert/login" className="text-sm font-medium text-indigo-500 hover:text-indigo-400">
+                            <Link href={role == 'user' ? '/register':'/expert/register'} className="text-sm font-medium text-indigo-500 hover:text-indigo-400">
                                 Back to login
                             </Link>
                         </div>
