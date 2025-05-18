@@ -4,7 +4,7 @@ import ResetPasswordPage from "@/components/shared/newPassword";
 
 const UserResetPassword = () => {
     return <>
-        <ResetPasswordPage />
+        <ResetPasswordPage role='user' />
     </>
 };
 

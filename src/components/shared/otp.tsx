@@ -24,6 +24,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const [isResendDisabled, setIsResendDisabled] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
     const [email, setEmail] = useState<string>('');
+    const [type, setType] = useState<string>('');
 
     const inputRefs = useRef<HTMLInputElement[]>([]);
     const router = useRouter();
@@ -31,7 +32,9 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
 
     useEffect(() => {
         const emailFromQuery = searchParams.get('email');
+        const typeFromQuery = searchParams.get('type');
         setEmail(emailFromQuery ?? '');
+        setType(typeFromQuery ?? '');
 
         if (emailFromQuery) {
             setTimer(120);
@@ -83,7 +86,12 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         try {
             const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
             if (response.status) {
-                router.replace(role === 'user' ? '/login' : '/expert/login');
+                if (type === 'forgot-password') {
+                    const otpPath = role === 'user' ? '/resetPassword' : '/expert/resetPassword';
+                    router.replace(`${otpPath}?email=${email}`);
+                } else {
+                    router.replace(role === 'user' ? '/login' : '/expert/login');
+                }
             } else {
                 setError(response.message || 'Invalid OTP');
             }
@@ -171,7 +179,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
 
                             <div>
                                 <button type="submit" disabled={isLoading || timer === 0}
-                                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${timer === 0 ? 'opacity-30 cursor-not-allowed': ''}  ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
+                                    className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${timer === 0 ? 'opacity-30 cursor-not-allowed' : ''}  ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}>
                                     {isLoading ? (
                                         <>
                                             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -195,7 +203,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                         </div>
 
                         <div className="mt-6 text-center">
-                            <Link href={role == 'user' ? '/register':'/expert/register'} className="text-sm font-medium text-indigo-500 hover:text-indigo-400">
+                            <Link href={role == 'user' ? '/register' : '/expert/register'} className="text-sm font-medium text-indigo-500 hover:text-indigo-400">
                                 Back to login
                             </Link>
                         </div>

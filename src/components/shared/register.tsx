@@ -11,7 +11,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
-import { registerPost } from '@/app/service/user/userApi';
+import { registerPost } from '@/app/service/shared/sharedApi';
 
 
 interface RegisterPageProps {
@@ -52,7 +52,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
             if (res?.email) {
                 toast.success(res.message || "Registration successful!");
                 const otpPath = role === 'user' ? '/verify-otp' : '/expert/verify-otp';
-                router.replace(`${otpPath}?email=${res.email}`);
+                router.replace(`${otpPath}?email=${res.email}&type=register`);
             }
         } catch (err) {
             console.log("error in register", err)

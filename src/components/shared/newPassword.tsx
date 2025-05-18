@@ -1,42 +1,49 @@
-// app/reset-password/page.tsx  (or wherever you want)
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { resetPassword } from "@/app/service/shared/sharedApi";
 
-const ResetPasswordPage = () => {
-    const router = useRouter();
+
+interface ResetPasswordProps {
+    role: 'user' | 'expert';
+}
+
+const ResetPasswordPage: React.FC<ResetPasswordProps> = ({ role }) => {
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const router = useRouter();
+    const searchParams = useSearchParams();
+    const email = searchParams.get('email');
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPassword !== confirmPassword) {
+        if (!email) {
+            setError("Invalid password reset link. Email not found.");
+            router.replace(role == 'user' ? '/forgetPassword' : '/expert/forgetPassword');
+            return;
+        }
+
+        if (newPassword.trim() !== confirmPassword.trim()) {
             setError("Passwords do not match!");
             return;
         }
         setError("");
         setLoading(true);
-
         try {
-            // Example API call (replace URL with your API)
-            const res = await fetch("/api/reset-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ newPassword }),
-            });
+            const response = await resetPassword(email, newPassword.trim(), role);
 
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data.message || "Something went wrong!");
+            if (!response.status) {
+                setError(response?.message || "Failed to reset password. Please try again.");
             } else {
-                router.push("/login"); // Redirect to login after success
+                router.replace(role === 'user' ? '/login' : '/expert/login');
             }
         } catch (err) {
             setError("Server error. Please try again.");
-            console.log(err)
+            console.error("Password reset error:", err);
         } finally {
             setLoading(false);
         }
@@ -51,13 +58,13 @@ const ResetPasswordPage = () => {
                 <div className="mb-4 w-[70%]">
                     <label className="block opacity-80 text-[#E54B00] text-sm mb-2">New Password</label>
                     <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400"required/>
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" required />
                 </div>
 
                 <div className="mb-6 w-[70%]  ">
                     <label className="block opacity-80 text-[#E54B00] text-sm mb-2">Confirm Password</label>
                     <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" required/>
+                        className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" required />
                 </div>
 
                 {error && <p className="text-red-500 text-center mb-4 text-sm">{error}</p>}

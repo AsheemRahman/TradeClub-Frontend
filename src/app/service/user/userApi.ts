@@ -16,33 +16,6 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-interface RegisterPayload {
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-    role: 'user' | 'expert';
-}
-
-interface userloginType {
-    email: string;
-    password: string;
-    role: 'user' | 'expert';
-}
-
-
-export const registerPost = async (userData: RegisterPayload) => {
-    try {
-        const response = await axios.post(`${API_URI}/${userData.role}/register`, userData, {
-            withCredentials: true,
-        });
-        return response.data;
-    } catch (error: unknown) {
-        handleAxiosError(error);
-    }
-};
-
-
 export const verifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axios.post(`${API_URI}/user/verify-otp`, { otp, email });
@@ -61,13 +34,3 @@ export const resendOtp = async (email: string) => {
         handleAxiosError(error)
     }
 }
-
-
-export const userLoginPost = async (formData: userloginType) => {
-    try {
-        const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
-        return response.data;
-    } catch (error: unknown) {
-        handleAxiosError(error)
-    }
-};

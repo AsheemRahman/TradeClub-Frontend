@@ -7,8 +7,7 @@ import { useState } from 'react';
 import { loginType } from '@/types/types';
 import ImageSlider from './ImageSlider';
 import { toast } from 'react-toastify';
-import { userLoginPost } from '@/app/service/user/userApi';
-import { expertLoginPost } from '@/app/service/expert/expertApi'; // Ensure this import exists
+import { LoginPost } from '@/app/service/shared/sharedApi';
 
 interface LoginPage {
     role: 'user' | 'expert';
@@ -28,10 +27,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
 
         try {
             const payload = { ...formData, role };
-            const loginApi = isUser ? userLoginPost : expertLoginPost;
-
-            const response = await loginApi(payload);
-
+            const response = await LoginPost(payload);
             if (response.success) {
                 toast.success(response.message);
                 router.replace(isUser ? '/home' : '/expert/dashboard');
@@ -50,7 +46,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
         <div className="flex justify-center items-center">
             <div className="flex flex-col items-center md:flex-row bg-[#151231] text-[#fefeeb] rounded-[10px] mx-5 overflow-hidden shadow-lg w-full h-[550px]">
 
-                 {/* Image Section */}
+                {/* Image Section */}
                 <ImageSlider />
 
                 {/* Form Section */}
@@ -90,7 +86,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                         </p>
                     )}
 
-                     {/* Social Logins */}
+                    {/* Social Logins */}
                     {isUser && (
                         <>
                             <div className="relative my-6 text-center">

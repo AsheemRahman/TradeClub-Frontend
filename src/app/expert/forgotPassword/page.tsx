@@ -3,7 +3,7 @@ import ForgotPassword from "@/components/shared/forgotpassword";
 
 const ExpertForgetPasword = () => {
     return <>
-        <ForgotPassword />
+        <ForgotPassword role='expert' />
     </>
 };
 

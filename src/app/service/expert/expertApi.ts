@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
 
+
 const API_URI = process.env.NEXT_PUBLIC_BACKEND_API;
 
 interface userloginType {
@@ -30,6 +31,7 @@ export const expertVerifyOtp = async (otp: number, email: string) => {
     }
 };
 
+
 export const resendExpertOtp = async (email: string) => {
     try {
         const response = await axios.post(`${API_URI}/expert/resend-otp`, { email })
@@ -38,6 +40,7 @@ export const resendExpertOtp = async (email: string) => {
         handleAxiosError(error)
     }
 }
+
 
 export const expertLoginPost = async (formData: userloginType) => {
     try {

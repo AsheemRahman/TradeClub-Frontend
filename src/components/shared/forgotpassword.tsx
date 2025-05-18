@@ -3,13 +3,34 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { forgotPassword } from "@/app/service/shared/sharedApi";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
-export default function ForgotPassword() {
+interface ForgotPasswordProps {
+    role: 'user' | 'expert';
+}
+
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ role }) => {
     const [email, setEmail] = useState("");
+    const router = useRouter()
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // You can handle API logic here
+
+        try {
+            const response = await forgotPassword(email, role);
+            console.log(response)
+            if (response.status) {
+                toast.success(response.message);
+                const otpPath = role === 'user' ? '/verify-otp' : '/expert/verify-otp';
+                router.replace(`${otpPath}?email=${response.email}&type=forgot-password`);
+            } else {
+                toast.error(response?.message || 'Login failed. Please try again.');
+            }
+        } catch (error) {
+            console.error("Error sending reset link:", error);
+        }
     };
 
     return (
@@ -44,3 +65,6 @@ export default function ForgotPassword() {
         </div>
     );
 }
+
+
+export default ForgotPassword;
