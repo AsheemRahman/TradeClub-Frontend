@@ -140,9 +140,9 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                 <meta name="description" content="Verify your TradeClub account" />
             </Head>
 
-            <div className="flex flex-col justify-center mb-20">
+            <div className="flex flex-col justify-center mb-20 ">
                 <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                    <h1 className="mt-15 mb-8 text-center text-4xl font-extrabold ">
+                    <h1 className="mt-15 mb-8 text-center text-white text-4xl font-extrabold ">
                         Verify your account
                     </h1>
                     <div className="mt-2 text-center text-sm text-gray-600">
@@ -162,7 +162,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                                     {otp.map((digit, index) => (
                                         <input key={index} ref={(ref) => { if (ref) inputRefs.current[index] = ref; }} type="text" inputMode="numeric" maxLength={1} value={digit}
                                             onChange={(e) => handleChange(index, e.target.value)} onKeyDown={(e) => handleKeyDown(e, index)}
-                                            className="w-12 h-12 text-center text-xl border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+                                            className="w-12 h-12 text-center text-xl text-white border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
                                     ))}
                                 </div>
                             </div>
