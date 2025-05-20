@@ -16,7 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <AdminNavbar />
             <div className="flex">
                 {showSidebar && <Sidebar />}
-                <main className={`${showSidebar ? 'flex-1' : 'w-full'} p-6`}>
+                <main className={`${showSidebar ? 'flex-1' : 'w-full'} px-6`}>
                     {children}
                 </main>
             </div>

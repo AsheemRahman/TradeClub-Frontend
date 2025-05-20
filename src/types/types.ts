@@ -13,11 +13,12 @@ export type loginType = {
 
 
 export type UserType = {
-    _id: string;
+    id: string;
     fullName: string;
     email: string;
     password: string;
     phoneNumber?: string;
+    isActive?:boolean
     createdAt: string;
 }
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { adminloginType } from "@/types/types";
+import { loginType } from "@/types/types";
 import { toast } from 'react-toastify'
 
 const API_URI = process.env.NEXT_PUBLIC_BACKEND_API;
@@ -15,11 +15,42 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-export const loginPost = async (userData: adminloginType) => {
+export const loginPost = async (userData: loginType) => {
     try {
         const response = await axios.post(`${API_URI}/admin/login`, { ...userData }, { withCredentials: true })
         return response.data
     } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+}
+
+
+export const getUserDetails = async () => {
+    try {
+        const response = await axios.get(`${API_URI}/admin/get-users`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+}
+
+
+export const userStatus = async (id: string, status: boolean) => {
+    try {
+        const response = await axios.patch(`${API_URI}/admin/user-status/${id}`, { status });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+
+export const getexpertDetails = async () => {
+    try {
+        const response = await axios.get(`${API_URI}/admin/expert-details`, {
+        })
+        return response.data
+    } catch (error) {
         handleAxiosError(error)
     }
 }

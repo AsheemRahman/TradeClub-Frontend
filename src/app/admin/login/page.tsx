@@ -13,10 +13,7 @@ import { loginPost } from '@/app/service/admin/adminApi';
 
 const AdminLogin: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
-    const [formData, setFormData] = useState<loginType>({
-        email: "",
-        password: ""
-    });
+    const [formData, setFormData] = useState<loginType>({ email: "", password: "" });
 
     const router = useRouter();
 
@@ -30,6 +27,7 @@ const AdminLogin: React.FC = () => {
         setIsLoading(true);
         try {
             const response = await loginPost(formData);
+            console.log(response)
             if (response.success) {
                 toast.success(response.message);
                 router.replace('/admin/dashboard');
