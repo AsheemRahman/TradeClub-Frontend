@@ -13,7 +13,6 @@ interface Props {
 
 export default function TableComponent({ userData, toggleStatus, role }: Props) {
 
-
     const router = useRouter();
 
     const handlePermission = (id: string, isActive: boolean) => {

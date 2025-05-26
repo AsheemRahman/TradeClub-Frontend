@@ -7,16 +7,16 @@ import Sidebar from "@/components/admin/sideBar";
 import Footer from "@/components/shared/footer";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+
     const pathname = usePathname();
-    const noSidebarRoutes = ['/admin/login'];
-    const showSidebar = !noSidebarRoutes.includes(pathname);
+    const hideSidebar = pathname === '/admin/login' || /^\/admin\/expert-management\/[^\/]+$/.test(pathname);
 
     return (
         <div>
             <AdminNavbar />
             <div className="flex">
-                {showSidebar && <Sidebar />}
-                <main className={`${showSidebar ? 'flex-1' : 'w-full'} px-6`}>
+                {!hideSidebar && <Sidebar />}
+                <main className={`${!hideSidebar ? 'flex-1' : 'w-full'} px-6`}>
                     {children}
                 </main>
             </div>

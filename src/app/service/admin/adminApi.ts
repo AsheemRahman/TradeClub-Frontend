@@ -59,3 +59,13 @@ export const expertStatus = async (id: string, status: boolean) => {
         handleAxiosError(error);
     }
 };
+
+export const getExpertById = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_URI}/admin/getExpert/${id}`,{ withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
