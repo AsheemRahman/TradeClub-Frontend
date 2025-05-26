@@ -24,7 +24,6 @@ export const loginPost = async (userData: loginType) => {
     }
 }
 
-
 export const getUserDetails = async () => {
     try {
         const response = await axios.get(`${API_URI}/admin/get-users`, { withCredentials: true });
@@ -34,23 +33,29 @@ export const getUserDetails = async () => {
     }
 }
 
-
 export const userStatus = async (id: string, status: boolean) => {
     try {
-        const response = await axios.patch(`${API_URI}/admin/user-status/${id}`, { status });
+        const response = await axios.patch(`${API_URI}/admin/user-status/${id}`, { status }, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
     }
 };
 
-
-export const getexpertDetails = async () => {
+export const getExpertDetails = async () => {
     try {
-        const response = await axios.get(`${API_URI}/admin/expert-details`, {
-        })
+        const response = await axios.get(`${API_URI}/admin/get-experts`, { withCredentials: true })
         return response.data
     } catch (error) {
         handleAxiosError(error)
     }
 }
+
+export const expertStatus = async (id: string, status: boolean) => {
+    try {
+        const response = await axios.patch(`${API_URI}/admin/expert-status/${id}`, { status }, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};

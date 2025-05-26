@@ -20,7 +20,6 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ role }) => {
 
         try {
             const response = await forgotPassword(email, role);
-            console.log(response)
             if (response.status) {
                 toast.success(response.message);
                 const otpPath = role === 'user' ? '/verify-otp' : '/expert/verify-otp';

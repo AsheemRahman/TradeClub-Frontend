@@ -56,7 +56,7 @@ const UserManagement = () => {
     return (
         <div>
             <ProductHeader title="User Management" />
-            <UserTable userData={userData} toggleStatus={changeStatus} />
+            <UserTable userData={userData} toggleStatus={changeStatus} role='user' />
         </div>
     );
 };

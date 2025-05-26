@@ -18,7 +18,8 @@ export type UserType = {
     email: string;
     password: string;
     phoneNumber?: string;
-    isActive?:boolean
+    isActive?: boolean;
+    isVerified?: "Approved" | "pending" | "Declined";
     createdAt: string;
 }
 
