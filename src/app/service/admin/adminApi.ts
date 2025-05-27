@@ -71,7 +71,25 @@ export const expertStatus = async (id: string, status: boolean) => {
 
 export const getExpertById = async (id: string) => {
     try {
-        const response = await axios.get(`${API_URI}/admin/getExpert/${id}`,{ withCredentials: true });
+        const response = await axios.get(`${API_URI}/admin/getExpert/${id}`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const approveExpert = async (id: string) => {
+    try {
+        const response = await axios.patch(`${API_URI}/admin/approve-expert`, { id }, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const declineExpert = async (id: string) => {
+    try {
+        const response = await axios.patch(`${API_URI}/admin/decline-expert`, { id }, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

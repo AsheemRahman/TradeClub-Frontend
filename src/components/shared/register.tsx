@@ -48,11 +48,11 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
         setLoading(true);
         try {
             const payload = { ...formData, role };
-            const res = await registerPost(payload);
-            if (res?.email) {
-                toast.success(res.message || "Registration successful!");
+            const response = await registerPost(payload);
+            if (response?.email) {
+                toast.success(response.message || "Registration successful!");
                 const otpPath = role === 'user' ? '/verify-otp' : '/expert/verify-otp';
-                router.replace(`${otpPath}?email=${res.email}&type=register`);
+                router.replace(`${otpPath}?email=${response.email}&type=register`);
             }
         } catch (err) {
             console.log("error in register", err)
@@ -151,13 +151,13 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
 
                         {/* Social Buttons */}
                         <div className="grid grid-cols-2 gap-4">
-                            <button type="button" className="flex items-center justify-center py-3 px-4 border border-gray-600 rounded-md transition duration-200 hover:bg-gray-800">
+                            <button type="button" className="flex items-center justify-center py-3 px-4 border border-gray-400 rounded-md transition duration-200 hover:bg-gray-800">
                                 <FcGoogle size={24} className="mr-2" />
-                                <span>Google</span>
+                                <span className='text-white'>Google</span>
                             </button>
-                            <button type="button" className="flex items-center justify-center py-3 px-4 border border-gray-600 rounded-md transition duration-200 hover:bg-gray-800">
-                                <FaFacebook size={22} className="mr-2" />
-                                <span>Facebook</span>
+                            <button type="button" className="flex items-center justify-center  py-3 px-4 border border-gray-400 rounded-md transition duration-200 hover:bg-gray-800">
+                                <FaFacebook size={22} className="mr-2 text-blue-600" />
+                                <span className='text-white'>Facebook</span>
                             </button>
                         </div>
                     </div>

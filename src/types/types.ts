@@ -1,3 +1,4 @@
+
 export interface TokenPayload {
     email: string;
     role: string;
@@ -40,7 +41,7 @@ export type IExpert = {
     isVerified?: "Approved" | "Pending" | "Declined";
     isActive?: boolean;
     profilePicture?: string;
-    date_of_birth?: string;
+    DOB?: string;
     state?: string;
     country?: string;
     experience_level?: 'Beginner' | 'Intermediate' | 'Expert';
@@ -52,3 +53,22 @@ export type IExpert = {
     Government_Id?: string;
     selfie_Id?: string;
 }
+
+
+export type ExpertFormData = {
+    email?: string;
+    phoneNumber: string;
+    profilePicture: string;
+    DOB: string;
+    state: string;
+    country: string;
+    experience_level: string;
+    year_of_experience: string;
+    markets_Traded: string;
+    trading_style: string;
+    proof_of_experience: string;
+    Introduction_video: string;
+    Government_Id: string;
+    selfie_Id: string;
+}
+

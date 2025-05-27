@@ -7,7 +7,6 @@ export async function middleware(req: NextRequest) {
     const { pathname } = url;
 
     if (pathname.startsWith('/login') || pathname.startsWith('/admin/login') || pathname.startsWith('/expert/login')) {
-        console.log("Skipping middleware for login request...");
         return NextResponse.next();
     }
 

@@ -5,7 +5,7 @@ import { ArrowLeft, Mail, Phone, Calendar, MapPin, TrendingUp, Award, FileText, 
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { IExpert } from '@/types/types';
-import { getExpertById } from '@/app/service/admin/adminApi';
+import { approveExpert, declineExpert, getExpertById } from '@/app/service/admin/adminApi';
 import { toast } from 'react-toastify';
 
 
@@ -75,6 +75,19 @@ export default function ExpertDetailPage() {
         );
     }
 
+    const handleApprove = async () => {
+        const response = await approveExpert(id);
+        if (response.status) {
+            toast.success("Expert Approved Successfully")
+        }
+    }
+    const handleDecline = async () => {
+        const response = await declineExpert(id);
+        if (response.status) {
+            toast.success("Expert Declined Successfully")
+        }
+    }
+
     return (
         <div className="min-h-screen bg-gradient-to-br  p-4">
             <div className="max-w-6xl mx-auto">
@@ -92,10 +105,10 @@ export default function ExpertDetailPage() {
                     <div className="relative bg-gradient-to-r from-purple-600 to-blue-600 p-8">
                         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
                             <div className="relative">
-                                {expert.profilePicture ? (
+                                {expert.profilePicture !== "" ? (
                                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white/30 cursor-pointer hover:scale-105 transition-transform duration-200"
                                         onClick={() => openImageModal(expert.profilePicture, "Profile Picture")}>
-                                        <Image src={expert.profilePicture} alt="Profile" fill className="object-cover" />
+                                        {/* <Image src={expert.profilePicture!} alt="Profile" fill className="object-cover" /> */}
                                     </div>
                                 ) : (
                                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/20 flex items-center justify-center">
@@ -125,31 +138,46 @@ export default function ExpertDetailPage() {
                                                 </span>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {expert.isVerified !== "Pending" ? (
-                                        <div className="flex gap-3">
-                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isVerified === "Approved"
-                                                    ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                                                    : 'bg-red-500/60 text-red-300 border border-red-500/30'}`}>
-                                                {expert.isVerified}
-                                            </div>
-                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isActive
-                                                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
-                                                    : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'}`}>
+                                        {/* show verified and active */}
+                                        <div className="flex gap-3 mt-4">
+                                            {expert.isVerified !== "Pending" &&
+                                                <div className={`px-3 py-2 rounded-full text-sm font-medium shadow-lg ${expert.isVerified === "Approved"
+                                                    ? 'bg-green-500 text-white border-2 border-green-400'
+                                                    : 'bg-red-500 text-white border-2 border-red-400'}`}>
+                                                    {expert.isVerified}
+                                                </div>
+                                            }
+                                            <div className={`px-3 py-2 rounded-full text-sm font-medium shadow-lg ${expert.isActive
+                                                ? 'bg-yellow-400 text-gray-900 border-2 border-yellow-300'
+                                                : 'bg-gray-800 text-white border-2 border-gray-600'}`}>
                                                 {expert.isActive ? 'Active' : 'Blocked'}
                                             </div>
                                         </div>
-                                    ) : (
+                                    </div>
+
+                                    {/* {expert.isVerified !== "Pending" ? (
                                         <div className="flex gap-3">
-                                            <button className="px-4 py-2 rounded-full text-sm font-medium bg-green-600 text-white border border-green-500 hover:bg-green-400">
-                                                Approve
-                                            </button>
-                                            <button className="px-4 py-2 rounded-full text-sm font-medium bg-red-500 text-white border border-red-500/20 hover:bg-red-400">
-                                                Decline
-                                            </button>
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isVerified === "Approved"
+                                                ? 'bg-green-500 text-white border border-green-500/30'
+                                                : 'bg-red-500 text-white border border-red-500/30'}`}>
+                                                {expert.isVerified}
+                                            </div>
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isActive
+                                                ? 'bg-yellow-200 text-blue-300 border border-blue-500/30'
+                                                : 'bg-gray-500/20 text-white border border-gray-500/30'}`}>
+                                                {expert.isActive ? 'Active' : 'Blocked'}
+                                            </div>
                                         </div>
-                                    )}
+                                    ) : ( */}
+                                    <div className="flex gap-3">
+                                        <button className="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white border border-green-500 hover:bg-green-400" onClick={handleApprove}>
+                                            Approve
+                                        </button>
+                                        <button className="px-4 py-2 rounded-md text-sm font-medium bg-red-500 text-white border border-red-500/20 hover:bg-red-400" onClick={handleDecline}>
+                                            Decline
+                                        </button>
+                                    </div>
+                                    {/* )} */}
                                 </div>
                             </div>
                         </div>
@@ -180,7 +208,7 @@ export default function ExpertDetailPage() {
                         {activeTab === 'profile' && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[
-                                    { label: 'Date of Birth', value: expert.date_of_birth ? new Date(expert.date_of_birth).toDateString() : 'N/A', icon: Calendar },
+                                    { label: 'Date of Birth', value: expert.DOB ? new Date(expert.DOB).toDateString() : 'N/A', icon: Calendar },
                                     { label: 'Country', value: expert.country || 'N/A', icon: MapPin },
                                     { label: 'State', value: expert.state || 'N/A', icon: MapPin },
                                     { label: 'Phone', value: expert.phoneNumber || 'N/A', icon: Phone },
@@ -281,7 +309,7 @@ export default function ExpertDetailPage() {
                                     {expert.selfie_Id ? (
                                         <div className="w-48 h-48 rounded-lg overflow-hidden border-2 border-white/20 cursor-pointer hover:scale-105 transition-transform duration-200"
                                             onClick={() => openImageModal(expert.selfie_Id, "Selfie with ID")} >
-                                            <Image src={expert.selfie_Id} alt="Selfie with ID" className="w-full h-full object-cover" />
+                                            {/* <Image src={expert.selfie_Id} alt="Selfie with ID" className="w-full h-full object-cover" /> */}
                                         </div>
                                     ) : (
                                         <p className="text-white/60">No selfie with ID available</p>

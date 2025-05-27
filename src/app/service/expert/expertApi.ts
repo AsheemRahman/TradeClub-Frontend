@@ -1,3 +1,4 @@
+import { ExpertFormData } from "@/types/types";
 import axios from "axios";
 import { toast } from 'react-toastify'
 
@@ -46,6 +47,16 @@ export const expertLoginPost = async (formData: userloginType) => {
     try {
         const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
         return response.data;
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+};
+
+
+export const expertVerification = async (formData: ExpertFormData) => {
+    try {
+        const response = await axios.post(`${API_URI}/expert/verification`, formData, { withCredentials: true, });
+        return response;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
