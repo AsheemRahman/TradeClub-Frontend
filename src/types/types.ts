@@ -36,7 +36,7 @@ export type RegisterFormData = {
 export type IExpert = {
     fullName: string;
     email: string;
-    phone_number?: string;
+    phoneNumber?: string;
     isVerified?: "Approved" | "Pending" | "Declined";
     isActive?: boolean;
     profilePicture?: string;

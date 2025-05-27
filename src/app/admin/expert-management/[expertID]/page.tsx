@@ -69,7 +69,7 @@ export default function ExpertDetailPage() {
             <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
                 <div className="text-center">
                     <XCircle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-                    <p className="text-red-400 text-xl">Expert not found</p>
+                    <p className="text-red-400 text-xxl">Expert not found</p>
                 </div>
             </div>
         );
@@ -118,25 +118,38 @@ export default function ExpertDetailPage() {
                                                 <Mail className="w-4 h-4" />
                                                 {expert.email}
                                             </span>
-                                            {expert.phone_number && (
+                                            {expert.phoneNumber && (
                                                 <span className="flex items-center gap-1">
                                                     <Phone className="w-4 h-4" />
-                                                    {expert.phone_number}
+                                                    {expert.phoneNumber}
                                                 </span>
                                             )}
                                         </div>
                                     </div>
 
-                                    <div className="flex gap-3">
-                                        <div className={`px-4 py-2 rounded-full text-sm font-medium 
-                                        ${expert.isVerified == "Approved" ? 'bg-green-500/20 text-green-300 border border-green-500/30' : 'bg-red-500/60 text-red-300 border border-red-500/30'}`}>
-                                            {expert.isVerified}
+                                    {expert.isVerified !== "Pending" ? (
+                                        <div className="flex gap-3">
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isVerified === "Approved"
+                                                    ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                                                    : 'bg-red-500/60 text-red-300 border border-red-500/30'}`}>
+                                                {expert.isVerified}
+                                            </div>
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isActive
+                                                    ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                                                    : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'}`}>
+                                                {expert.isActive ? 'Active' : 'Blocked'}
+                                            </div>
                                         </div>
-                                        <div className={`px-4 py-2 rounded-full text-sm font-medium 
-                                        ${expert.isActive ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'}`}>
-                                            {expert.isActive ? 'Active' : 'Blocked'}
+                                    ) : (
+                                        <div className="flex gap-3">
+                                            <button className="px-4 py-2 rounded-full text-sm font-medium bg-green-600 text-white border border-green-500 hover:bg-green-400">
+                                                Approve
+                                            </button>
+                                            <button className="px-4 py-2 rounded-full text-sm font-medium bg-red-500 text-white border border-red-500/20 hover:bg-red-400">
+                                                Decline
+                                            </button>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -170,7 +183,7 @@ export default function ExpertDetailPage() {
                                     { label: 'Date of Birth', value: expert.date_of_birth ? new Date(expert.date_of_birth).toDateString() : 'N/A', icon: Calendar },
                                     { label: 'Country', value: expert.country || 'N/A', icon: MapPin },
                                     { label: 'State', value: expert.state || 'N/A', icon: MapPin },
-                                    { label: 'Phone', value: expert.phone_number || 'N/A', icon: Phone },
+                                    { label: 'Phone', value: expert.phoneNumber || 'N/A', icon: Phone },
                                     { label: 'Email', value: expert.email, icon: Mail },
                                     { label: 'Status', value: expert.isActive ? 'Active' : 'Blocked', icon: expert.isActive ? CheckCircle : XCircle }
                                 ].map((item, index) => (

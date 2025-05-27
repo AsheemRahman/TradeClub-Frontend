@@ -24,6 +24,15 @@ export const loginPost = async (userData: loginType) => {
     }
 }
 
+export const adminLogout = async () => {
+    try {
+        const response = await axios.get(`${API_URI}/admin/logout`, { withCredentials: true })
+        return response
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+}
+
 export const getUserDetails = async () => {
     try {
         const response = await axios.get(`${API_URI}/admin/get-users`, { withCredentials: true });

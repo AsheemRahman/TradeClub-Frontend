@@ -1,3 +1,4 @@
+import { adminLogout } from '@/app/service/admin/adminApi';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
@@ -20,10 +21,12 @@ export default function Sidebar() {
     const router = useRouter();
     const pathname = usePathname();
 
-    const handleLogout = () => {
-        router.push('/admin/login');
+    const handleLogout = async () => {
+        const response = await adminLogout();
+        if (response?.status) {
+            router.push('/admin/login');
+        }
     };
-
 
     return (
         <div className="bg-[#151231] w-64 flex flex-col ml-5 p-4 rounded-xl text-white">

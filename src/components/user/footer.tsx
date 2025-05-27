@@ -18,22 +18,22 @@ const UserFooter = () => {
                         TradeClub
                     </h1>
                     <div className="flex gap-3">
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaYoutube className="text-lg" />
                         </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaDiscord className="text-lg" />
                         </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaInstagram className="text-lg" />
                         </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaTelegram className="text-lg" />
                         </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaTwitter className="text-lg" />
                         </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full">
+                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
                             <FaFacebook className="text-lg" />
                         </Link>
                     </div>
@@ -41,14 +41,13 @@ const UserFooter = () => {
 
                 {/* Main footer links section */}
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-8">
-                    {/* Quick Links */}
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Quick Links</h3>
                         <ul className="space-y-3 opacity-70 ">
-                            <li><Link href="/about">About us</Link></li>
-                            <li><Link href="/terms">Term of Service</Link></li>
-                            <li><Link href="/privacy">Privacy Policy</Link></li>
-                            <li><Link href="/help">Help Center</Link></li>
+                            <li className='hover:opacity-60'><Link href="/about">About us</Link></li>
+                            <li className='hover:opacity-60'><Link href="/terms">Term of Service</Link></li>
+                            <li className='hover:opacity-60'><Link href="/privacy">Privacy Policy</Link></li>
+                            <li className='hover:opacity-60'><Link href="/help">Help Center</Link></li>
                             <li className="flex items-center gap-2">
                                 <span>English</span>
                                 <span className="bg-[#E54B00] text-white rounded-full p-1">
@@ -71,12 +70,12 @@ const UserFooter = () => {
                     {/* Supports */}
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Supports</h3>
-                        <ul className="space-y-3 opacity-70 ">
-                            <li><Link href="/contact">Contact</Link></li>
-                            <li><Link href="/faqs">FAQs</Link></li>
-                            <li><Link href="/community-support">Community Support</Link></li>
-                            <li><Link href="/educations">Educations</Link></li>
-                            <li><Link href="/email-support">Email Support</Link></li>
+                        <ul className="space-y-3 opacity-70">
+                            <li className='hover:opacity-60'><Link href="/contact">Contact</Link></li>
+                            <li className='hover:opacity-60'><Link href="/faqs">FAQs</Link></li>
+                            <li className='hover:opacity-60'><Link href="/community-support">Community Support</Link></li>
+                            <li className='hover:opacity-60'><Link href="/educations">Educations</Link></li>
+                            <li className='hover:opacity-60'><Link href="/email-support">Email Support</Link></li>
                         </ul>
                     </div>
 
@@ -84,12 +83,12 @@ const UserFooter = () => {
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">We Provide</h3>
                         <ul className="space-y-3  opacity-70 ">
-                            <li><Link href="/learn-trading">Learn Trading</Link></li>
-                            <li><Link href="/videocall">Videocall with expert</Link></li>
-                            <li><Link href="/chat">Real-Time Chat</Link></li>
-                            <li><Link href="/insights">Trade Insights</Link></li>
-                            <li><Link href="/subscription">Subscription Plan</Link></li>
-                            <li><Link href="/community">Cummunity Support</Link></li>
+                            <li className='hover:opacity-60'><Link href="/learn-trading">Learn Trading</Link></li>
+                            <li className='hover:opacity-60'><Link href="/videocall">Videocall with expert</Link></li>
+                            <li className='hover:opacity-60'><Link href="/chat">Real-Time Chat</Link></li>
+                            <li className='hover:opacity-60'><Link href="/insights">Trade Insights</Link></li>
+                            <li className='hover:opacity-60'><Link href="/subscription">Subscription Plan</Link></li>
+                            <li className='hover:opacity-60'><Link href="/community">Cummunity Support</Link></li>
                         </ul>
                     </div>
 
