@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
+import axiosInstance from "./AxiosInstance";
 
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -33,7 +34,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const registerPost = async (userData: RegisterPayload) => {
     try {
-        const response = await axios.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true,});
+        const response = await axiosInstance.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true,});
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error);
@@ -43,7 +44,7 @@ export const registerPost = async (userData: RegisterPayload) => {
 
 export const LoginPost = async (formData: loginType) => {
     try {
-        const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -57,7 +58,7 @@ export const forgotPassword = async (email: string, role: string) => {
         return;
     }
     try {
-        const response = await axios.post(`${API_URI}/${role}/forgot-password`, { email })
+        const response = await axiosInstance.post(`${API_URI}/${role}/forgot-password`, { email })
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -71,7 +72,7 @@ export const resetPassword = async (email: string, password: string, role: strin
         return;
     }
     try {
-        const response = await axios.patch(`${API_URI}/${role}/reset-password`, { email, password })
+        const response = await axiosInstance.patch(`${API_URI}/${role}/reset-password`, { email, password })
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)

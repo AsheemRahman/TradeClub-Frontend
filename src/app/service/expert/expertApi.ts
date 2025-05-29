@@ -1,6 +1,7 @@
 import { ExpertFormData } from "@/types/types";
 import axios from "axios";
 import { toast } from 'react-toastify'
+import axiosInstance from "../shared/AxiosInstance";
 
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -25,7 +26,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const expertVerifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axios.post(`${API_URI}/expert/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`${API_URI}/expert/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -35,7 +36,7 @@ export const expertVerifyOtp = async (otp: number, email: string) => {
 
 export const resendExpertOtp = async (email: string) => {
     try {
-        const response = await axios.post(`${API_URI}/expert/resend-otp`, { email })
+        const response = await axiosInstance.post(`${API_URI}/expert/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -45,7 +46,7 @@ export const resendExpertOtp = async (email: string) => {
 
 export const expertLoginPost = async (formData: userloginType) => {
     try {
-        const response = await axios.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -55,7 +56,7 @@ export const expertLoginPost = async (formData: userloginType) => {
 
 export const expertVerification = async (formData: ExpertFormData) => {
     try {
-        const response = await axios.post(`${API_URI}/expert/verification`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`${API_URI}/expert/verification`, formData, { withCredentials: true, });
         return response;
     } catch (error: unknown) {
         handleAxiosError(error)

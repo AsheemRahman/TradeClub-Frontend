@@ -34,7 +34,6 @@ const AdminLogin: React.FC = () => {
             }
         } catch (error) {
             console.log("error occurred when fetching data", error);
-            toast.error("Login failed. Please check your credentials.");
         } finally {
             setIsLoading(false);
         }

@@ -1,7 +1,7 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
-import { useAuthStore, User } from '@/store/authStore';
+// import { useAuthStore, User } from '@/store/authStore';
 
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -49,13 +49,13 @@ adminAxiosInstance.interceptors.response.use(
                 const newToken = Cookies.get('admin-accessToken');
                 if (newToken && originalRequest.headers) {
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    const user = useAuthStore.getState().user;
-                    useAuthStore.getState().setUserAuth(user as User, newToken);
+                    // const user = useAuthStore.getState().user;
+                    // useAuthStore.getState().setUserAuth(user as User, newToken);
                 }
                 return adminAxiosInstance(originalRequest);
             }
 
-            useAuthStore.getState().logout();
+            // useAuthStore.getState().logout();
             toast.error('Your session has expired. Please login again.');
             if (typeof window !== 'undefined') {
                 window.location.href = '/admin/login';
@@ -65,9 +65,9 @@ adminAxiosInstance.interceptors.response.use(
         }
 
         // Handle other errors
-        if (error.response?.status !== 401) {
-            toast.error(error.message || 'An unexpected error occurred.');
-        }
+        // if (error.response?.status !== 401) {
+        //     toast.error(error.message || 'An unexpected error occurred.');
+        // }
 
         return Promise.reject(error);
     }

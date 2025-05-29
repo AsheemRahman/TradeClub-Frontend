@@ -1,47 +1,31 @@
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig } from 'axios';
 import { toast } from 'react-toastify';
 import Cookies from 'js-cookie';
-import { User, useAuthStore } from '@/store/authStore';
+import { useAuthStore, User } from '@/store/authStore';
 
-const API_URI = process.env.NEXT_PUBLIC_API_URI;
+
+const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
+
 
 const axiosInstance: AxiosInstance = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_BASE_URL,
     withCredentials: true,
 });
 
-interface RefreshResponse {
-    success: boolean;
-    data: {
-        accessToken: string;
-    };
-    message: string;
-}
 
-const refreshAccessToken = async (): Promise<string | null> => {
+const refreshAccessToken = async (): Promise<boolean> => {
     try {
-        const response = await axios.post<RefreshResponse>(`${API_URI}/user/refresh`, {}, { withCredentials: true });
-
-        if (response.status === 200 && response.data.success) {
-            const newAccessToken = response.data.data.accessToken;
-            const user = useAuthStore.getState().user;
-
-            useAuthStore.getState().setUserAuth(user as User, newAccessToken);
-            Cookies.set('accessToken', newAccessToken, { path: '/', expires: 1 / 24, sameSite: 'Lax' });
-
-            return newAccessToken;
-        }
-
-        return null;
+        const response = await axios.post(`${API_URI}/user/refresh-token`, {}, { withCredentials: true });
+        return response.data.status === true;
     } catch (error) {
-        console.error('Error refreshing token:', error);
-        return null;
+        console.error('Error refreshing admin token:', error);
+        return false;
     }
 };
 
 // Request Interceptor
 axiosInstance.interceptors.request.use(
-    async (config) => {
+    (config) => {
         const token = Cookies.get('accessToken');
         if (token && config.headers) {
             config.headers.Authorization = `Bearer ${token}`;
@@ -61,26 +45,26 @@ axiosInstance.interceptors.response.use(
             originalRequest._retry = true;
 
             const newToken = await refreshAccessToken();
-
             if (newToken) {
-                originalRequest.headers = {
-                    ...originalRequest.headers,
-                    Authorization: `Bearer ${newToken}`,
-                };
+                const newToken = Cookies.get('accessToken');
+                if (newToken && originalRequest.headers) {
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    const user = useAuthStore.getState().user;
+                    useAuthStore.getState().setUserAuth(user as User, newToken);
+                }
                 return axiosInstance(originalRequest);
             }
 
             useAuthStore.getState().logout();
             toast.error('Your session has expired. Please login again.');
-
             if (typeof window !== 'undefined') {
                 window.location.href = '/login';
             }
 
-            return Promise.reject(new Error('Session expired.'));
+            return Promise.reject(new Error('session expired.'));
         }
 
-        // Show error toast only for non-401 errors
+        // Handle other errors
         if (error.response?.status !== 401) {
             toast.error(error.message || 'An unexpected error occurred.');
         }

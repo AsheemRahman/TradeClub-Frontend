@@ -1,5 +1,6 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
+import axiosInstance from "../shared/AxiosInstance";
 
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -18,7 +19,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const verifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axios.post(`${API_URI}/user/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`${API_URI}/user/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -28,7 +29,7 @@ export const verifyOtp = async (otp: number, email: string) => {
 
 export const resendOtp = async (email: string) => {
     try {
-        const response = await axios.post(`${API_URI}/user/resend-otp`, { email })
+        const response = await axiosInstance.post(`${API_URI}/user/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
