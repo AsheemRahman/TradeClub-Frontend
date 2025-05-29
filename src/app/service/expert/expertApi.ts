@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from 'react-toastify'
 
 
-const API_URI = process.env.NEXT_PUBLIC_BACKEND_API;
+const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 interface userloginType {
     email: string;

@@ -27,6 +27,11 @@ export async function middleware(req: NextRequest) {
 
     console.log("middleware role =>", role);
 
+    if ((!token && refreshToken) || (!token && adminRefreshToken)) {
+        console.log("Access token expired, but refresh token exists. Allowing frontend to refresh.");
+        return NextResponse.next();
+    }
+
     if (!token) {
         if (pathname.startsWith('/expert')) {
             return NextResponse.redirect(new URL('/expert/login', req.url));
@@ -35,11 +40,6 @@ export async function middleware(req: NextRequest) {
             return NextResponse.redirect(new URL('/admin/login', req.url));
         }
         return NextResponse.redirect(new URL('/login', req.url));
-    }
-
-    if ((!token && refreshToken) || (!token && adminRefreshToken)) {
-        console.log("Access token expired, but refresh token exists. Allowing frontend to refresh.");
-        return NextResponse.next();
     }
 
     return NextResponse.next();
@@ -51,5 +51,7 @@ export const config = {
         '/profile',
         '/expert/dashboard',
         '/admin/dashboard',
+        '/admin/user-management',
+        '/admin/expert-management/:path*',
     ],
 };
