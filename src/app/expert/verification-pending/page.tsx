@@ -90,8 +90,6 @@ const VerificationPending = () => {
                         </div>
                     </div>
 
-
-
                     {/* Contact Info */}
                     <div className="bg-gray-800/30 rounded-xl w-[90%] mx-auto p-4 mb-8">
                         <p className="text-sm text-gray-400 mb-2">
@@ -115,10 +113,8 @@ const VerificationPending = () => {
                         <Home className="w-5 h-5" />
                         Go to Home
                     </button>
-                    <button
-                        onClick={() => router.replace('/expert/login')}
-                        className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
-                    >
+                    <button onClick={() => router.replace('/expert/login')}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors">
                         Go to Login
                         <ArrowRight className="w-5 h-5" />
                     </button>

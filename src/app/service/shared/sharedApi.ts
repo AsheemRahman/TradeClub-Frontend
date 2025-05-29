@@ -33,9 +33,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const registerPost = async (userData: RegisterPayload) => {
     try {
-        const response = await axios.post(`${API_URI}/${userData.role}/register`, userData, {
-            withCredentials: true,
-        });
+        const response = await axios.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true,});
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error);

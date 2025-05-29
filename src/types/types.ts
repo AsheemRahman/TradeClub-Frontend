@@ -6,12 +6,10 @@ export interface TokenPayload {
     exp: number;
 }
 
-
 export type loginType = {
     email: string,
     password: string
 }
-
 
 export type UserType = {
     id: string;
@@ -24,7 +22,6 @@ export type UserType = {
     createdAt: string;
 }
 
-
 export type RegisterFormData = {
     fullName: string;
     email: string;
@@ -32,7 +29,6 @@ export type RegisterFormData = {
     password: string;
     confirmPassword: string;
 }
-
 
 export type IExpert = {
     fullName: string;
@@ -53,7 +49,6 @@ export type IExpert = {
     Government_Id?: string;
     selfie_Id?: string;
 }
-
 
 export type ExpertFormData = {
     email?: string;

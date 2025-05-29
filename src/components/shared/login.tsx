@@ -3,11 +3,13 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-
-import { loginType } from '@/types/types';
-import ImageSlider from './ImageSlider';
 import { toast } from 'react-toastify';
+
+import ImageSlider from './ImageSlider';
+import { loginType } from '@/types/types';
 import { LoginPost } from '@/app/service/shared/sharedApi';
+
+import { useAuthStore } from '@/store/authStore';
 
 interface LoginPage {
     role: 'user' | 'expert';
@@ -20,6 +22,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
 
     const router = useRouter();
     const isUser = role === 'user';
+    const authStore = useAuthStore();
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,6 +32,8 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             const payload = { ...formData, role };
             const response = await LoginPost(payload);
             if (response.success) {
+                const { user, accessToken } = response.data;
+                authStore.setUserAuth(user, accessToken);
                 toast.success(response.message);
                 router.replace(isUser ? '/home' : '/expert/dashboard');
             } else {
