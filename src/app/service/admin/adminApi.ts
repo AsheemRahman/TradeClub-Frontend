@@ -87,9 +87,9 @@ export const approveExpert = async (id: string) => {
     }
 };
 
-export const declineExpert = async (id: string) => {
+export const declineExpert = async (id: string, rejectionReason: string) => {
     try {
-        const response = await axios.patch(`${API_URI}/admin/decline-expert`, { id }, { withCredentials: true });
+        const response = await axios.patch(`${API_URI}/admin/decline-expert`, { id, rejectionReason }, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

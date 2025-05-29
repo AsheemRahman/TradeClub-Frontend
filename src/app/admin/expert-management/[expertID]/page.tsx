@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ArrowLeft, Mail, Phone, Calendar, MapPin, TrendingUp, Award, FileText, Video, Shield, User, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { useState, useEffect, useCallback, } from 'react';
+import { ArrowLeft, Mail, Phone, Calendar, MapPin, TrendingUp, Award, FileText, Video, Shield, User, CheckCircle, XCircle, Eye, X, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { IExpert } from '@/types/types';
@@ -19,6 +19,10 @@ export default function ExpertDetailPage() {
     const [activeTab, setActiveTab] = useState('profile');
     const [imageModal, setImageModal] = useState<{ src: string | undefined, alt: string } | null>(null);
 
+    const [showRejectionModal, setShowRejectionModal] = useState(false);
+    const [rejectionReason, setRejectionReason] = useState('');
+    const [isSubmittingRejection, setIsSubmittingRejection] = useState(false);
+
     const router = useRouter();
 
     const openImageModal = (src: string | undefined, alt: string) => {
@@ -28,30 +32,39 @@ export default function ExpertDetailPage() {
         setImageModal(null);
     };
 
+    const openRejectionModal = () => {
+        setShowRejectionModal(true);
+        setRejectionReason('');
+    };
+    const closeRejectionModal = () => {
+        setShowRejectionModal(false);
+        setRejectionReason('');
+    };
+
+    const fetchExpertDetails = useCallback(async () => {
+        try {
+            const response = await getExpertById(id);
+            if (response.status) {
+                setExpert(response.Expert);
+            } else {
+                setExpert(null);
+            }
+        } catch (err) {
+            toast.error("Unable to fetch expert details. Please try again.");
+            console.error("Error fetching expert:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, [id]);
+
     useEffect(() => {
         if (!id) {
             router.push("/admin/expert-management")
             return;
         }
 
-        const fetchExpertDetails = async () => {
-            try {
-                const response = await getExpertById(id);
-                if (response.status) {
-                    setExpert(response.Expert)
-                } else {
-                    setExpert(null)
-                }
-            } catch (err) {
-                toast.error("Unable to fetch expert details. Please try again.");
-                console.error("Error fetching expert:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchExpertDetails();
-    }, [id, router]);
+    }, [id, router, fetchExpertDetails]);
 
     if (loading) {
         return (
@@ -79,14 +92,39 @@ export default function ExpertDetailPage() {
         const response = await approveExpert(id);
         if (response.status) {
             toast.success("Expert Approved Successfully")
+            fetchExpertDetails();
         }
     }
     const handleDecline = async () => {
-        const response = await declineExpert(id);
-        if (response.status) {
-            toast.success("Expert Declined Successfully")
+        if (rejectionReason.trim() === '') {
+            toast.error("Please provide a reason for rejection");
+            return;
+        }
+
+        setIsSubmittingRejection(true);
+        try {
+            const response = await declineExpert(id, rejectionReason);
+            if (response.status) {
+                toast.success("Expert Declined Successfully");
+                closeRejectionModal();
+                fetchExpertDetails();
+            }
+        } catch (error) {
+            toast.error("Failed to decline expert. Please try again.");
+            console.error("Error declining expert:", error);
+        } finally {
+            setIsSubmittingRejection(false);
         }
     }
+
+    const commonRejectionReasons = [
+        "Incomplete documentation",
+        "Invalid or expired ID",
+        "Insufficient trading experience",
+        "Poor quality introduction video",
+        "Unverifiable credentials",
+        "Does not meet platform requirements"
+    ];
 
     return (
         <div className="min-h-screen bg-gradient-to-br  p-4">
@@ -138,46 +176,45 @@ export default function ExpertDetailPage() {
                                                 </span>
                                             )}
                                         </div>
+
                                         {/* show verified and active */}
-                                        <div className="flex gap-3 mt-4">
-                                            {expert.isVerified !== "Pending" &&
-                                                <div className={`px-3 py-2 rounded-full text-sm font-medium shadow-lg ${expert.isVerified === "Approved"
-                                                    ? 'bg-green-500 text-white border-2 border-green-400'
-                                                    : 'bg-red-500 text-white border-2 border-red-400'}`}>
+                                        {expert.isVerified == "Pending" &&
+                                            <div className="flex gap-3 mt-4">
+                                                <div className="px-3 py-2 rounded-full text-sm font-medium shadow-lg bg-red-500 text-white border-2 border-red-400">
                                                     {expert.isVerified}
                                                 </div>
-                                            }
-                                            <div className={`px-3 py-2 rounded-full text-sm font-medium shadow-lg ${expert.isActive
+                                                <div className={`px-3 py-2 rounded-full text-sm font-medium shadow-lg ${expert.isActive
+                                                    ? 'bg-yellow-400 text-gray-900 border-2 border-yellow-300'
+                                                    : 'bg-gray-800 text-white border-2 border-gray-600'}`}>
+                                                    {expert.isActive ? 'Active' : 'Blocked'}
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+
+                                    {expert.isVerified !== "Pending" ? (
+                                        <div className="flex gap-3">
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isVerified === "Approved"
+                                                ? 'bg-green-500 text-white border-2 border-green-400'
+                                                : 'bg-red-500 text-white border-2 border-red-400'}`}>
+                                                {expert.isVerified}
+                                            </div>
+                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isActive
                                                 ? 'bg-yellow-400 text-gray-900 border-2 border-yellow-300'
                                                 : 'bg-gray-800 text-white border-2 border-gray-600'}`}>
                                                 {expert.isActive ? 'Active' : 'Blocked'}
                                             </div>
                                         </div>
-                                    </div>
-
-                                    {/* {expert.isVerified !== "Pending" ? (
+                                    ) : (
                                         <div className="flex gap-3">
-                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isVerified === "Approved"
-                                                ? 'bg-green-500 text-white border border-green-500/30'
-                                                : 'bg-red-500 text-white border border-red-500/30'}`}>
-                                                {expert.isVerified}
-                                            </div>
-                                            <div className={`px-4 py-2 rounded-full text-sm font-medium  ${expert.isActive
-                                                ? 'bg-yellow-200 text-blue-300 border border-blue-500/30'
-                                                : 'bg-gray-500/20 text-white border border-gray-500/30'}`}>
-                                                {expert.isActive ? 'Active' : 'Blocked'}
-                                            </div>
+                                            <button className="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white border border-green-500 hover:bg-green-400" onClick={handleApprove}>
+                                                Approve
+                                            </button>
+                                            <button className="px-4 py-2 rounded-md text-sm font-medium bg-red-500 text-white border border-red-500/20 hover:bg-red-400" onClick={openRejectionModal}>
+                                                Decline
+                                            </button>
                                         </div>
-                                    ) : ( */}
-                                    <div className="flex gap-3">
-                                        <button className="px-4 py-2 rounded-md text-sm font-medium bg-green-600 text-white border border-green-500 hover:bg-green-400" onClick={handleApprove}>
-                                            Approve
-                                        </button>
-                                        <button className="px-4 py-2 rounded-md text-sm font-medium bg-red-500 text-white border border-red-500/20 hover:bg-red-400" onClick={handleDecline}>
-                                            Decline
-                                        </button>
-                                    </div>
-                                    {/* )} */}
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -329,6 +366,79 @@ export default function ExpertDetailPage() {
                         <button onClick={closeImageModal} className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors duration-200">
                             <XCircle className="w-6 h-6" />
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Rejection Reason Modal */}
+            {showRejectionModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 shadow-2xl w-full max-w-md">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-red-500/20 rounded-lg">
+                                        <MessageSquare className="w-5 h-5 text-red-300" />
+                                    </div>
+                                    <h3 className="text-white text-xl font-semibold">Decline Expert</h3>
+                                </div>
+                                <button
+                                    onClick={closeRejectionModal}
+                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
+                                >
+                                    <X className="w-5 h-5 text-white/60" />
+                                </button>
+                            </div>
+
+                            <div className="mb-6">
+                                <p className="text-white/80 mb-4">
+                                    Please provide a reason for declining <span className="font-semibold">{expert.fullName}</span>&apos;s application:
+                                </p>
+
+                                {/* Quick Selection Buttons */}
+                                <div className="mb-4">
+                                    <p className="text-white/60 text-sm mb-2">Quick select:</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {commonRejectionReasons.map((reason, index) => (
+                                            <button
+                                                key={index}
+                                                onClick={() => setRejectionReason(reason)}
+                                                className={`px-3 py-1 text-xs rounded-full border transition-colors duration-200 ${rejectionReason === reason
+                                                    ? 'bg-red-500/20 border-red-400 text-red-300'
+                                                    : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
+                                                    }`}
+                                            >
+                                                {reason}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <textarea
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    placeholder="Enter reason for rejection..."
+                                    className="w-full h-32 bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
+                                    required
+                                />
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={closeRejectionModal}
+                                    className="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleDecline}
+                                    disabled={isSubmittingRejection || rejectionReason.trim() === ''}
+                                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                                >
+                                    {isSubmittingRejection ? 'Declining...' : 'Decline Expert'}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
