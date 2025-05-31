@@ -35,3 +35,13 @@ export const resendOtp = async (email: string) => {
         handleAxiosError(error)
     }
 }
+
+
+export const getProfile = async () => {
+    try {
+        const profile = await axiosInstance.get('/user/get-profile', { withCredentials: true});
+        return profile.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};

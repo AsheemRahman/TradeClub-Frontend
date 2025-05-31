@@ -52,6 +52,6 @@ export const config = {
         '/expert/dashboard',
         '/admin/dashboard',
         '/admin/user-management',
-        '/admin/expert-management/:path*',
+        '/admin/expert-management/(.*)',
     ],
 };
