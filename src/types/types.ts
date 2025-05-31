@@ -67,3 +67,9 @@ export type ExpertFormData = {
     selfie_Id: string;
 }
 
+export type UpdateProfilePayload = {
+    id:string;
+    fullName: string;
+    phoneNumber: string;
+    newPassword?: string;
+}

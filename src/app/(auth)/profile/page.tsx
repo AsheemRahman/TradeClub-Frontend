@@ -1,6 +1,7 @@
 "use client"
 
 import Image from 'next/image';
+import { toast } from 'react-toastify';
 import React, { useEffect, useState } from 'react';
 import { User, Edit3, CreditCard, MessageCircle, Bell, Settings, Award, Eye, EyeOff, Phone, Lock, Check, X } from 'lucide-react';
 
@@ -13,8 +14,9 @@ import ExpertConsultationCard from '@/components/user/profile/ExpertConsultation
 import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsultationsList';
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
 
-import { getProfile } from '@/app/service/user/userApi';
-import { toast } from 'react-toastify';
+import { getUserProfile, updateProfile } from '@/app/service/user/userApi';
+import { purchaseHistory, subscription } from '@/lib/mockData'
+import { UpdateProfilePayload } from '@/types/types';
 
 
 const UserProfile = () => {
@@ -25,17 +27,17 @@ const UserProfile = () => {
     const [otpState, setOtpState] = useState({ showOtpModal: false, otpCode: '', otpType: '', isVerifying: false, otpSent: false, countdown: 0 });
     const [passwordValidation, setPasswordValidation] = useState({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false, passwordsMatch: false });
 
-    const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null,});
+    const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null, });
 
     const getProfileData = async () => {
-        const userData = await getProfile();
+        const userData = await getUserProfile();
         if (userData.status) {
             const transformedData = {
                 id: userData.userDetails._id,
                 fullName: userData.userDetails.fullName,
                 email: userData.userDetails.email,
                 phoneNumber: userData.userDetails.phoneNumber,
-                profilePicture: userData.userDetails.profilePicture || "/images/profile_pic.png",
+                profilePicture: userData.userDetails.profilePicture || "/images/profilePicture.jpg",
             };
             setUserData(transformedData);
         }
@@ -45,41 +47,6 @@ const UserProfile = () => {
         getProfileData();
     }, [])
 
-    // Mock purchase history
-    const purchaseHistory = [
-        {
-            id: 1,
-            type: 'subscription',
-            productName: 'Premium Plan',
-            amount: 29.99,
-            status: 'completed',
-            createdAt: '2024-01-15'
-        },
-        {
-            id: 2,
-            type: 'expert-consultation',
-            productName: 'Expert Consultation - 1 Hour',
-            amount: 99.99,
-            status: 'completed',
-            createdAt: '2024-02-20'
-        },
-        {
-            id: 3,
-            type: 'credits',
-            productName: 'Additional Credits Pack',
-            amount: 19.99,
-            status: 'completed',
-            createdAt: '2024-03-10'
-        }
-    ];
-
-    const subscription = {
-        type: 'free',
-        status: 'active',
-        endDate: '2024-12-31'
-    }
-
-    // Initialize edit form when editing starts
     const startEditing = () => {
         setEditForm({
             fullName: userData.fullName,
@@ -104,11 +71,8 @@ const UserProfile = () => {
         return Object.values(validation).every(Boolean);
     };
 
-
-    // Handle form input changes
     const handleInputChange = (field: string, value: string) => {
         setEditForm(prev => ({ ...prev, [field]: value }));
-
         if (field === 'newPassword' || field === 'confirmPassword') {
             const newPassword = field === 'newPassword' ? value : editForm.newPassword;
             const confirmPassword = field === 'confirmPassword' ? value : editForm.confirmPassword;
@@ -119,13 +83,9 @@ const UserProfile = () => {
     // Send OTP
     const sendOtp = (type: string) => {
         setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60, otpType: type }));
-
-        // Simulate API call
         setTimeout(() => {
             console.log(`OTP sent for ${type} verification`);
         }, 1000);
-
-        // Countdown timer
         const timer = setInterval(() => {
             setOtpState(prev => {
                 if (prev.countdown <= 1) {
@@ -140,10 +100,8 @@ const UserProfile = () => {
     // Verify OTP
     const verifyOtp = async () => {
         setOtpState(prev => ({ ...prev, isVerifying: true }));
-
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 2000));
-
         if (otpState.otpCode === '123456') {
             // Update user data based on verification type
             if (otpState.otpType === 'phone') {
@@ -151,7 +109,7 @@ const UserProfile = () => {
             } else if (otpState.otpType === 'password') {
                 // Only update password if it was changed
                 if (editForm.newPassword.length > 0) {
-                    console.log('Password updated successfully');
+                    toast.success('Password updated successfully');
                     // In a real app, you would call your API to update the password here
                 }
             }
@@ -160,15 +118,14 @@ const UserProfile = () => {
             if (otpState.otpType !== 'phone') {
                 setIsEditing(false);
             }
-            toast.success('Verification successful!');
         } else {
-            alert('Invalid OTP. Please try again.');
+            toast.error('Invalid OTP. Please try again.');
             setOtpState(prev => ({ ...prev, isVerifying: false }));
         }
     };
 
     // Handle profile save
-    const handleSaveProfile = () => {
+    const handleSaveProfile = async () => {
         const hasPhoneChanged = editForm.phoneNumber !== userData.phoneNumber;
         const hasPasswordChanged = editForm.newPassword.length > 0;
         if (hasPasswordChanged) {
@@ -178,20 +135,32 @@ const UserProfile = () => {
                 return;
             }
         }
-        if (hasPhoneChanged || hasPasswordChanged) {
-            const verificationType = hasPhoneChanged ? 'phone' : 'password';
-            setOtpState(prev => ({
-                ...prev,
-                showOtpModal: true,
-                otpType: verificationType,
-                otpCode: '',
-                otpSent: false,
-                countdown: 0
-            }));
-            sendOtp(verificationType);
+
+        const updatedPayload: UpdateProfilePayload = { id: userData.id, fullName: editForm.fullName, phoneNumber: editForm.phoneNumber, };
+        if (hasPasswordChanged) {
+            updatedPayload.newPassword = editForm.newPassword;
+        }
+
+        const response = await updateProfile(updatedPayload);
+        if (response?.status) {
+            if (hasPhoneChanged || hasPasswordChanged) {
+                const verificationType = hasPhoneChanged ? 'phone' : 'password';
+                setOtpState(prev => ({
+                    ...prev,
+                    showOtpModal: true,
+                    otpType: verificationType,
+                    otpCode: '',
+                    otpSent: false,
+                    countdown: 0
+                }));
+                sendOtp(verificationType);
+            } else {
+                toast.success("Profile updated successfully!");
+                setIsEditing(false);
+                getProfileData();
+            }
         } else {
-            setIsEditing(false);
-            console.log('Profile updated:', userData);
+            toast.error(response?.message || "Failed to update profile.");
         }
     };
 
@@ -232,13 +201,9 @@ const UserProfile = () => {
                             <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
                                 {isEditing ? (
                                     <div className="space-y-4 w-full">
-                                        <input
-                                            type="text"
-                                            value={editForm.fullName}
-                                            onChange={(e) => handleInputChange('fullName', e.target.value)}
-                                            className="text-3xl font-bold text-white bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:border-purple-500 transition-colors w-full"
-                                            placeholder="Full Name"
-                                        />
+                                        <label className="text-slate-300 font-medium">Email Address</label>
+                                        <input type="email" value={userData.email} disabled readOnly className="w-full bg-slate-700/30 border border-slate-600/50 rounded-lg px-4 py-3 text-slate-400 cursor-not-allowed" />
+                                        <p className="text-slate-500 text-xs">Email cannot be changed</p>
                                     </div>
                                 ) : (
                                     <>
@@ -262,14 +227,11 @@ const UserProfile = () => {
                         <div className="flex gap-3">
                             {isEditing ? (
                                 <div className="flex gap-3">
-                                    <button
-                                        onClick={handleSaveProfile}
-                                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-400 hover:to-purple-400 transition-all duration-200 shadow-lg font-medium"
-                                    >
+                                    <button onClick={handleSaveProfile}
+                                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-400 hover:to-purple-400 transition-all duration-200 shadow-lg font-medium">
                                         Save Changes
                                     </button>
-                                    <button
-                                        onClick={() => setIsEditing(false)}
+                                    <button onClick={() => setIsEditing(false)}
                                         className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 font-medium"
                                     >
                                         Cancel
@@ -287,7 +249,7 @@ const UserProfile = () => {
 
                 {/* OTP Verification Modal */}
                 {otpState.showOtpModal && (
-                    <OtpVerificationModal otpState={otpState} setOtpState={setOtpState} verifyOtp={verifyOtp} sendOtp={sendOtp} editForm={editForm} />
+                    <OtpVerificationModal otpState={otpState} setOtpState={setOtpState} verifyOtp={verifyOtp} sendOtp={sendOtp} />
                 )}
 
                 {/* Navigation Tabs */}
@@ -299,9 +261,7 @@ const UserProfile = () => {
                             { id: 'consultations', label: 'Expert Consultations', icon: MessageCircle },
                             { id: 'settings', label: 'Settings', icon: Settings }
                         ].map(({ id, label, icon: Icon }) => (
-                            <button
-                                key={id}
-                                onClick={() => setActiveTab(id)}
+                            <button key={id} onClick={() => setActiveTab(id)}
                                 className={`flex-1 py-3 px-4 rounded-xl font-medium text-sm flex items-center justify-center gap-2 transition-all duration-200 ${activeTab === id
                                     ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
                                     : 'text-slate-400 hover:text-white hover:bg-slate-700/50'
@@ -322,7 +282,6 @@ const UserProfile = () => {
                             <div className="space-y-8 w-full">
                                 {/* Subscription Status */}
                                 <SubscriptionCard />
-
                                 {/* Expert Consultation Slots */}
                                 {subscription.type !== 'free' && (
                                     <ExpertConsultationCard />
@@ -387,18 +346,22 @@ const UserProfile = () => {
                                             Profile Information
                                         </h3>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            {/* Full name */}
+                                            <div className="space-y-2">
+                                                <label className="text-slate-300 font-medium flex items-center gap-2 ">Full name</label>
+                                                <input type="text" value={editForm.fullName} onChange={(e) => handleInputChange('fullName', e.target.value)} placeholder="Full Name"
+                                                    className=" w-full   text-white bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-purple-500 transition-colors"
+                                                />
+                                            </div>
+
                                             {/* Phone Number */}
                                             <div className="space-y-2">
                                                 <label className="text-slate-300 font-medium flex items-center gap-2">
                                                     <Phone className="w-4 h-4" />
                                                     Phone Number
                                                 </label>
-                                                <input
-                                                    type="tel"
-                                                    value={editForm.phoneNumber}
-                                                    onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
+                                                <input type="tel" value={editForm.phoneNumber || ""} onChange={(e) => handleInputChange('phoneNumber', e.target.value)} placeholder="Enter phone number"
                                                     className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-purple-500 transition-colors"
-                                                    placeholder="Enter phone number"
                                                 />
                                                 {editForm.phoneNumber !== userData.phoneNumber && editForm.phoneNumber && (
                                                     <p className="text-amber-400 text-sm flex items-center gap-1">
@@ -406,18 +369,6 @@ const UserProfile = () => {
                                                         OTP verification required
                                                     </p>
                                                 )}
-                                            </div>
-
-                                            {/* Current Email (Read-only) */}
-                                            <div className="space-y-2">
-                                                <label className="text-slate-300 font-medium">Email Address</label>
-                                                <input
-                                                    type="email"
-                                                    value={userData.email}
-                                                    disabled readOnly
-                                                    className="w-full bg-slate-700/30 border border-slate-600/50 rounded-lg px-4 py-3 text-slate-400 cursor-not-allowed"
-                                                />
-                                                <p className="text-slate-500 text-xs">Email cannot be changed</p>
                                             </div>
                                         </div>
                                     </div>
@@ -435,16 +386,10 @@ const UserProfile = () => {
                                             <div className="space-y-2">
                                                 <label className="text-slate-300 font-medium">New Password</label>
                                                 <div className="relative">
-                                                    <input
-                                                        type={showPassword.new ? "text" : "password"}
-                                                        value={editForm.newPassword}
-                                                        onChange={(e) => handleInputChange('newPassword', e.target.value)}
+                                                    <input  type={showPassword.new ? "text" : "password"} value={editForm.newPassword} onChange={(e) => handleInputChange('newPassword', e.target.value)} placeholder="Enter new password"
                                                         className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:border-purple-500 transition-colors"
-                                                        placeholder="Enter new password"
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
+                                                    <button type="button" onClick={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}
                                                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                                                     >
                                                         {showPassword.new ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -456,16 +401,10 @@ const UserProfile = () => {
                                             <div className="space-y-2">
                                                 <label className="text-slate-300 font-medium">Confirm Password</label>
                                                 <div className="relative">
-                                                    <input
-                                                        type={showPassword.confirm ? "text" : "password"}
-                                                        value={editForm.confirmPassword}
-                                                        onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                                                    <input type={showPassword.confirm ? "text" : "password"} value={editForm.confirmPassword} onChange={(e) => handleInputChange('confirmPassword', e.target.value)} placeholder="Confirm new password"
                                                         className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:border-purple-500 transition-colors"
-                                                        placeholder="Confirm new password"
                                                     />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
+                                                    <button type="button" onClick={() => setShowPassword(prev => ({ ...prev, confirm: !prev.confirm }))}
                                                         className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
                                                     >
                                                         {showPassword.confirm ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
@@ -524,13 +463,10 @@ const UserProfile = () => {
 
             {/* Sidebar */}
             <div className="space-y-8">
-                {/* Quick Stats */}
                 <QuickStats />
-                {/* Upgrade Card */}
                 {subscription.type === 'free' && (
                     <UpgradePlanCard />
                 )}
-                {/* Achievement Card */}
                 <AchievementsCard />
             </div>
         </div>

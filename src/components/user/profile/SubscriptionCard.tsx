@@ -12,7 +12,7 @@ const formatDate = (dateString: string) => {
 const subscription = {
     type: 'free',
     status: 'active',
-    endDate: '2024-12-31'
+    endDate: '2025-12-31'
 }
 
 

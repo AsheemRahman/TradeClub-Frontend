@@ -64,11 +64,6 @@ axiosInstance.interceptors.response.use(
             return Promise.reject(new Error('session expired.'));
         }
 
-        // Handle other errors
-        if (error.response?.status !== 401) {
-            toast.error(error.message || 'An unexpected error occurred.');
-        }
-
         return Promise.reject(error);
     }
 );
