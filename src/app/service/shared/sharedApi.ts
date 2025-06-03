@@ -24,9 +24,9 @@ interface loginType {
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
         console.error("Axios Error:", error.response?.data?.message);
-        toast.error(error.response?.data?.message || "API Error");
+        toast.error(error.response?.data?.message || "Something went wrong!");
     } else {
-        console.error("Unexpected Error:", error);
+        console.error("Unknown error:", error);
         toast.error("Something went wrong. Please try again.");
     }
 };
@@ -34,7 +34,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const registerPost = async (userData: RegisterPayload) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true,});
+        const response = await axiosInstance.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true, });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error);
@@ -73,6 +73,15 @@ export const resetPassword = async (email: string, password: string, role: strin
     }
     try {
         const response = await axiosInstance.patch(`${API_URI}/${role}/reset-password`, { email, password })
+        return response.data
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+}
+
+export const googleSignup = async (userData: { fullName?: string, email?: string, profilePicture?: string, role: string }) => {
+    try {
+        const response = await axiosInstance.post(`${API_URI}/${userData.role}/google-login`, { userData })
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)

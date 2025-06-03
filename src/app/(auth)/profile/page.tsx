@@ -386,7 +386,7 @@ const UserProfile = () => {
                                             <div className="space-y-2">
                                                 <label className="text-slate-300 font-medium">New Password</label>
                                                 <div className="relative">
-                                                    <input  type={showPassword.new ? "text" : "password"} value={editForm.newPassword} onChange={(e) => handleInputChange('newPassword', e.target.value)} placeholder="Enter new password"
+                                                    <input type={showPassword.new ? "text" : "password"} value={editForm.newPassword} onChange={(e) => handleInputChange('newPassword', e.target.value)} placeholder="Enter new password"
                                                         className="w-full bg-slate-700/50 border border-slate-600 rounded-lg px-4 py-3 pr-12 text-white focus:outline-none focus:border-purple-500 transition-colors"
                                                     />
                                                     <button type="button" onClick={() => setShowPassword(prev => ({ ...prev, new: !prev.new }))}

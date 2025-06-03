@@ -1,13 +1,14 @@
 'use client';
 
 import Link from 'next/link';
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import ImageSlider from './ImageSlider';
 import { loginType } from '@/types/types';
-import { LoginPost } from '@/app/service/shared/sharedApi';
+import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
 
 import { useAuthStore } from '@/store/authStore';
 
@@ -19,10 +20,42 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const [formData, setFormData] = useState<loginType>({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [googleLoginCompleted, setGoogleLoginCompleted] = useState(false);
 
     const router = useRouter();
     const isUser = role === 'user';
     const authStore = useAuthStore();
+    const { data: session } = useSession();
+
+    useEffect(() => {
+        const handleGoogleLogin = async () => {
+            if (session?.user?.email && session.user.name && !googleLoginCompleted) {
+                try {
+                    const response = await googleSignup({
+                        fullName: session.user.name,
+                        email: session.user.email,
+                        profilePicture: session.user.image ?? undefined,
+                        role: role,
+                    });
+
+                    if (response.status) {
+                        const { user, accessToken } = response.data;
+                        authStore.setUserAuth(user, accessToken);
+                        toast.success(response.message);
+                        setGoogleLoginCompleted(true);
+                        router.replace(isUser ? '/home' : '/expert/dashboard');
+                    } else {
+                        toast.error(response.message || 'Google login failed');
+                    }
+                } catch (error) {
+                    console.error('Google login error:', error);
+                    toast.error('Google login failed');
+                }
+            }
+        };
+
+        handleGoogleLogin();
+    }, [session, role, authStore, isUser, router, googleLoginCompleted]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -92,27 +125,18 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                     )}
 
                     {/* Social Logins */}
-                    {isUser && (
-                        <>
-                            <div className="relative my-6 text-center">
-                                <span className="bg-[#1A1A1A] px-4 relative z-10">Or Continue With</span>
-                                <div className="absolute left-0 right-0 top-1/2 h-px bg-[#fefeeb] z-0"></div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                                <Link href="/auth/facebook" className="w-full">
-                                    <button className="bg-[#0866FF] hover:bg-[#4285F4] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
-                                        <i className="bi bi-facebook"></i> Facebook
-                                    </button>
-                                </Link>
-                                <Link href="/auth/google" className="w-full">
-                                    <button className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
-                                        <i className="bi bi-google"></i> Google
-                                    </button>
-                                </Link>
-                            </div>
-                        </>
-                    )}
+                    <div className="relative my-6 text-center">
+                        <span className="bg-[#1A1A1A] px-4 relative z-10">Or Continue With</span>
+                        <div className="absolute left-0 right-0 top-1/2 h-px bg-[#fefeeb] z-0"></div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                        <button className="bg-[#0866FF] hover:bg-[#4285F4] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
+                            <i className="bi bi-facebook"></i> Facebook
+                        </button>
+                        <button onClick={() => signIn('google')} className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
+                            <i className="bi bi-google"></i> Google
+                        </button>
+                    </div>
 
                     <div className="text-center text-sm mt-7">
                         Don&apos;t have an account?
