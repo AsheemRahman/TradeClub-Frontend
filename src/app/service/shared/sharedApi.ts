@@ -20,6 +20,13 @@ interface loginType {
     role: 'user' | 'expert';
 }
 
+interface googleLogin {
+    fullName: string | null | undefined,
+    email: string | null | undefined;
+    profilePicture?: string,
+    role: 'user' | 'expert';
+}
+
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -79,10 +86,21 @@ export const resetPassword = async (email: string, password: string, role: strin
     }
 }
 
-export const googleSignup = async (userData: { fullName?: string, email?: string, profilePicture?: string, role: string }) => {
+
+export const googleSignup = async (userData: googleLogin) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${userData.role}/google-login`, { userData })
+        const response = await axiosInstance.post(`${API_URI}/${userData.role}/google-login`, userData, { withCredentials: true, })
         return response.data
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+}
+
+
+export const logoutApi = async (role: string) => {
+    try {
+        const response = await axiosInstance.get(`${API_URI}/${role}/logout`, { withCredentials: true })
+        return response
     } catch (error: unknown) {
         handleAxiosError(error)
     }

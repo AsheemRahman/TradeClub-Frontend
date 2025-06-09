@@ -1,14 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { signIn, useSession } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'react-toastify';
 
 import ImageSlider from './ImageSlider';
 import { loginType } from '@/types/types';
-import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
+import { LoginPost } from '@/app/service/shared/sharedApi';
 
 import { useAuthStore } from '@/store/authStore';
 
@@ -20,42 +20,19 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const [formData, setFormData] = useState<loginType>({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [googleLoginCompleted, setGoogleLoginCompleted] = useState(false);
 
     const router = useRouter();
     const isUser = role === 'user';
     const authStore = useAuthStore();
-    const { data: session } = useSession();
 
-    useEffect(() => {
-        const handleGoogleLogin = async () => {
-            if (session?.user?.email && session.user.name && !googleLoginCompleted) {
-                try {
-                    const response = await googleSignup({
-                        fullName: session.user.name,
-                        email: session.user.email,
-                        profilePicture: session.user.image ?? undefined,
-                        role: role,
-                    });
-
-                    if (response.status) {
-                        const { user, accessToken } = response.data;
-                        authStore.setUserAuth(user, accessToken);
-                        toast.success(response.message);
-                        setGoogleLoginCompleted(true);
-                        router.replace(isUser ? '/home' : '/expert/dashboard');
-                    } else {
-                        toast.error(response.message || 'Google login failed');
-                    }
-                } catch (error) {
-                    console.error('Google login error:', error);
-                    toast.error('Google login failed');
-                }
-            }
-        };
-
-        handleGoogleLogin();
-    }, [session, role, authStore, isUser, router, googleLoginCompleted]);
+    const handleGoogleLogin = async () => {
+        try {
+            await signIn('google', { callbackUrl: role === 'user' ? '/home' : '/expert/dashboard' });
+        } catch (error) {
+            console.error(error);
+            toast.error("Error during Google Sign-in");
+        }
+    };
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,7 +41,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
         try {
             const payload = { ...formData, role };
             const response = await LoginPost(payload);
-            if (response.success) {
+            if (response.status) {
                 const { user, accessToken } = response.data;
                 authStore.setUserAuth(user, accessToken);
                 toast.success(response.message);
@@ -74,7 +51,6 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             }
         } catch (error) {
             console.error("Login error:", error);
-            // toast.error("Login failed. Please check your credentials.");
         } finally {
             setIsLoading(false);
         }
@@ -133,7 +109,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                         <button className="bg-[#0866FF] hover:bg-[#4285F4] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
                             <i className="bi bi-facebook"></i> Facebook
                         </button>
-                        <button onClick={() => signIn('google')} className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
+                        <button onClick={handleGoogleLogin} className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
                             <i className="bi bi-google"></i> Google
                         </button>
                     </div>
@@ -150,13 +126,5 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     );
 };
 
+
 export default Login;
-
-
-{/* Dots at the bottom */ }
-//  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-//  <div className="w-6 h-1 bg-white rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-// </div>

@@ -17,6 +17,10 @@ import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
 import { getUserProfile, updateProfile } from '@/app/service/user/userApi';
 import { purchaseHistory, subscription } from '@/lib/mockData'
 import { UpdateProfilePayload } from '@/types/types';
+import { useRouter } from 'next/navigation';
+import { logoutApi } from '@/app/service/shared/sharedApi';
+
+import { useAuthStore } from '@/store/authStore';
 
 
 const UserProfile = () => {
@@ -28,6 +32,9 @@ const UserProfile = () => {
     const [passwordValidation, setPasswordValidation] = useState({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false, passwordsMatch: false });
 
     const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null, });
+
+    const router = useRouter();
+    const authStore = useAuthStore();
 
     const getProfileData = async () => {
         const userData = await getUserProfile();
@@ -175,6 +182,14 @@ const UserProfile = () => {
         }
     };
 
+    const handleLogout = async () => {
+        const response = await logoutApi("user");
+        if (response?.status) {
+            authStore.logout()
+            router.replace('/login');
+        }
+    };
+
     return (
         <div className="min-h-screen flex gap-6 p-8">
             <div className="w-full">
@@ -238,10 +253,15 @@ const UserProfile = () => {
                                     </button>
                                 </div>
                             ) : (
-                                <button onClick={startEditing} className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium">
-                                    <Edit3 className="w-4 h-4" />
-                                    Edit Profile
-                                </button>
+                                <div className='space-y-2'>
+                                    <button onClick={startEditing} className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium">
+                                        <Edit3 className="w-4 h-4" />
+                                        Edit Profile
+                                    </button>
+                                    <button onClick={handleLogout} className="px-13 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium">
+                                        Logout
+                                    </button>
+                                </div>
                             )}
                         </div>
                     </div>

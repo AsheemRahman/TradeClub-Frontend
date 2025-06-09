@@ -24,7 +24,7 @@ export default function Sidebar() {
     const handleLogout = async () => {
         const response = await adminLogout();
         if (response?.status) {
-            router.push('/admin/login');
+            router.replace('/admin/login');
         }
     };
 
