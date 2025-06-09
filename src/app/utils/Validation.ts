@@ -1,5 +1,3 @@
-// utils/validation.ts
-
 export const registerValidation = {
     fullName: {
         required: "Full name is required",
@@ -26,4 +24,16 @@ export const registerValidation = {
     confirmPassword: {
         required: "Please confirm your password",
     },
-};
+    phoneNumber: {
+        validate: (value: string) => {
+            if (!value) return true;
+            if (!/^[0-9]+$/.test(value)) return "Phone number must contain only digits";
+            if (value.length < 10) return "Phone number must be at least 10 digits";
+            if (value.length > 15) return "Phone number must be at most 15 digits";
+            return true;
+        }
+    },
+    checkBox: {
+        required: "You must accept the terms",
+    }
+}

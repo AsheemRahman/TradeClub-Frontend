@@ -88,13 +88,14 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
 
                     {/* Form Fields */}
                     <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
-                        <input type="text" placeholder="Full Name" {...register("fullName", registerValidation.fullName)}  className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"/>
+                        <input type="text" placeholder="Full Name" {...register("fullName", registerValidation.fullName)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                         {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message}</p>}
 
-                        <input type="email" placeholder="Email" {...register("email", registerValidation.email)}  className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"/>
+                        <input placeholder="Email" {...register("email", registerValidation.email)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
                         {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
 
-                        <input type="tel" placeholder="Phone Number" {...register("phoneNumber")} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"/>
+                        <input type="tel" placeholder="Phone Number" {...register("phoneNumber", registerValidation.phoneNumber)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                        {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
 
                         {/* Password Field */}
                         <div className="relative">
@@ -110,20 +111,18 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                         {/* Confirm Password Field */}
                         <div className="relative">
                             <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm password"
-                                {...register("confirmPassword", {  ...registerValidation.confirmPassword, validate: (value) => value === watch('password') || "Passwords do not match",})}
+                                {...register("confirmPassword", { ...registerValidation.confirmPassword, validate: (value) => value === watch('password') || "Passwords do not match", })}
                                 className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"
                             />
                             <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute top-3 right-4 text-gray-400">
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
-                            {errors.confirmPassword && (
-                                <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>
-                            )}
+                            {errors.confirmPassword && (<p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>)}
                         </div>
 
                         {/* Terms */}
                         <div className="my-3 flex items-center ">
-                            <input type="checkbox" id="terms" className="h-6 w-6" required />
+                            <input type="checkbox" id="terms" className="h-6 w-6" {...register("checkBox", registerValidation.checkBox)} />
                             <label htmlFor="terms" className="ml-4 text-m text-gray-300">
                                 By Creating An Account You Are Agreeing To Our{" "}
                                 <Link href="/terms" className="text-blue-500 hover:underline" >
@@ -134,6 +133,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                                 </Link>
                             </label>
                         </div>
+                        {errors.checkBox && <p className="text-red-500 text-sm">{errors.checkBox.message}</p>}
 
                         {/* Submit Button */}
                         <button type="submit" disabled={loading} className={`bg-[#E54B00] text-white font-bold py-3 rounded-lg w-full ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#e54c00d8]'}`}>

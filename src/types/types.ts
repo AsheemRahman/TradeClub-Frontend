@@ -28,6 +28,7 @@ export type RegisterFormData = {
     phoneNumber: string;
     password: string;
     confirmPassword: string;
+    checkBox:boolean;
 }
 
 export type IExpert = {
