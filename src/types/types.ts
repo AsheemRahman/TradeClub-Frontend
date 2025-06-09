@@ -28,7 +28,7 @@ export type RegisterFormData = {
     phoneNumber: string;
     password: string;
     confirmPassword: string;
-    checkBox:boolean;
+    checkBox: boolean;
 }
 
 export type IExpert = {
@@ -69,7 +69,7 @@ export type ExpertFormData = {
 }
 
 export type UpdateProfilePayload = {
-    id:string;
+    id: string;
     fullName: string;
     phoneNumber: string;
     newPassword?: string;

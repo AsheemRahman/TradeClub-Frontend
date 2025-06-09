@@ -1,9 +1,10 @@
 "use client"
 
-import Image from 'next/image';
-import { toast } from 'react-toastify';
+import { User, Edit3, CreditCard, MessageCircle, Bell, Settings, Award, Eye, EyeOff, Phone, Lock, Check, X, LogOut } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import { User, Edit3, CreditCard, MessageCircle, Bell, Settings, Award, Eye, EyeOff, Phone, Lock, Check, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
+import Image from 'next/image';
 
 import QuickStats from '@/components/user/profile/QuickStats';
 import AchievementsCard from '@/components/user/profile/AchievementsCard';
@@ -14,13 +15,12 @@ import ExpertConsultationCard from '@/components/user/profile/ExpertConsultation
 import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsultationsList';
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
 
-import { getUserProfile, updateProfile } from '@/app/service/user/userApi';
+import { getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
 import { purchaseHistory, subscription } from '@/lib/mockData'
 import { UpdateProfilePayload } from '@/types/types';
-import { useRouter } from 'next/navigation';
 import { logoutApi } from '@/app/service/shared/sharedApi';
-
 import { useAuthStore } from '@/store/authStore';
+
 
 
 const UserProfile = () => {
@@ -28,9 +28,9 @@ const UserProfile = () => {
     const [isEditing, setIsEditing] = useState(false);
     const [showPassword, setShowPassword] = useState({ new: false, confirm: false });
     const [editForm, setEditForm] = useState({ fullName: '', phoneNumber: '', newPassword: '', confirmPassword: '' });
-    const [otpState, setOtpState] = useState({ showOtpModal: false, otpCode: '', otpType: '', isVerifying: false, otpSent: false, countdown: 0 });
+    const [otpState, setOtpState] = useState({ showOtpModal: false, otpCode: '', isVerifying: false, otpSent: false, countdown: 0 });
     const [passwordValidation, setPasswordValidation] = useState({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false, passwordsMatch: false });
-
+    const [pendingUpdate, setPendingUpdate] = useState<UpdateProfilePayload | null>(null);
     const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null, });
 
     const router = useRouter();
@@ -87,51 +87,29 @@ const UserProfile = () => {
         }
     };
 
-    // Send OTP
-    const sendOtp = (type: string) => {
-        setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60, otpType: type }));
-        setTimeout(() => {
-            console.log(`OTP sent for ${type} verification`);
-        }, 1000);
-        const timer = setInterval(() => {
-            setOtpState(prev => {
-                if (prev.countdown <= 1) {
-                    clearInterval(timer);
-                    return { ...prev, countdown: 0 };
-                }
-                return { ...prev, countdown: prev.countdown - 1 };
-            });
-        }, 1000);
-    };
-
-    // Verify OTP
-    const verifyOtp = async () => {
+    const handleOtp = async () => {
         setOtpState(prev => ({ ...prev, isVerifying: true }));
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        if (otpState.otpCode === '123456') {
-            // Update user data based on verification type
-            if (otpState.otpType === 'phone') {
-                setUserData(prev => ({ ...prev, phoneNumber: editForm.phoneNumber }));
-            } else if (otpState.otpType === 'password') {
-                // Only update password if it was changed
-                if (editForm.newPassword.length > 0) {
-                    toast.success('Password updated successfully');
-                    // In a real app, you would call your API to update the password here
+        const response = await verifyOtp(+(otpState.otpCode), userData.email)
+        if (response.status) {
+            if (pendingUpdate) {
+                const response = await updateProfile(pendingUpdate);
+                if (response?.status) {
+                    toast.success("Profile updated successfully!");
+                    setIsEditing(false);
+                    getProfileData();
+                    setPendingUpdate(null);
+                } else {
+                    toast.error(response?.message || "Failed to update profile.");
                 }
             }
-            setOtpState({ showOtpModal: false, otpCode: '', otpType: '', isVerifying: false, otpSent: false, countdown: 0 });
-            // Only exit edit mode if we're not changing phone number
-            if (otpState.otpType !== 'phone') {
-                setIsEditing(false);
-            }
+            setOtpState({ showOtpModal: false, otpCode: '', isVerifying: false, otpSent: false, countdown: 0 });
         } else {
             toast.error('Invalid OTP. Please try again.');
             setOtpState(prev => ({ ...prev, isVerifying: false }));
         }
     };
 
-    // Handle profile save
+    // Handle profile save - prepare data and show OTP if needed
     const handleSaveProfile = async () => {
         const hasPhoneChanged = editForm.phoneNumber !== userData.phoneNumber;
         const hasPasswordChanged = editForm.newPassword.length > 0;
@@ -142,34 +120,70 @@ const UserProfile = () => {
                 return;
             }
         }
-
-        const updatedPayload: UpdateProfilePayload = { id: userData.id, fullName: editForm.fullName, phoneNumber: editForm.phoneNumber, };
+        // Prepare the update payload
+        const updatedPayload = {
+            id: userData.id,
+            fullName: editForm.fullName,
+            phoneNumber: editForm.phoneNumber,
+            newPassword: editForm.newPassword
+        };
         if (hasPasswordChanged) {
             updatedPayload.newPassword = editForm.newPassword;
         }
-
-        const response = await updateProfile(updatedPayload);
-        if (response?.status) {
-            if (hasPhoneChanged || hasPasswordChanged) {
-                const verificationType = hasPhoneChanged ? 'phone' : 'password';
-                setOtpState(prev => ({
-                    ...prev,
-                    showOtpModal: true,
-                    otpType: verificationType,
-                    otpCode: '',
-                    otpSent: false,
-                    countdown: 0
-                }));
-                sendOtp(verificationType);
-            } else {
+        // If phone or password changed, show OTP modal first
+        if (hasPhoneChanged || hasPasswordChanged) {
+            // Store the payload for after OTP verification
+            setPendingUpdate(updatedPayload);
+            // Show OTP modal and send OTP
+            setOtpState(prev => ({
+                ...prev,
+                showOtpModal: true,
+                otpCode: '',
+                otpSent: false,
+                countdown: 0
+            }));
+            await resendOtp(userData.email)
+            setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60 }));
+            const timer = setInterval(() => {
+                setOtpState(prev => {
+                    if (prev.countdown <= 1) {
+                        clearInterval(timer);
+                        return { ...prev, countdown: 0 };
+                    }
+                    return { ...prev, countdown: prev.countdown - 1 };
+                });
+            }, 1000);
+        } else {
+            const response = await updateProfile(updatedPayload);
+            if (response?.status) {
                 toast.success("Profile updated successfully!");
                 setIsEditing(false);
                 getProfileData();
+            } else {
+                toast.error(response?.message || "Failed to update profile.");
             }
-        } else {
-            toast.error(response?.message || "Failed to update profile.");
         }
     };
+
+    const handleResendOTP = async () => {
+        try {
+            await resendOtp(userData.email)
+            setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60 }));
+            const timer = setInterval(() => {
+                setOtpState(prev => {
+                    if (prev.countdown <= 1) {
+                        clearInterval(timer);
+                        return { ...prev, countdown: 0 };
+                    }
+                    return { ...prev, countdown: prev.countdown - 1 };
+                });
+            }, 1000);
+
+        } catch (error) {
+            console.log("error while resend otp", error)
+            toast.error("Failed to resend OTP.");
+        }
+    }
 
     const getSubscriptionBadge = () => {
         switch (subscription.type) {
@@ -258,7 +272,8 @@ const UserProfile = () => {
                                         <Edit3 className="w-4 h-4" />
                                         Edit Profile
                                     </button>
-                                    <button onClick={handleLogout} className="px-13 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium">
+                                    <button onClick={handleLogout} className="px-9 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 flex items-center gap-2 font-medium">
+                                        <LogOut className="w-4 h-4" />
                                         Logout
                                     </button>
                                 </div>
@@ -269,7 +284,7 @@ const UserProfile = () => {
 
                 {/* OTP Verification Modal */}
                 {otpState.showOtpModal && (
-                    <OtpVerificationModal otpState={otpState} setOtpState={setOtpState} verifyOtp={verifyOtp} sendOtp={sendOtp} />
+                    <OtpVerificationModal otpState={otpState} setOtpState={setOtpState} handleOtp={handleOtp} handleResendOTP={handleResendOTP} />
                 )}
 
                 {/* Navigation Tabs */}

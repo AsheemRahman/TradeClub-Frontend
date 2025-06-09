@@ -4,7 +4,6 @@ import { Shield, Check } from 'lucide-react';
 interface OtpState {
     showOtpModal: boolean;
     otpCode: string;
-    otpType: string;
     isVerifying: boolean;
     otpSent: boolean;
     countdown: number;
@@ -13,13 +12,12 @@ interface OtpState {
 interface Props {
     otpState: OtpState;
     setOtpState: React.Dispatch<React.SetStateAction<OtpState>>;
-    verifyOtp: () => void;
-    sendOtp: (type: 'email' | 'phone') => void;
+    handleOtp: () => void;
+    handleResendOTP: () => void;
 }
 
-const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOtp, sendOtp }) => {
+const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, handleOtp, handleResendOTP }) => {
     if (!otpState.showOtpModal) return null;
-
     return (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-8 w-full max-w-md">
@@ -42,7 +40,7 @@ const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOt
                             disabled={otpState.isVerifying}
                         />
                         <p className="text-slate-500 text-sm text-center">
-                            Code expires in 10 minutes
+                            Code expires in 5 minutes
                         </p>
                     </div>
 
@@ -53,11 +51,7 @@ const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOt
                                 Resend code in {otpState.countdown}s
                             </p>
                         ) : (
-                            <button onClick={() => {
-                                if (otpState.otpType === 'email' || otpState.otpType === 'phone') {
-                                    sendOtp(otpState.otpType);
-                                }
-                            }}
+                            <button onClick={handleResendOTP}
                                 className="text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors" disabled={otpState.isVerifying}>
                                 Resend verification code
                             </button>
@@ -66,7 +60,7 @@ const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOt
 
                     {/* Action Buttons */}
                     <div className="flex gap-3">
-                        <button onClick={verifyOtp} disabled={otpState.otpCode.length !== 6 || otpState.isVerifying}
+                        <button onClick={handleOtp} disabled={otpState.otpCode.length !== 6 || otpState.isVerifying}
                             className="flex-1 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl font-medium hover:from-blue-400 hover:to-purple-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {otpState.isVerifying ? (
@@ -81,7 +75,7 @@ const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOt
                                 </>
                             )}
                         </button>
-                        <button onClick={() => setOtpState({ showOtpModal: false, otpCode: '', otpType: 'email', isVerifying: false, otpSent: false, countdown: 0, })} disabled={otpState.isVerifying}
+                        <button onClick={() => setOtpState({ showOtpModal: false, otpCode: '', isVerifying: false, otpSent: false, countdown: 0, })} disabled={otpState.isVerifying}
                             className="px-6 py-3 border border-slate-600 text-slate-300 hover:text-white hover:bg-slate-700 rounded-xl transition-all duration-200 font-medium disabled:opacity-50"
                         >
                             Cancel
@@ -89,13 +83,13 @@ const OtpVerificationModal: React.FC<Props> = ({ otpState, setOtpState, verifyOt
                     </div>
 
                     {/* Help Text */}
-                    <div className="bg-slate-700/30 p-4 rounded-lg border border-slate-600/50">
+                    {/* <div className="bg-slate-700/30 p-4 rounded-lg border border-slate-600/50">
                         <p className="text-slate-400 text-sm text-center">
                             <strong>For demo purposes:</strong> Use code{' '}
                             <span className="font-mono bg-slate-600 px-2 py-1 rounded text-white">
                                 123456 </span>{' '} to verify
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
