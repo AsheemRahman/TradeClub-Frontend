@@ -1,14 +1,6 @@
-import { googleSignup } from "@/app/service/shared/sharedApi";
 import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
-
-
-type GoogleProfile = {
-    picture?: string;
-    email?: string;
-    name?: string;
-    sub?: string;
-};
+import { googleSignup } from "@/app/service/shared/sharedApi";
 
 const handler = NextAuth({
     providers: [
@@ -18,80 +10,48 @@ const handler = NextAuth({
         }),
     ],
     callbacks: {
-        async signIn({ account, profile }) {
-            console.log("Google Profile:", profile);
-            console.log("Google Account:", account);
-            return true;
-        },
-        async redirect({ url, baseUrl }) {
-            if (url.includes("/expert/")) {
-                return `${baseUrl}/expert/dashboard`;
-            }
-            return `${baseUrl}/home`;
-        },
         async jwt({ token, account, profile }) {
-            if (account?.provider) {
-                const { name, email, sub, picture } = profile as GoogleProfile;
+            // When user signs in for the first time
+            if (account && profile) {
+                token.name = profile.name;
+                token.email = profile.email;
+                token.picture = profile.picture;
 
                 try {
-                    let res: GoogleSignupResponse | undefined;
-                    const isExpert = account.provider === 'google-expert';
+                    const role = "user";
+                    const response = await googleSignup({
+                        fullName: profile.name,
+                        email: profile.email,
+                        profilePicture: profile.picture,
+                        role: role,
+                    });
 
-                    if (isExpert) {
-                        res = await googleExpertSignup({
-                            name: name || "",
-                            email: email || "",
-                            image: picture,
-                        });
+                    if (response?.status) {
+                        const { user, accessToken } = response.data;
+                        token.accessToken = accessToken;
+                        token.user = user;
                     } else {
-                        res = await googleSignup({
-                            fullName: name || "",
-                            email: email || "",
-                            image: picture,
-                        });
+                        console.error("Google signup failed:", response?.message);
                     }
-                    console.log("3248", res)
-
-                    if (res?.status) {
-                        return {
-                            ...token,
-                            id: sub,
-                            googleId: sub,
-                            access: res.data.token,
-                            userData: { ...res.data.userData, id: res.data.userData._id },
-                            isExpert,
-                            name,
-                            email,
-                            picture,
-                        };
-                    }
-                    return token;
-                } catch (error: unknown) {
-                    console.error("Signup error:", error);
-                    return token;
+                } catch (error) {
+                    console.error("Error in googleSignup API:", error);
                 }
             }
             return token;
         },
         async session({ session, token }) {
-            return {
-                ...session,
-                user: {
-                    id: token.sub,
-                    googleId: token.sub,
-                    name: token.name,
-                    email: token.email,
-                    image: token.picture,
-                    access: token.access,
-                    userData: token.userData,
-                    isExpert: token.isExpert,
-                },
-            };
+            if (session.user && token) {
+                session.user.name = token.name as string;
+                session.user.email = token.email as string;
+                session.user.image = token.picture as string;
+                session.accessToken = token.accessToken as string;
+                session.user.id = token.user?.id;
+                session.user.role = token.user?.role;
+            }
+            return session;
         },
     },
-    pages: {
-        signIn: "/login",
-    },
+    secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };
