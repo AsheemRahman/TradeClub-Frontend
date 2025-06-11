@@ -12,8 +12,13 @@ interface FileUploadFieldProps {
     fieldName: keyof ExpertFormData;
     accept: string;
     icon: React.ElementType;
+    onFileUpload: (fieldName: keyof ExpertFormData, file: File) => void;
+    uploading: boolean;
 }
 
+interface UploadProgress {
+    [key: string]: boolean;
+}
 
 const ExpertDetailsForm = () => {
     const [formData, setFormData] = useState<ExpertFormData>({
@@ -34,6 +39,7 @@ const ExpertDetailsForm = () => {
     });
 
     const [currentStep, setCurrentStep] = useState<number>(1);
+    const [uploadProgress, setUploadProgress] = useState<UploadProgress>({});
     const totalSteps = 4;
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -41,28 +47,74 @@ const ExpertDetailsForm = () => {
     useEffect(() => {
         const emailFromQuery = searchParams.get('email');
         if (emailFromQuery) {
-            setFormData(prev => ({
-                ...prev,
-                email: emailFromQuery
-            }));
+            setFormData(prev => ({ ...prev, email: emailFromQuery }));
         }
     }, [searchParams])
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const uploadFileToS3 = async (file: File, folder: string): Promise<string | null> => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', folder);
+
+            const response = await fetch('/api/upload', { method: 'POST', body: formData, });
+            const result = await response.json();
+            if (result.success) {
+                return result.url;
+            } else {
+                throw new Error(result.error || 'Upload failed');
+            }
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            toast.error('Failed to upload file. Please try again.');
+            return null;
+        }
+    };
+
+    const handleFileUpload = async (fieldName: keyof ExpertFormData, file: File) => {
+        setUploadProgress(prev => ({ ...prev, [fieldName]: true }));
+
+        try {
+            // Determine folder based on field type
+            let folder = 'general';
+            if (fieldName === 'profilePicture') folder = 'profile-pictures';
+            else if (fieldName === 'proof_of_experience') folder = 'experience-proofs';
+            else if (fieldName === 'Introduction_video') folder = 'introduction-videos';
+            else if (fieldName === 'Government_Id') folder = 'government-ids';
+            else if (fieldName === 'selfie_Id') folder = 'selfie-ids';
+
+            const uploadedUrl = await uploadFileToS3(file, folder);
+
+            if (uploadedUrl) {
+                setFormData(prev => ({
+                    ...prev,
+                    [fieldName]: uploadedUrl,
+                }));
+                toast.success('File uploaded successfully!');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            toast.error('Failed to upload file. Please try again.');
+        } finally {
+            setUploadProgress(prev => ({ ...prev, [fieldName]: false }));
+        }
     };
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>, fieldName: keyof ExpertFormData) => {
         const file = e.target.files?.[0];
         if (file) {
-            setFormData(prev => ({
-                ...prev,
-                [fieldName]: file.name,
-            }));
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error('File size should not exceed 10MB');
+                return;
+            }
+
+            handleFileUpload(fieldName, file);
         }
     };
 
@@ -128,24 +180,59 @@ const ExpertDetailsForm = () => {
         }
     };
 
-    const FileUploadField: React.FC<FileUploadFieldProps> = ({ label, fieldName, accept, icon: Icon }) => (
-        <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <Icon className="w-4 h-4" />
-                {label}
-            </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-400 transition-colors">
-                <input type="file" accept={accept} onChange={(e) => handleFileChange(e, fieldName)} className="hidden" id={fieldName} />
-                <label htmlFor={fieldName} className="cursor-pointer">
-                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                    <p className="mt-2 text-sm text-gray-600">
-                        {formData[fieldName] ? formData[fieldName] : 'Click to upload or drag and drop'}
-                    </p>
-                    <p className="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
+    const FileUploadField: React.FC<FileUploadFieldProps> = ({ label, fieldName,
+        accept,
+        icon: Icon,
+        uploading
+    }) => {
+        const isUploaded = formData[fieldName] && typeof formData[fieldName] === 'string' && formData[fieldName].startsWith('http');
+
+        return (
+            <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
+                    <Icon className="w-4 h-4" />
+                    {label}
                 </label>
+                <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${isUploaded
+                    ? 'border-green-400 bg-green-50'
+                    : uploading
+                        ? 'border-blue-400 bg-blue-50'
+                        : 'border-gray-300 hover:border-blue-400'
+                    }`}>
+                    <input
+                        type="file"
+                        accept={accept}
+                        onChange={(e) => handleFileChange(e, fieldName)}
+                        className="hidden"
+                        id={fieldName}
+                        disabled={uploading}
+                    />
+                    <label htmlFor={fieldName} className={`cursor-pointer ${uploading ? 'pointer-events-none' : ''}`}>
+                        {uploading ? (
+                            <>
+                                <div className="animate-spin mx-auto h-12 w-12 border-4 border-blue-500 border-t-transparent rounded-full"></div>
+                                <p className="mt-2 text-sm text-blue-600">Uploading...</p>
+                            </>
+                        ) : isUploaded ? (
+                            <>
+                                <div className="mx-auto h-12 w-12 text-green-500 flex items-center justify-center">
+                                    ✓
+                                </div>
+                                <p className="mt-2 text-sm text-green-600">File uploaded successfully</p>
+                                <p className="text-xs text-gray-500">Click to replace</p>
+                            </>
+                        ) : (
+                            <>
+                                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                                <p className="mt-2 text-sm text-gray-600">Click to upload or drag and drop</p>
+                                <p className="text-xs text-gray-500">PNG, JPG, PDF up to 10MB</p>
+                            </>
+                        )}
+                    </label>
+                </div>
             </div>
-        </div>
-    );
+        );
+    };
 
     const ProgressBar = () => (
         <div className="mb-8">
@@ -227,7 +314,14 @@ const ExpertDetailsForm = () => {
                                     </div>
                                 </div>
 
-                                <FileUploadField label="Profile Picture" fieldName="profilePicture" accept="image/*" icon={Camera} />
+                                <FileUploadField
+                                    label="Profile Picture"
+                                    fieldName="profilePicture"
+                                    accept="image/*"
+                                    icon={Camera}
+                                    onFileUpload={handleFileUpload}
+                                    uploading={uploadProgress.profilePicture || false}
+                                />
                             </div>
                         )}
 
@@ -302,8 +396,22 @@ const ExpertDetailsForm = () => {
                                 </h2>
 
                                 <div className="space-y-6">
-                                    <FileUploadField label="Proof of Experience (Trading statements, certificates, etc.)" fieldName="proof_of_experience" accept=".pdf,.jpg,.jpeg,.png" icon={FileText} />
-                                    <FileUploadField label="Introduction Video" fieldName="Introduction_video" accept="video/*" icon={Camera} />
+                                    <FileUploadField
+                                        label="Proof of Experience (Trading statements, certificates, etc.)"
+                                        fieldName="proof_of_experience"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        icon={FileText}
+                                        onFileUpload={handleFileUpload}
+                                        uploading={uploadProgress.proof_of_experience || false}
+                                    />
+                                    <FileUploadField
+                                        label="Introduction Video"
+                                        fieldName="Introduction_video"
+                                        accept="video/*"
+                                        icon={Camera}
+                                        onFileUpload={handleFileUpload}
+                                        uploading={uploadProgress.Introduction_video || false}
+                                    />
                                 </div>
 
                                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -323,8 +431,22 @@ const ExpertDetailsForm = () => {
                                 </h2>
 
                                 <div className="space-y-6">
-                                    <FileUploadField label="Government ID (Driver's License, Passport, etc.)" fieldName="Government_Id" accept=".pdf,.jpg,.jpeg,.png" icon={CreditCard} />
-                                    <FileUploadField label="Selfie with ID" fieldName="selfie_Id" accept="image/*" icon={Image} />
+                                    <FileUploadField
+                                        label="Government ID (Driver's License, Passport, etc.)"
+                                        fieldName="Government_Id"
+                                        accept=".pdf,.jpg,.jpeg,.png"
+                                        icon={CreditCard}
+                                        onFileUpload={handleFileUpload}
+                                        uploading={uploadProgress.Government_Id || false}
+                                    />
+                                    <FileUploadField
+                                        label="Selfie with ID"
+                                        fieldName="selfie_Id"
+                                        accept="image/*"
+                                        icon={Image}
+                                        onFileUpload={handleFileUpload}
+                                        uploading={uploadProgress.selfie_Id || false}
+                                    />
                                 </div>
 
                                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">

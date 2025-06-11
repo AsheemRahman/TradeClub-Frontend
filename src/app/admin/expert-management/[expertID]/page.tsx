@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback, } from 'react';
 import { ArrowLeft, Mail, Phone, Calendar, MapPin, TrendingUp, Award, FileText, Video, Shield, User, CheckCircle, XCircle, Eye, X, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
-import { useParams, useRouter } from 'next/navigation';
-import { IExpert } from '@/types/types';
-import { approveExpert, declineExpert, getExpertById } from '@/app/service/admin/adminApi';
 import { toast } from 'react-toastify';
+import { IExpert } from '@/types/types';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, } from 'react';
+import { approveExpert, declineExpert, getExpertById } from '@/app/service/admin/adminApi';
 
 
 export default function ExpertDetailPage() {
-
     const params = useParams<{ expertID: string }>();
     const id = params?.expertID;
 
@@ -31,7 +30,6 @@ export default function ExpertDetailPage() {
     const closeImageModal = () => {
         setImageModal(null);
     };
-
     const openRejectionModal = () => {
         setShowRejectionModal(true);
         setRejectionReason('');
@@ -62,7 +60,6 @@ export default function ExpertDetailPage() {
             router.push("/admin/expert-management")
             return;
         }
-
         fetchExpertDetails();
     }, [id, router, fetchExpertDetails]);
 
@@ -146,7 +143,7 @@ export default function ExpertDetailPage() {
                                 {expert.profilePicture !== "" ? (
                                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-white/30 cursor-pointer hover:scale-105 transition-transform duration-200"
                                         onClick={() => openImageModal(expert.profilePicture, "Profile Picture")}>
-                                        {/* <Image src={expert.profilePicture!} alt="Profile" fill className="object-cover" /> */}
+                                        <Image src={expert.profilePicture!} alt="Profile" fill className="object-cover" />
                                     </div>
                                 ) : (
                                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-white/20 flex items-center justify-center">
@@ -344,9 +341,10 @@ export default function ExpertDetailPage() {
                                         <h3 className="text-white text-lg font-semibold">Selfie with ID</h3>
                                     </div>
                                     {expert.selfie_Id ? (
-                                        <div className="w-48 h-48 rounded-lg overflow-hidden border-2 border-white/20 cursor-pointer hover:scale-105 transition-transform duration-200"
-                                            onClick={() => openImageModal(expert.selfie_Id, "Selfie with ID")} >
-                                            {/* <Image src={expert.selfie_Id} alt="Selfie with ID" className="w-full h-full object-cover" /> */}
+                                        <div className="relative w-48 h-48 rounded-lg overflow-hidden border-2 border-white/20 cursor-pointer hover:scale-105 transition-transform duration-200"
+                                            onClick={() => openImageModal(expert.selfie_Id, "Selfie with ID")}
+                                        >
+                                            <Image src={expert.selfie_Id} alt="Selfie with ID" className="object-cover" fill />
                                         </div>
                                     ) : (
                                         <p className="text-white/60">No selfie with ID available</p>
@@ -362,7 +360,7 @@ export default function ExpertDetailPage() {
             {imageModal && (
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={closeImageModal}>
                     <div className="relative max-w-4xl max-h-full">
-                        <Image src={imageModal.src as string} alt={imageModal.alt} className="max-w-full max-h-full object-contain rounded-lg" />
+                        <Image src={imageModal.src as string} alt={imageModal.alt} width={800} height={600} className="rounded-lg object-contain" />
                         <button onClick={closeImageModal} className="absolute top-4 right-4 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-colors duration-200">
                             <XCircle className="w-6 h-6" />
                         </button>
@@ -382,10 +380,7 @@ export default function ExpertDetailPage() {
                                     </div>
                                     <h3 className="text-white text-xl font-semibold">Decline Expert</h3>
                                 </div>
-                                <button
-                                    onClick={closeRejectionModal}
-                                    className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
-                                >
+                                <button onClick={closeRejectionModal} className="p-2 hover:bg-white/10 rounded-lg transition-colors duration-200">
                                     <X className="w-5 h-5 text-white/60" />
                                 </button>
                             </div>
@@ -400,9 +395,7 @@ export default function ExpertDetailPage() {
                                     <p className="text-white/60 text-sm mb-2">Quick select:</p>
                                     <div className="flex flex-wrap gap-2">
                                         {commonRejectionReasons.map((reason, index) => (
-                                            <button
-                                                key={index}
-                                                onClick={() => setRejectionReason(reason)}
+                                            <button key={index} onClick={() => setRejectionReason(reason)}
                                                 className={`px-3 py-1 text-xs rounded-full border transition-colors duration-200 ${rejectionReason === reason
                                                     ? 'bg-red-500/20 border-red-400 text-red-300'
                                                     : 'bg-white/5 border-white/20 text-white/60 hover:bg-white/10'
@@ -414,25 +407,16 @@ export default function ExpertDetailPage() {
                                     </div>
                                 </div>
 
-                                <textarea
-                                    value={rejectionReason}
-                                    onChange={(e) => setRejectionReason(e.target.value)}
-                                    placeholder="Enter reason for rejection..."
+                                <textarea value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} placeholder="Enter reason for rejection..." required
                                     className="w-full h-32 bg-white/5 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50"
-                                    required
                                 />
                             </div>
 
                             <div className="flex gap-3">
-                                <button
-                                    onClick={closeRejectionModal}
-                                    className="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors duration-200"
-                                >
+                                <button onClick={closeRejectionModal} className="flex-1 px-4 py-2 bg-white/10 border border-white/20 text-white rounded-lg hover:bg-white/20 transition-colors duration-200">
                                     Cancel
                                 </button>
-                                <button
-                                    onClick={handleDecline}
-                                    disabled={isSubmittingRejection || rejectionReason.trim() === ''}
+                                <button onClick={handleDecline} disabled={isSubmittingRejection || rejectionReason.trim() === ''}
                                     className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                                 >
                                     {isSubmittingRejection ? 'Declining...' : 'Decline Expert'}
