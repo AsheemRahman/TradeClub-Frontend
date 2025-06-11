@@ -21,16 +21,16 @@ const ParticlesBackground = () => {
             ))}
             <style jsx>{`
         @keyframes float {
-          0% { transform: translateY(0) translateX(0); }
-          25% { transform: translateY(-20px) translateX(10px); }
-          50% { transform: translateY(-10px) translateX(20px); }
-          75% { transform: translateY(10px) translateX(-10px); }
-          100% { transform: translateY(0) translateX(0); }
+            0% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-20px) translateX(10px); }
+            50% { transform: translateY(-10px) translateX(20px); }
+            75% { transform: translateY(10px) translateX(-10px); }
+            100% { transform: translateY(0) translateX(0); }
         }
         .absolute {
-          animation: float 15s linear infinite;
+            animation: float 15s linear infinite;
         }
-      `}</style>
+        `}</style>
         </div>
     );
 };
