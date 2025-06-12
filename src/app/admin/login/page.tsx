@@ -27,7 +27,6 @@ const AdminLogin: React.FC = () => {
         setIsLoading(true);
         try {
             const response = await loginPost(formData);
-            console.log(response)
             if (response.success) {
                 toast.success(response.message);
                 router.replace('/admin/dashboard');

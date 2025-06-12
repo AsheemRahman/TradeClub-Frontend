@@ -97,12 +97,4 @@ export const declineExpert = async (id: string, rejectionReason: string) => {
     }
 };
 
-export const addCategory = async (categoryName: string) => {
-    try {
-        const response = await adminAxiosInstance.post(`${API_URI}/admin/add-category`, { categoryName }, { withCredentials: true });
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error);
-    }
-};
 

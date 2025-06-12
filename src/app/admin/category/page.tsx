@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Filter, CheckCircle, XCircle } from 'lucide-react';
 
-import { addCategory } from '@/app/service/admin/adminApi';
+import { addCategory, deleteCategory } from '@/app/service/admin/courseApi';
 import { toast } from 'react-toastify';
+import { ICategory } from '@/types/types';
 
 // Mock data - replace with actual API calls
 const mockCategories = [
@@ -14,13 +15,6 @@ const mockCategories = [
     { _id: '4', categoryName: 'Home & Garden', isActive: true, createdAt: new Date('2024-01-18'), updatedAt: new Date('2024-01-18') },
     { _id: '5', categoryName: 'Sports', isActive: true, createdAt: new Date('2024-01-19'), updatedAt: new Date('2024-01-19') },
 ];
-interface ICategory {
-    _id: string;
-    categoryName: string;
-    isActive: boolean;
-    createdAt?: Date;
-    updatedAt?: Date;
-}
 
 export default function CategoryManagement() {
     const [categories, setCategories] = useState(mockCategories);
@@ -88,11 +82,25 @@ export default function CategoryManagement() {
         setFormData({ categoryName: '', isActive: true });
     };
 
-    const handleDeleteCategory = () => {
-        const updatedCategories = categories.filter(cat => cat._id !== selectedCategory?._id);
-        setCategories(updatedCategories);
-        setShowDeleteModal(false);
-        setSelectedCategory(null);
+    const handleDeleteCategory = async () => {
+        if (!selectedCategory) {
+            toast.error("Category is missing")
+            return
+        };
+        try {
+            const response = await deleteCategory(selectedCategory._id);
+            if (response?.status) {
+                const updatedCategories = categories.filter(cat => cat._id !== selectedCategory._id);
+                setCategories(updatedCategories);
+                toast.success("Category deleted successfully");
+            }
+        } catch (error) {
+            console.error("Error deleting category:", error);
+            toast.error("An error occurred while deleting the category");
+        } finally {
+            setShowDeleteModal(false);
+            setSelectedCategory(null);
+        }
     };
 
     const openEditModal = (category: ICategory) => {
@@ -133,9 +141,7 @@ export default function CategoryManagement() {
                             <h1 className="text-3xl font-bold text-white">Category Management</h1>
                             <p className="text-gray-600 mt-1">Manage your product categories</p>
                         </div>
-                        <button onClick={() => setShowAddModal(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors shadow-sm"
-                        >
+                        <button onClick={() => setShowAddModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
                             <Plus size={20} />
                             Add Category
                         </button>
@@ -342,7 +348,7 @@ export default function CategoryManagement() {
                         <div className="bg-white rounded-xl max-w-md w-full p-6">
                             <h2 className="text-xl font-bold text-gray-900 mb-4">Delete Category</h2>
                             <p className="text-gray-600 mb-6">
-                                Are you sure you want to delete `${selectedCategory?.categoryName}`? This action cannot be undone.
+                                Are you sure you want to delete &quot;{selectedCategory?.categoryName}&quot;? This action cannot be undone.
                             </p>
                             <div className="flex gap-3">
                                 <button onClick={() => { setShowDeleteModal(false); setSelectedCategory(null); }} className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
