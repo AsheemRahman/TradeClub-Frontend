@@ -2,16 +2,17 @@ import { adminLogout } from '@/app/service/admin/adminApi';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
-import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt } from 'react-icons/fa';
+import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen } from 'react-icons/fa';
 
 
 const menuItems = [
     { label: 'Dashboard', icon: <FaChartPie />, href: '/admin/dashboard', highlighted: true },
     { label: 'Customers', icon: <FaUserFriends />, href: '/admin/user-management' },
     { label: 'Experts', icon: <FaUserTie />, href: '/admin/expert-management' },
-    { label: 'Purchases', icon: <FaShoppingCart />, href: '/admin/purchases' },
-    { label: 'Subscription Plan', icon: <FaMoneyBillWave />, href: '/admin/subscription' },
+    { label: 'Course Category', icon: <FaFolderOpen />, href: '/admin/category' },
     { label: 'Course', icon: <FaGraduationCap />, href: '/admin/Course' },
+    { label: 'Subscription Plan', icon: <FaMoneyBillWave />, href: '/admin/subscription' },
+    { label: 'Purchases', icon: <FaShoppingCart />, href: '/admin/purchases' },
     { label: 'Coupons', icon: <FaTicketAlt />, href: '/admin/coupons' },
     { label: 'Logout', icon: <FaSignOutAlt /> },
 ];
