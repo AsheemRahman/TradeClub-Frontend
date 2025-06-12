@@ -3,48 +3,45 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Filter, CheckCircle, XCircle } from 'lucide-react';
 
-import { addCategory, deleteCategory } from '@/app/service/admin/courseApi';
+import { addCategory, deleteCategory, editCategory, getCategory } from '@/app/service/admin/courseApi';
 import { toast } from 'react-toastify';
 import { ICategory } from '@/types/types';
 
-// Mock data - replace with actual API calls
-const mockCategories = [
-    { _id: '1', categoryName: 'Electronics', isActive: true, createdAt: new Date('2024-01-15'), updatedAt: new Date('2024-01-15') },
-    { _id: '2', categoryName: 'Clothing', isActive: true, createdAt: new Date('2024-01-16'), updatedAt: new Date('2024-01-16') },
-    { _id: '3', categoryName: 'Books', isActive: false, createdAt: new Date('2024-01-17'), updatedAt: new Date('2024-01-20') },
-    { _id: '4', categoryName: 'Home & Garden', isActive: true, createdAt: new Date('2024-01-18'), updatedAt: new Date('2024-01-18') },
-    { _id: '5', categoryName: 'Sports', isActive: true, createdAt: new Date('2024-01-19'), updatedAt: new Date('2024-01-19') },
-];
-
 export default function CategoryManagement() {
-    const [categories, setCategories] = useState(mockCategories);
-    const [filteredCategories, setFilteredCategories] = useState(mockCategories);
+    const [categories, setCategories] = useState<ICategory[]>([]);
+    const [filteredCategories, setFilteredCategories] = useState<ICategory[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<ICategory | null>(null);
-    const [formData, setFormData] = useState({ categoryName: '', isActive: true });
+    const [formData, setFormData] = useState({ _id: '', categoryName: '', isActive: true });
 
     useEffect(() => {
+        fetchCategories();
         let filtered = categories;
         if (searchTerm) {
-            filtered = filtered.filter(cat =>
-                cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            filtered = filtered.filter(cat => cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase()));
         }
         if (filterStatus !== 'all') {
-            filtered = filtered.filter(cat =>
-                filterStatus === 'active' ? cat.isActive : !cat.isActive
-            );
+            filtered = filtered.filter(cat => filterStatus === 'active' ? cat.isActive : !cat.isActive);
         }
         setFilteredCategories(filtered);
     }, [categories, searchTerm, filterStatus]);
 
+    const fetchCategories = async () => {
+        const response = await getCategory();
+        if (response?.status) {
+            setCategories(response.categories);
+        } else {
+            toast.error("Failed to fetch categories");
+        }
+    };
+
     const handleAddCategory = async () => {
         if (!formData.categoryName.trim() || formData.categoryName.length < 5) {
-            toast.error("Charactor must be more than 4 letters")
+            toast.error("Charactor must be more than 4")
             return;
         }
         try {
@@ -53,33 +50,46 @@ export default function CategoryManagement() {
                 const newCategory = {
                     _id: response?.newCategory?._id,
                     categoryName: response.newCategory.categoryName,
-                    isActive: true,
+                    isActive: response.newCategory.isActive,
                     createdAt: new Date(response.newCategory.createdAt || new Date()),
                     updatedAt: new Date(response.newCategory.updatedAt || new Date())
                 };
                 setCategories(prev => [...prev, newCategory]);
-                setFormData({ categoryName: '', isActive: true });
+                setFormData({ _id: '', categoryName: '', isActive: true });
                 setShowAddModal(false);
-            } else {
-                console.error(response?.message || 'Error creating category');
             }
-        } catch (err) {
-            console.error('Error adding category:', err);
+        } catch (error) {
+            console.error('Error adding category:', error);
         }
     };
 
-    const handleEditCategory = () => {
-        if (!formData.categoryName.trim() || !selectedCategory) return;
-
-        const updatedCategories = categories.map(cat => cat._id === selectedCategory._id
-            ? { ...cat, categoryName: formData.categoryName.trim(), isActive: formData.isActive, updatedAt: new Date() }
-            : cat
-        );
-
-        setCategories(updatedCategories);
-        setShowEditModal(false);
-        setSelectedCategory(null);
-        setFormData({ categoryName: '', isActive: true });
+    const handleEditCategory = async () => {
+        if (!formData.categoryName.trim() || formData.categoryName.length < 5) {
+            toast.error("Charactor must be more than 4")
+            return;
+        }
+        try {
+            const response = await editCategory(formData._id, formData.categoryName.trim());
+            if (response?.status) {
+                const newCategory = {
+                    _id: response?.newCategory?._id,
+                    categoryName: response.newCategory.categoryName,
+                    isActive: response.newCategory.isActive,
+                    createdAt: new Date(response.newCategory.createdAt || new Date()),
+                    updatedAt: new Date(response.newCategory.updatedAt || new Date())
+                };
+                setCategories(prev => [...prev, newCategory]);
+                toast.success("Category edited successfully");
+                setFormData({ _id: '', categoryName: '', isActive: true });
+                setShowAddModal(false);
+            }
+        } catch (error) {
+            console.error('Error editing category:', error);
+        } finally {
+            setShowEditModal(false);
+            setSelectedCategory(null);
+            setFormData({ _id: '', categoryName: '', isActive: true });
+        }
     };
 
     const handleDeleteCategory = async () => {
@@ -105,7 +115,7 @@ export default function CategoryManagement() {
 
     const openEditModal = (category: ICategory) => {
         setSelectedCategory(category);
-        setFormData({ categoryName: category.categoryName, isActive: category.isActive });
+        setFormData({ _id: category._id, categoryName: category.categoryName, isActive: category.isActive });
         setShowEditModal(true);
     };
 
@@ -115,15 +125,12 @@ export default function CategoryManagement() {
     };
 
     const toggleCategoryStatus = (categoryId: string) => {
-        const updatedCategories = categories.map(cat =>
-            cat._id === categoryId
-                ? { ...cat, isActive: !cat.isActive, updatedAt: new Date() }
-                : cat
-        );
+        const updatedCategories = categories.map(cat => cat._id === categoryId ? { ...cat, isActive: !cat.isActive, updatedAt: new Date() } : cat);
         setCategories(updatedCategories);
     };
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | undefined) => {
+        if (!date) return 'Invalid Date';
         return new Date(date).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
@@ -264,10 +271,7 @@ export default function CategoryManagement() {
                                 <Filter size={48} className="mx-auto" />
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 mb-2">No categories found</h3>
-                            <p className="text-gray-600 mb-4"> {searchTerm || filterStatus !== 'all'
-                                ? 'Try adjusting your search or filter criteria.'
-                                : 'Get started by adding your first category.'
-                            }
+                            <p className="text-gray-600 mb-4"> {searchTerm || filterStatus !== 'all' ? 'Try adjusting your search or filter criteria.' : 'Get started by adding your first category.'}
                             </p>
                             {!searchTerm && filterStatus === 'all' && (
                                 <button onClick={() => setShowAddModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
@@ -289,12 +293,6 @@ export default function CategoryManagement() {
                                     <input type="text" placeholder="Enter category name" value={formData.categoryName} onChange={(e) => setFormData({ ...formData, categoryName: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
-                                </div>
-                                <div className="flex items-center">
-                                    <input type="checkbox" id="isActive" checked={formData.isActive} onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
-                                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                                    />
-                                    <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">Active</label>
                                 </div>
                             </div>
                             <div className="flex gap-3 mt-6">
@@ -329,7 +327,7 @@ export default function CategoryManagement() {
                                 </div>
                             </div>
                             <div className="flex gap-3 mt-6">
-                                <button onClick={() => { setShowEditModal(false); setSelectedCategory(null); setFormData({ categoryName: '', isActive: true }); }}
+                                <button onClick={() => { setShowEditModal(false); setSelectedCategory(null); setFormData({ _id: '', categoryName: '', isActive: true }); }}
                                     className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                                 >
                                     Cancel
