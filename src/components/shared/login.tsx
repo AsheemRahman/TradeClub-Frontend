@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 
 import ImageSlider from './ImageSlider';
@@ -24,6 +24,21 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const router = useRouter();
     const isUser = role === 'user';
     const authStore = useAuthStore();
+    const { data: session, status } = useSession();
+    console.log("session in login", session)
+
+    useEffect(() => {
+        if (status === "authenticated" && session) {
+            const user = session.user;
+            const accessToken = session.accessToken;
+
+            const isAlreadyStored = authStore.user?.id === user.id && authStore.token === accessToken;
+            if (user && accessToken && !isAlreadyStored) {
+                authStore.setUserAuth({ id: user.id, role: user.role, ...(user.role === 'expert' && { isVerified: user.isVerified }), }, accessToken);
+                router.replace(isUser ? '/home' : '/expert/dashboard');
+            }
+        }
+    }, [status, session, router, isUser, authStore]);
 
     const handleGoogleLogin = async () => {
         try {

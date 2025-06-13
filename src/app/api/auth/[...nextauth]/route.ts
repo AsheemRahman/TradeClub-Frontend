@@ -11,7 +11,6 @@ const handler = NextAuth({
     ],
     callbacks: {
         async jwt({ token, account, profile }) {
-            // When user signs in for the first time
             if (account && profile) {
                 token.name = profile.name;
                 token.email = profile.email;
