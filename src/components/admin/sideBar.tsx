@@ -1,6 +1,6 @@
-import { adminLogout } from '@/app/service/admin/adminApi';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { adminLogout } from '@/app/service/admin/adminApi';
 
 import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen } from 'react-icons/fa';
 
@@ -10,7 +10,7 @@ const menuItems = [
     { label: 'Customers', icon: <FaUserFriends />, href: '/admin/user-management' },
     { label: 'Experts', icon: <FaUserTie />, href: '/admin/expert-management' },
     { label: 'Course Category', icon: <FaFolderOpen />, href: '/admin/category' },
-    { label: 'Course', icon: <FaGraduationCap />, href: '/admin/Course' },
+    { label: 'Course', icon: <FaGraduationCap />, href: '/admin/course' },
     { label: 'Subscription Plan', icon: <FaMoneyBillWave />, href: '/admin/subscription' },
     { label: 'Purchases', icon: <FaShoppingCart />, href: '/admin/purchases' },
     { label: 'Coupons', icon: <FaTicketAlt />, href: '/admin/coupons' },
