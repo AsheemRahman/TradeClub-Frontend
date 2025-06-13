@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Plus, Edit, Trash2, Eye, EyeOff, Search, Save, X, DollarSign, BookOpen, Users, Loader2 } from 'lucide-react';
 import { ICourse, ICategory, ICourseFormData, ICourseContent } from '@/types/courseTypes';
 import { toast } from 'react-toastify';
+import { addCourse, editCourse, getCategory, getCourse } from '@/app/service/admin/courseApi';
 
 
 const AdminCoursesPage = () => {
@@ -22,7 +23,7 @@ const AdminCoursesPage = () => {
     const [formData, setFormData] = useState<ICourseFormData>({
         title: '',
         description: '',
-        price: '',
+        price: 0,
         imageUrl: '',
         category: '',
         content: [],
@@ -38,8 +39,8 @@ const AdminCoursesPage = () => {
         try {
             setLoading(true);
             const [coursesRes, categoriesRes] = await Promise.all([
-                fetch('/api/admin/courses'),
-                fetch('/api/admin/categories')
+                getCourse(),
+                getCategory()
             ]);
 
             if (!coursesRes.ok || !categoriesRes.ok) {
@@ -93,7 +94,7 @@ const AdminCoursesPage = () => {
         setFormData({
             title: '',
             description: '',
-            price: '',
+            price: 0,
             imageUrl: '',
             category: '',
             content: [],
@@ -106,7 +107,7 @@ const AdminCoursesPage = () => {
         setFormData({
             title: course.title,
             description: course.description,
-            price: course.price.toString(),
+            price: course.price,
             imageUrl: course.imageUrl,
             category: course.category._id,
             content: course.content || [],
@@ -152,43 +153,27 @@ const AdminCoursesPage = () => {
             const courseData = {
                 title: formData.title,
                 description: formData.description,
-                price: parseFloat(formData.price),
+                price: formData.price,
                 imageUrl: formData.imageUrl,
                 category: formData.category,
                 content: formData.content,
                 isPublished: formData.isPublished
             };
 
-            const url = editingCourse ? `/api/admin/courses/${editingCourse._id}` : '/api/admin/courses';
-
-            const method = editingCourse ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(courseData),
-            });
-
-            if (!response.ok) {
-                throw new Error(`Failed to ${editingCourse ? 'update' : 'create'} course`);
+            const response = editingCourse ? await editCourse(editingCourse._id, courseData) : await addCourse(courseData);
+            if (response.status) {
+                if (editingCourse) {
+                    setCourses(courses.map(course =>
+                        course._id === editingCourse._id
+                            ? { ...response.course, category: selectedCategory }
+                            : course
+                    ));
+                    toast.success('Course updated successfully');
+                } else {
+                    setCourses([...courses, { ...response.course, category: selectedCategory }]);
+                    toast.success('Course created successfully');
+                }
             }
-
-            const result = await response.json();
-
-            if (editingCourse) {
-                setCourses(courses.map(course =>
-                    course._id === editingCourse._id
-                        ? { ...result.course, category: selectedCategory }
-                        : course
-                ));
-                toast.success('Course updated successfully');
-            } else {
-                setCourses([...courses, { ...result.course, category: selectedCategory }]);
-                toast.success('Course created successfully');
-            }
-
             setShowModal(false);
             setEditingCourse(null);
             resetForm();
@@ -283,16 +268,13 @@ const AdminCoursesPage = () => {
             <div className="min-h-screen">
                 <div className="max-w-7xl mx-auto">
                     {/* Header */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-6">
                         <div className="flex justify-between items-center">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Course Management</h1>
+                                <h1 className="text-3xl font-bold text-white">Course Management</h1>
                                 <p className="text-gray-600 mt-1">Manage your courses, content, and publishing status</p>
                             </div>
-                            <button
-                                onClick={() => setShowModal(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors"
-                            >
+                            <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors">
                                 <Plus size={20} />
                                 Add New Course
                             </button>
@@ -300,7 +282,7 @@ const AdminCoursesPage = () => {
                     </div>
 
                     {/* Filters */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+                    <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-6">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -309,27 +291,27 @@ const AdminCoursesPage = () => {
                                     placeholder="Search courses..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="w-full pl-10 pr-4 py-2 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
                             <select
                                 value={filterCategory}
                                 onChange={(e) => setFilterCategory(e.target.value)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="px-4 py-2 border text-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="">All Categories</option>
+                                <option value="" className='text-black'>All Categories</option>
                                 {categories.map(category => (
-                                    <option key={category._id} value={category._id}>{category.name}</option>
+                                    <option key={category._id} value={category._id} className='text-black'>{category.name}</option>
                                 ))}
                             </select>
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="px-4 py-2 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="">All Status</option>
-                                <option value="published">Published</option>
-                                <option value="draft">Draft</option>
+                                <option value="" className='text-black'>All Status</option>
+                                <option value="published" className='text-black'>Published</option>
+                                <option value="draft" className='text-black'>Draft</option>
                             </select>
                         </div>
                     </div>
@@ -337,18 +319,11 @@ const AdminCoursesPage = () => {
                     {/* Courses Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {filteredCourses.map(course => (
-                            <div key={course._id} className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                            <div key={course._id} className="bg-[#151231] rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                                 <div className="relative h-48">
-                                    <Image
-                                        src={course.imageUrl}
-                                        alt={course.title}
-                                        fill
-                                        className="object-cover"
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    />
+                                    <Image src={course.imageUrl} alt={course.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                     <div className="absolute top-4 right-4 flex gap-2">
-                                        <button
-                                            onClick={() => togglePublishStatus(course._id)}
+                                        <button onClick={() => togglePublishStatus(course._id)}
                                             className={`p-2 rounded-full ${course.isPublished ? 'bg-green-500' : 'bg-gray-500'} text-white`}
                                         >
                                             {course.isPublished ? <Eye size={16} /> : <EyeOff size={16} />}
@@ -467,7 +442,7 @@ const AdminCoursesPage = () => {
                                             step="0.01"
                                             required
                                             value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                                            onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
                                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             placeholder="0.00"
                                         />

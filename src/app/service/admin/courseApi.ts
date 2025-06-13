@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
+import { ICourseFormData } from "@/types/courseTypes";
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
 
@@ -50,3 +51,38 @@ export const editCategory = async (id: string, categoryName: string) => {
     }
 };
 
+export const getCourse = async () => {
+    try {
+        const response = await adminAxiosInstance.get(`${API_URI}/admin/courses`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const addCourse = async (courseData: ICourseFormData) => {
+    try {
+        const response = await adminAxiosInstance.post(`${API_URI}/admin/add-course`, { courseData }, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const editCourse = async (id: string, courseData: ICourseFormData) => {
+    try {
+        const response = await adminAxiosInstance.put(`${API_URI}/admin/edit-course/${id}`, { courseData }, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const deleteCourse = async (id: string) => {
+    try {
+        const response = await adminAxiosInstance.delete(`${API_URI}/admin/delete-course/${id}`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};

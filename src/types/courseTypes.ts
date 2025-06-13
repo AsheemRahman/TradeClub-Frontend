@@ -26,7 +26,7 @@ export interface ICourse {
 export interface ICourseFormData {
     title: string;
     description: string;
-    price: string;
+    price: number;
     imageUrl: string;
     category: string;
     content: ICourseContent[];
