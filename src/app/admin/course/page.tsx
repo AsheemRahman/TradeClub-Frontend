@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
 import React, { useState, useEffect } from 'react';
 import { ICourse, ICategory, ICourseFormData, ICourseContent } from '@/types/courseTypes';
@@ -70,9 +71,18 @@ const AdminCoursesPage = () => {
     };
 
     const handleDelete = async (courseId: string): Promise<void> => {
-        if (!window.confirm('Are you sure you want to delete this course?')) {
-            return;
-        }
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this course?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel',
+        });
+
+        if (!result.isConfirmed) return;
         try {
             const response = await deleteCourse(courseId)
             if (!response.status) {
@@ -146,6 +156,17 @@ const AdminCoursesPage = () => {
     });
 
     const togglePublishStatus = async (courseId: string): Promise<void> => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to change the status of this course?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, Change it!',
+            cancelButtonText: 'Cancel',
+        });
+        if (!result.isConfirmed) return;
         try {
             const course = courses.find(c => c._id === courseId);
             if (!course) return;
@@ -281,9 +302,9 @@ const AdminCoursesPage = () => {
                 </div>
 
                 {filteredCourses.length === 0 && (
-                    <div className="text-center py-12">
+                    <div className="text-center py-28">
                         <BookOpen size={48} className="mx-auto text-gray-400 mb-4" />
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No courses found</h3>
+                        <h3 className="text-lg font-medium text-gray-100 mb-2">No courses found</h3>
                         <p className="text-gray-500">Try adjusting your search or filter criteria</p>
                     </div>
                 )}
