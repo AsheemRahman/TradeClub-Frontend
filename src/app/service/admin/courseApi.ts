@@ -62,7 +62,7 @@ export const getCourse = async () => {
 
 export const addCourse = async (courseData: ICourseFormData) => {
     try {
-        const response = await adminAxiosInstance.post(`${API_URI}/admin/add-course`, { courseData }, { withCredentials: true });
+        const response = await adminAxiosInstance.post(`${API_URI}/admin/add-course`, courseData, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -71,7 +71,7 @@ export const addCourse = async (courseData: ICourseFormData) => {
 
 export const editCourse = async (id: string, courseData: ICourseFormData) => {
     try {
-        const response = await adminAxiosInstance.put(`${API_URI}/admin/edit-course/${id}`, { courseData }, { withCredentials: true });
+        const response = await adminAxiosInstance.put(`${API_URI}/admin/edit-course/${id}`, courseData, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

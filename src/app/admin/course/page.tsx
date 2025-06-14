@@ -5,7 +5,7 @@ import { toast } from 'react-toastify';
 import React, { useState, useEffect } from 'react';
 import { ICourse, ICategory, ICourseFormData, ICourseContent } from '@/types/courseTypes';
 import { addCourse, deleteCourse, editCourse, getCategory, getCourse, togglePublish } from '@/app/service/admin/courseApi';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, Save, X, DollarSign, BookOpen, Users, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, Save, X, BookOpen, Users, Loader2, IndianRupee } from 'lucide-react';
 
 
 const AdminCoursesPage = () => {
@@ -88,7 +88,6 @@ const AdminCoursesPage = () => {
 
     const handleSubmit = async (e: React.FormEvent): Promise<void> => {
         e.preventDefault();
-
         try {
             setSubmitting(true);
             const selectedCategory = categories.find(cat => cat._id === formData.category);
@@ -96,7 +95,6 @@ const AdminCoursesPage = () => {
                 toast.error('Please select a valid category');
                 return;
             }
-
             const courseData = {
                 title: formData.title,
                 description: formData.description,
@@ -109,11 +107,7 @@ const AdminCoursesPage = () => {
             const response = editingCourse ? await editCourse(editingCourse._id, courseData) : await addCourse(courseData);
             if (response.status) {
                 if (editingCourse) {
-                    setCourses(courses.map(course =>
-                        course._id === editingCourse._id
-                            ? { ...response.course, category: selectedCategory }
-                            : course
-                    ));
+                    setCourses(courses.map(course => course._id === editingCourse._id ? { ...response.course, category: selectedCategory } : course));
                     toast.success('Course updated successfully');
                 } else {
                     setCourses([...courses, { ...response.course, category: selectedCategory }]);
@@ -132,16 +126,11 @@ const AdminCoursesPage = () => {
     };
 
     const addContentItem = (): void => {
-        setFormData({
-            ...formData,
-            content: [...formData.content, { title: '', videoUrl: '', duration: 0 }]
-        });
+        setFormData({ ...formData, content: [...formData.content, { title: '', videoUrl: '', duration: 0 }] });
     };
 
     const updateContentItem = (index: number, field: keyof ICourseContent, value: string | number): void => {
-        const updatedContent = formData.content.map((item, i) =>
-            i === index ? { ...item, [field]: value } : item
-        );
+        const updatedContent = formData.content.map((item, i) => i === index ? { ...item, [field]: value } : item);
         setFormData({ ...formData, content: updatedContent });
     };
 
@@ -164,9 +153,7 @@ const AdminCoursesPage = () => {
             if (!response.status) {
                 throw new Error('Failed to toggle publish status');
             }
-            const updatedCourses = courses.map(c =>
-                c._id === courseId ? { ...c, isPublished: !c.isPublished } : c
-            );
+            const updatedCourses = courses.map(c => c._id === courseId ? { ...c, isPublished: !c.isPublished } : c);
             setCourses(updatedCourses);
             const updatedCourse = updatedCourses.find(c => c._id === courseId);
             toast.success(`Course ${updatedCourse?.isPublished ? 'published' : 'unpublished'} successfully`);
@@ -260,12 +247,12 @@ const AdminCoursesPage = () => {
                                     </span>
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">{course.title}</h3>
-                                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{course.description}</p>
+                                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{course.description}</p>
                                 <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                                    <div className="flex items-center gap-4 text-sm text-gray-300">
                                         <div className="flex items-center gap-1">
-                                            <DollarSign size={16} />
-                                            <span>${course.price}</span>
+                                            <IndianRupee size={16} />
+                                            <span>{course.price}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <Users size={16} />
