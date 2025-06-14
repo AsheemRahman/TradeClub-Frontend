@@ -6,7 +6,7 @@ export interface ICourseContent {
 
 export interface ICategory {
     _id: string;
-    name: string;
+    categoryName: string;
 }
 
 export interface ICourse {

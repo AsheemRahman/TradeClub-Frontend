@@ -86,3 +86,12 @@ export const deleteCourse = async (id: string) => {
         handleAxiosError(error);
     }
 };
+
+export const togglePublish = async (id: string) => {
+    try {
+        const response = await adminAxiosInstance.patch(`${API_URI}/admin/course/${id}/toggle-publish`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
