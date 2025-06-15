@@ -1,5 +1,6 @@
 'use client';
 
+import { Mail, MapPin, Phone } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 import { FaYoutube, FaDiscord, FaInstagram, FaTelegram, FaTwitter, FaFacebook } from 'react-icons/fa';
@@ -38,7 +39,7 @@ export default function ContactPage() {
                     {/* Phone */}
                     <div className="flex items-center gap-8">
                         <div className="bg-orange-500 p-5 rounded-md">
-                            📞
+                            <Phone />
                         </div>
                         <div>
                             <p className="text-sm text-gray-400">Phone Number</p>
@@ -49,7 +50,7 @@ export default function ContactPage() {
                     {/* Email */}
                     <div className="flex items-center gap-8">
                         <div className="bg-orange-500 p-5 rounded-md">
-                            📧
+                            <Mail />
                         </div>
                         <div>
                             <p className="text-sm text-gray-400">Email</p>
@@ -60,7 +61,7 @@ export default function ContactPage() {
                     {/* Location */}
                     <div className="flex items-center gap-8">
                         <div className="bg-orange-500 p-5 rounded-md">
-                            📍
+                            <MapPin />
                         </div>
                         <div>
                             <p className="text-sm text-gray-400">Our Location</p>

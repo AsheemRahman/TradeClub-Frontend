@@ -12,6 +12,9 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 
 import { registerPost } from '@/app/service/shared/sharedApi';
+import { useForm } from 'react-hook-form';
+import { registerValidation } from '@/app/utils/Validation';
+
 
 
 interface RegisterPageProps {
@@ -23,31 +26,19 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [formData, setFormData] = useState<RegisterFormData>({
-        fullName: '',
-        email: '',
-        phoneNumber: '',
-        password: '',
-        confirmPassword: '',
-    });
+    const { register, handleSubmit, watch, formState: { errors }, } = useForm<RegisterFormData>();
 
     const router = useRouter();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-
-        if (formData.password !== formData.confirmPassword) {
+    const onSubmit = async (data: RegisterFormData) => {
+        if (data.password !== data.confirmPassword) {
             toast.error("Passwords do not match");
             return;
         }
 
         setLoading(true);
         try {
-            const payload = { ...formData, role };
+            const payload = { ...data, role };
             const response = await registerPost(payload);
             if (response?.email) {
                 toast.success(response.message || "Registration successful!");
@@ -55,12 +46,12 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                 router.replace(`${otpPath}?email=${response.email}&type=register`);
             }
         } catch (err) {
-            console.log("error in register", err)
+            console.log("error in register", err);
             toast.error("Something went wrong during registration.");
         } finally {
             setLoading(false);
-        };
-    }
+        }
+    };
 
     return (
         <div className=" flex items-center justify-center px-5">
@@ -96,34 +87,42 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                     </p>
 
                     {/* Form Fields */}
-                    <form className="flex flex-col gap-3" onSubmit={handleSubmit}>
-                        <input name="fullName" type="text" placeholder="Full Name" required value={formData.fullName} onChange={handleChange}
-                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                        <input name="email" type="email" placeholder="Email" required value={formData.email} onChange={handleChange}
-                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                        <input name="phoneNumber" type="tel" placeholder="Phone Number" value={formData.phoneNumber} onChange={handleChange}
-                            className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                    <form className="flex flex-col gap-3" onSubmit={handleSubmit(onSubmit)}>
+                        <input type="text" placeholder="Full Name" {...register("fullName", registerValidation.fullName)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                        {errors.fullName && <p className="text-red-500 text-sm">{errors.fullName.message}</p>}
+
+                        <input placeholder="Email" {...register("email", registerValidation.email)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                        {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+
+                        <input type="tel" placeholder="Phone Number" {...register("phoneNumber", registerValidation.phoneNumber)} className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
+                        {errors.phoneNumber && <p className="text-red-500 text-sm">{errors.phoneNumber.message}</p>}
 
                         {/* Password Field */}
                         <div className="relative">
-                            <input name="password" type={showPassword ? "text" : "password"} value={formData.password} onChange={handleChange} placeholder="Enter your password" required className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                            <button type="button" className="absolute top-3 right-4 text-gray-400" onClick={() => setShowPassword(!showPassword)}>
+                            <input type={showPassword ? 'text' : 'password'} placeholder="Enter your password" {...register("password", registerValidation.password)}
+                                className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"
+                            />
+                            <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute top-3 right-4 text-gray-400">
                                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
+                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
                         </div>
 
                         {/* Confirm Password Field */}
                         <div className="relative">
-                            <input name="confirmPassword" type={showConfirmPassword ? "text" : "password"} value={formData.confirmPassword} onChange={handleChange} placeholder="Confirm password" required
-                                className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none" />
-                            <button type="button" className="absolute top-3 right-4 text-gray-400" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            <input type={showConfirmPassword ? 'text' : 'password'} placeholder="Confirm password"
+                                {...register("confirmPassword", { ...registerValidation.confirmPassword, validate: (value) => value === watch('password') || "Passwords do not match", })}
+                                className="w-full p-3 rounded bg-[#2D2A4A] text-white placeholder-gray-400 focus:outline-none"
+                            />
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute top-3 right-4 text-gray-400">
                                 {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                             </button>
+                            {errors.confirmPassword && (<p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>)}
                         </div>
 
                         {/* Terms */}
                         <div className="my-3 flex items-center ">
-                            <input type="checkbox" id="terms" className="h-6 w-6" required />
+                            <input type="checkbox" id="terms" className="h-6 w-6" {...register("checkBox", registerValidation.checkBox)} />
                             <label htmlFor="terms" className="ml-4 text-m text-gray-300">
                                 By Creating An Account You Are Agreeing To Our{" "}
                                 <Link href="/terms" className="text-blue-500 hover:underline" >
@@ -134,6 +133,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                                 </Link>
                             </label>
                         </div>
+                        {errors.checkBox && <p className="text-red-500 text-sm">{errors.checkBox.message}</p>}
 
                         {/* Submit Button */}
                         <button type="submit" disabled={loading} className={`bg-[#E54B00] text-white font-bold py-3 rounded-lg w-full ${loading ? 'opacity-60 cursor-not-allowed' : 'hover:bg-[#e54c00d8]'}`}>

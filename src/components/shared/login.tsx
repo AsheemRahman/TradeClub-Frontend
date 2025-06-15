@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { signIn } from "next-auth/react";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'react-toastify';
@@ -24,6 +25,15 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const isUser = role === 'user';
     const authStore = useAuthStore();
 
+    const handleGoogleLogin = async () => {
+        try {
+            await signIn('google', { callbackUrl: role === 'user' ? '/home' : '/expert/dashboard' });
+        } catch (error) {
+            console.error(error);
+            toast.error("Error during Google Sign-in");
+        }
+    };
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -31,7 +41,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
         try {
             const payload = { ...formData, role };
             const response = await LoginPost(payload);
-            if (response.success) {
+            if (response.status) {
                 const { user, accessToken } = response.data;
                 authStore.setUserAuth(user, accessToken);
                 toast.success(response.message);
@@ -41,7 +51,6 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             }
         } catch (error) {
             console.error("Login error:", error);
-            // toast.error("Login failed. Please check your credentials.");
         } finally {
             setIsLoading(false);
         }
@@ -92,27 +101,18 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                     )}
 
                     {/* Social Logins */}
-                    {isUser && (
-                        <>
-                            <div className="relative my-6 text-center">
-                                <span className="bg-[#1A1A1A] px-4 relative z-10">Or Continue With</span>
-                                <div className="absolute left-0 right-0 top-1/2 h-px bg-[#fefeeb] z-0"></div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                                <Link href="/auth/facebook" className="w-full">
-                                    <button className="bg-[#0866FF] hover:bg-[#4285F4] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
-                                        <i className="bi bi-facebook"></i> Facebook
-                                    </button>
-                                </Link>
-                                <Link href="/auth/google" className="w-full">
-                                    <button className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
-                                        <i className="bi bi-google"></i> Google
-                                    </button>
-                                </Link>
-                            </div>
-                        </>
-                    )}
+                    <div className="relative my-6 text-center">
+                        <span className="bg-[#1A1A1A] px-4 relative z-10">Or Continue With</span>
+                        <div className="absolute left-0 right-0 top-1/2 h-px bg-[#fefeeb] z-0"></div>
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                        <button className="bg-[#0866FF] hover:bg-[#4285F4] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
+                            <i className="bi bi-facebook"></i> Facebook
+                        </button>
+                        <button onClick={handleGoogleLogin} className="bg-[#db4437] hover:bg-[#f55] text-white py-2 w-full rounded-md flex items-center justify-center gap-2">
+                            <i className="bi bi-google"></i> Google
+                        </button>
+                    </div>
 
                     <div className="text-center text-sm mt-7">
                         Don&apos;t have an account?
@@ -126,13 +126,5 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     );
 };
 
+
 export default Login;
-
-
-{/* Dots at the bottom */ }
-//  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-//  <div className="w-6 h-1 bg-white rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-//  <div className="w-6 h-1 bg-gray-400 rounded-full"></div>
-// </div>

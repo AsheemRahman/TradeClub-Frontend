@@ -1,6 +1,7 @@
 import axios from "axios";
-import { toast } from 'react-toastify'
+import { toast } from 'react-toastify';
 import axiosInstance from "../shared/AxiosInstance";
+import { UpdateProfilePayload } from "@/types/types";
 
 
 const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -34,4 +35,24 @@ export const resendOtp = async (email: string) => {
     } catch (error: unknown) {
         handleAxiosError(error)
     }
-}
+};
+
+
+export const getUserProfile = async () => {
+    try {
+        const profile = await axiosInstance.get('/user/get-profile');
+        return profile.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+
+export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
+    try {
+        const updateProfile = await axiosInstance.post('/user/update-profile', updatedPayload );
+        return updateProfile.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
