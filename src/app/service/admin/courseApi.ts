@@ -60,6 +60,15 @@ export const getCourse = async () => {
     }
 };
 
+export const getCourseByID = async (id: string) => {
+    try {
+        const response = await adminAxiosInstance.get(`${API_URI}/admin/course/${id}`, { withCredentials: true });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 export const addCourse = async (courseData: ICourseFormData) => {
     try {
         const response = await adminAxiosInstance.post(`${API_URI}/admin/add-course`, courseData, { withCredentials: true });
