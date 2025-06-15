@@ -74,3 +74,11 @@ export type UpdateProfilePayload = {
     phoneNumber: string;
     newPassword?: string;
 }
+
+export type ICategory = {
+    _id: string;
+    categoryName: string;
+    isActive: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
