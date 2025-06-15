@@ -5,7 +5,7 @@ import { Plus, Edit2, Trash2, Search, Filter, CheckCircle, XCircle } from 'lucid
 
 import { addCategory, deleteCategory, editCategory, getCategory } from '@/app/service/admin/courseApi';
 import { toast } from 'react-toastify';
-import { ICategory } from '@/types/types';
+import { ICategory } from '@/types/courseTypes';
 
 export default function CategoryManagement() {
     const [categories, setCategories] = useState<ICategory[]>([]);

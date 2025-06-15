@@ -1,24 +1,29 @@
 'use client';
 
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import React, { useState, useEffect } from 'react';
-import { ICourse, ICategory, ICourseFormData, ICourseContent } from '@/types/courseTypes';
-import { addCourse, deleteCourse, editCourse, getCategory, getCourse, togglePublish } from '@/app/service/admin/courseApi';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, Save, X, BookOpen, Users, Loader2, IndianRupee } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, BookOpen, Users, Loader2, IndianRupee, } from 'lucide-react';
+
+import { ICourse, ICategory, ICourseFormData, } from '@/types/courseTypes';
+import { deleteCourse, getCategory, getCourse, togglePublish } from '@/app/service/admin/courseApi';
+
+import CourseModal from '@/components/admin/CourseModal';
 
 
 const AdminCoursesPage = () => {
     const [courses, setCourses] = useState<ICourse[]>([]);
     const [categories, setCategories] = useState<ICategory[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [submitting, setSubmitting] = useState<boolean>(false);
     const [showModal, setShowModal] = useState<boolean>(false);
     const [editingCourse, setEditingCourse] = useState<ICourse | null>(null);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filterCategory, setFilterCategory] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState<string>('');
+    const router = useRouter();
 
     const [formData, setFormData] = useState<ICourseFormData>({
         title: '',
@@ -50,10 +55,6 @@ const AdminCoursesPage = () => {
         } finally {
             setLoading(false);
         }
-    };
-
-    const resetForm = (): void => {
-        setFormData({ title: '', description: '', price: 0, imageUrl: '', category: '', content: [], isPublished: false });
     };
 
     const handleEdit = (course: ICourse): void => {
@@ -94,58 +95,6 @@ const AdminCoursesPage = () => {
             console.error('Error deleting course:', error);
             toast.error('Failed to delete course');
         }
-    };
-
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
-        try {
-            setSubmitting(true);
-            const selectedCategory = categories.find(cat => cat._id === formData.category);
-            if (!selectedCategory) {
-                toast.error('Please select a valid category');
-                return;
-            }
-            const courseData = {
-                title: formData.title,
-                description: formData.description,
-                price: formData.price,
-                imageUrl: formData.imageUrl,
-                category: formData.category,
-                content: formData.content,
-                isPublished: formData.isPublished
-            };
-            const response = editingCourse ? await editCourse(editingCourse._id, courseData) : await addCourse(courseData);
-            if (response.status) {
-                if (editingCourse) {
-                    setCourses(courses.map(course => course._id === editingCourse._id ? { ...response.course, category: selectedCategory } : course));
-                    toast.success('Course updated successfully');
-                } else {
-                    setCourses([...courses, { ...response.course, category: selectedCategory }]);
-                    toast.success('Course created successfully');
-                }
-            }
-            setShowModal(false);
-            setEditingCourse(null);
-            resetForm();
-        } catch (error) {
-            console.error('Error saving course:', error);
-            toast.error(`Failed to ${editingCourse ? 'update' : 'create'} course`);
-        } finally {
-            setSubmitting(false);
-        }
-    };
-
-    const addContentItem = (): void => {
-        setFormData({ ...formData, content: [...formData.content, { title: '', videoUrl: '', duration: 0 }] });
-    };
-
-    const updateContentItem = (index: number, field: keyof ICourseContent, value: string | number): void => {
-        const updatedContent = formData.content.map((item, i) => i === index ? { ...item, [field]: value } : item);
-        setFormData({ ...formData, content: updatedContent });
-    };
-
-    const removeContentItem = (index: number): void => {
-        setFormData({ ...formData, content: formData.content.filter((_, i) => i !== index) });
     };
 
     const filteredCourses = courses.filter(course => {
@@ -263,11 +212,13 @@ const AdminCoursesPage = () => {
                             </div>
                             <div className="p-6">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded" >
                                         {course.category.categoryName}
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2">{course.title}</h3>
+                                <h3 className="text-xl font-semibold text-white mb-2" onClick={() => router.push(`/admin/course/${course._id}`)}>
+                                    {course.title}
+                                </h3>
                                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{course.description}</p>
                                 <div className="flex items-center justify-between mb-4">
                                     <div className="flex items-center gap-4 text-sm text-gray-300">
@@ -311,151 +262,9 @@ const AdminCoursesPage = () => {
             </div>
 
             {/* Modal */}
-            {showModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b">
-                            <div className="flex justify-between items-center">
-                                <h2 className="text-2xl font-bold text-gray-900">
-                                    {editingCourse ? 'Edit Course' : 'Create New Course'}
-                                </h2>
-                                <button onClick={() => { setShowModal(false); setEditingCourse(null); resetForm(); }} className="text-gray-400 hover:text-gray-600">
-                                    <X size={24} />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Course Title *
-                                    </label>
-                                    <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Enter course title"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Price ($) *
-                                    </label>
-                                    <input type="number" step="0.01" required value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} placeholder="0.00"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Description *
-                                </label>
-                                <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Enter course description"
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Category *
-                                    </label>
-                                    <select required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    >
-                                        <option value="">Select Category</option>
-                                        {categories.map(category => (
-                                            <option key={category._id} value={category._id}>{category.categoryName}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Image URL *
-                                    </label>
-                                    <input type="url" required value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} placeholder="https://example.com/image.jpg"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Course Content */}
-                            <div>
-                                <div className="flex justify-between items-center mb-4">
-                                    <label className="block text-sm font-medium text-gray-700">
-                                        Course Content
-                                    </label>
-                                    <button type="button" onClick={addContentItem}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                                    >
-                                        <Plus size={16} />
-                                        Add Content
-                                    </button>
-                                </div>
-                                {formData.content.map((item, index) => (
-                                    <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h4 className="font-medium text-gray-900">Content Item {index + 1}</h4>
-                                            <button type="button" onClick={() => removeContentItem(index)} className="text-red-600 hover:text-red-700">
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Title
-                                                </label>
-                                                <input type="text" value={item.title} onChange={(e) => updateContentItem(index, 'title', e.target.value)} placeholder="Content title"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Video URL
-                                                </label>
-                                                <input type="url" value={item.videoUrl} onChange={(e) => updateContentItem(index, 'videoUrl', e.target.value)} placeholder="https://example.com/video.mp4"
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                    Duration (minutes)
-                                                </label>
-                                                <input type="number" value={item.duration} onChange={(e) => updateContentItem(index, 'duration', parseInt(e.target.value) || 0)}
-                                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="0"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <input type="checkbox" id="isPublished" checked={formData.isPublished} onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                                    className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                />
-                                <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">
-                                    Publish this course immediately
-                                </label>
-                            </div>
-                            <div className="flex gap-4 pt-4">
-                                <button type="button" onClick={handleSubmit} disabled={submitting}
-                                    className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                                >
-                                    {submitting ? (
-                                        <Loader2 size={20} className="animate-spin" />
-                                    ) : (
-                                        <Save size={20} />
-                                    )}
-                                    {submitting ? (editingCourse ? 'Updating...' : 'Creating...') : (editingCourse ? 'Update Course' : 'Create Course')}
-                                </button>
-                                <button type="button" onClick={() => { setShowModal(false); setEditingCourse(null); resetForm(); }} disabled={submitting}
-                                    className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showModal &&
+                <CourseModal setCourses={setCourses} courses={courses} setShowModal={setShowModal} formData={formData} setFormData={setFormData} categories={categories} editingCourse={editingCourse} setEditingCourse={setEditingCourse} />
+            }
         </div>
     );
 };

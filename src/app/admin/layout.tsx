@@ -9,7 +9,7 @@ import Footer from "@/components/shared/footer";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
 
     const pathname = usePathname();
-    const hideSidebar = pathname === '/admin/login' || /^\/admin\/expert-management\/[^\/]+$/.test(pathname);
+    const hideSidebar = pathname === '/admin/login' || /^\/admin\/expert-management\/[^\/]+$/.test(pathname) || /^\/admin\/course\/[^\/]+$/.test(pathname) ;
 
     return (
         <div>

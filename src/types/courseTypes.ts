@@ -4,9 +4,12 @@ export interface ICourseContent {
     duration: number;
 }
 
-export interface ICategory {
+export interface ICategory  {
     _id: string;
     categoryName: string;
+    isActive: boolean;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 export interface ICourse {
