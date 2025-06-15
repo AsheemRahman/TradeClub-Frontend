@@ -73,6 +73,7 @@ export type UpdateProfilePayload = {
     fullName: string;
     phoneNumber: string;
     newPassword?: string;
+    profilePicture : string;
 }
 
 export type ICategory = {

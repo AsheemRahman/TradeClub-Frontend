@@ -27,7 +27,7 @@ const UserProfile = () => {
     const [activeTab, setActiveTab] = useState('overview');
     const [isEditing, setIsEditing] = useState(false);
     const [showPassword, setShowPassword] = useState({ new: false, confirm: false });
-    const [editForm, setEditForm] = useState({ fullName: '', phoneNumber: '', newPassword: '', confirmPassword: '' });
+    const [editForm, setEditForm] = useState({ fullName: '', phoneNumber: '', newPassword: '', confirmPassword: '', profilePicture: '' });
     const [otpState, setOtpState] = useState({ showOtpModal: false, otpCode: '', isVerifying: false, otpSent: false, countdown: 0 });
     const [passwordValidation, setPasswordValidation] = useState({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false, passwordsMatch: false });
     const [pendingUpdate, setPendingUpdate] = useState<UpdateProfilePayload | null>(null);
@@ -59,7 +59,8 @@ const UserProfile = () => {
             fullName: userData.fullName,
             phoneNumber: userData.phoneNumber,
             newPassword: '',
-            confirmPassword: ''
+            confirmPassword: '',
+            profilePicture: ''
         });
         setIsEditing(true);
         setActiveTab('settings')
@@ -125,7 +126,8 @@ const UserProfile = () => {
             id: userData.id,
             fullName: editForm.fullName,
             phoneNumber: editForm.phoneNumber,
-            newPassword: editForm.newPassword
+            newPassword: editForm.newPassword,
+            profilePicture: editForm.profilePicture
         };
         if (hasPasswordChanged) {
             updatedPayload.newPassword = editForm.newPassword;
@@ -204,6 +206,39 @@ const UserProfile = () => {
         }
     };
 
+    const handleFileUpload = async () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+
+        input.onchange = async (e: Event) => {
+            const target = e.target as HTMLInputElement;
+            const file = target.files?.[0];
+            if (!file) return;
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('folder', 'profile-pictures');
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await res.json();
+                if (data.success && data.url) {
+                    setEditForm(prev => ({  ...prev,  profilePicture: data.url,}));
+                    toast.success('File uploaded successfully!');
+                } else {
+                    throw new Error(data.error || 'Upload failed');
+                }
+            } catch (err) {
+                console.error('Upload error:', err);
+                toast.error('File upload failed');
+            }
+        };
+        input.click();
+    };
+
+
     return (
         <div className="min-h-screen flex gap-6 p-8">
             <div className="w-full">
@@ -219,11 +254,11 @@ const UserProfile = () => {
                                 )}
                             </div>
                             {isEditing && (
-                                <button className="absolute -bottom-2 -right-2 bg-blue-500 hover:bg-blue-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg">
+                                <button className="absolute -bottom-2 -right-2 bg-blue-500 hover:bg-blue-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg" onClick={handleFileUpload}>
                                     <Edit3 className="w-4 h-4" />
                                 </button>
                             )}
-                            <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            {/* <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
                         </div>
 
                         <div className="flex-1">

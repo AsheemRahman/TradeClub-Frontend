@@ -1,5 +1,5 @@
-import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client } from './aws-config';
+import { PutObjectCommand } from '@aws-sdk/client-s3';
 
 
 export interface UploadResponse {
@@ -34,12 +34,9 @@ export const uploadFileToS3 = async ( file: File,folder: string = 'uploads'): Pr
     }
 };
 
-export const uploadMultipleFiles = async (
-    files: { file: File; folder: string }[]
-): Promise<UploadResponse[]> => {
+export const uploadMultipleFiles = async ( files: { file: File; folder: string }[]): Promise<UploadResponse[]> => {
     const uploadPromises = files.map(({ file, folder }) =>
         uploadFileToS3(file, folder)
     );
-
     return await Promise.all(uploadPromises);
 };
