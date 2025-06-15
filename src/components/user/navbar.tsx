@@ -74,7 +74,7 @@ export default function Navbar() {
             {isMenuOpen && (
                 <div className="lg:hidden mt-4 space-y-4">
                     <Link href="/" className="block text-xl hover:text-gray-300">Home</Link>
-                    <Link href="/e-learning" className="block text-xl hover:text-gray-300">E-Learning</Link>
+                    <Link href="/learning" className="block text-xl hover:text-gray-300">E-Learning</Link>
                     <Link href="/faqs" className="block text-xl hover:text-gray-300">FAQs</Link>
                     <Link href="/contact" className="block text-xl hover:text-gray-300">Contact</Link>
                     <Link href="/resources" className="block text-xl hover:text-gray-300">Resources</Link>
