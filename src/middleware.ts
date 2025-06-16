@@ -58,6 +58,9 @@ export const config = {
         '/expert/dashboard',
         '/admin/dashboard',
         '/admin/user-management',
+        '/admin/expert-management',
         '/admin/expert-management/(.*)',
+        '/admin/course',
+        '/admin/course/(.*)',
     ],
 };

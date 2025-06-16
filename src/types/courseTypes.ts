@@ -18,7 +18,7 @@ export interface ICourse {
     description: string;
     price: number;
     imageUrl: string;
-    category: ICategory;
+    category: string;
     purchasedUsers?: number;
     content: ICourseContent[];
     isPublished: boolean;

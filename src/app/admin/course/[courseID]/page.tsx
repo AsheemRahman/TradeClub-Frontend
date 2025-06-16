@@ -16,7 +16,7 @@ const AdminCourseDetail = () => {
     const router = useRouter();
     const [course, setCourse] = useState<ICourse | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'analytics' | 'students'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'analytics' | 'users'>('overview');
     const [expandedContent, setExpandedContent] = useState<string | null>(null);
     const [playingVideo, setPlayingVideo] = useState<string | null>(null);
 
@@ -75,7 +75,7 @@ const AdminCourseDetail = () => {
             description: course.description,
             price: course.price,
             imageUrl: course.imageUrl,
-            category: course.category._id,
+            category: course.category,
             content: course.content.map(item => ({
                 title: item.title,
                 videoUrl: item.videoUrl,
@@ -153,13 +153,6 @@ const AdminCourseDetail = () => {
         return course.content.reduce((total, item) => total + item.duration, 0);
     };
 
-    // const formatCurrency = (amount: number) => {
-    //     return new Intl.NumberFormat('en-IN', {
-    //         style: 'currency',
-    //         currency: 'INR',
-    //     }).format(amount);
-    // };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
@@ -178,10 +171,7 @@ const AdminCourseDetail = () => {
                     <AlertCircle className="mx-auto mb-4 text-red-500" size={48} />
                     <h2 className="text-2xl font-bold text-white mb-2">Course Not Found</h2>
                     <p className="text-gray-400 mb-4">The course you&apos;re looking for doesn&apos;t exist.</p>
-                    <button
-                        onClick={() => router.push('/admin/course')}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg"
-                    >
+                    <button onClick={() => router.push('/admin/course')} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
                         Back to Courses
                     </button>
                 </div>
@@ -201,14 +191,11 @@ const AdminCourseDetail = () => {
                         </button>
 
                         <div className="flex items-center gap-3">
-                            <button onClick={handleEditClick}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-                            >
+                            <button onClick={handleEditClick} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                                 <Edit size={16} />
                                 Edit
                             </button>
-                            <button
-                                onClick={handleTogglePublish}
+                            <button onClick={handleTogglePublish}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${course.isPublished
                                     ? 'bg-yellow-600 hover:bg-yellow-700 text-white'
                                     : 'bg-green-600 hover:bg-green-700 text-white'
@@ -231,17 +218,16 @@ const AdminCourseDetail = () => {
                         {/* Course Info */}
                         <div className="lg:col-span-3">
                             <div className="flex items-center gap-3 mb-4">
-                                <span className={`px-3 py-1 rounded-full text-sm font-medium ${course.isPublished
+                                <span className={`px-3 py-1 rounded-sm text-sm font-medium ${course.isPublished
                                     ? 'bg-green-100 text-green-800'
                                     : 'bg-yellow-100 text-yellow-800'
                                     }`}>
                                     {course.isPublished ? 'Published' : 'Draft'}
                                 </span>
-                                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-sm">
-                                    {course.category.categoryName}
+                                <span className="bg-blue-600 text-white px-3 py-1 rounded-sm text-sm">
+                                    {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
                                 </span>
                             </div>
-
                             <h1 className="text-4xl font-bold text-white mb-4">{course.title}</h1>
                             <p className="text-xl text-gray-300 mb-6">{course.description}</p>
                         </div>
@@ -271,9 +257,9 @@ const AdminCourseDetail = () => {
                             { id: 'overview', label: 'Overview', icon: FileText },
                             { id: 'content', label: 'Course Content', icon: Video },
                             { id: 'analytics', label: 'Analytics', icon: BarChart3 },
-                            { id: 'students', label: 'Students', icon: Users }
+                            { id: 'users', label: 'users', icon: Users }
                         ].map((tab) => (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id as "overview" | "content" | "analytics" | 'students')}
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id as "overview" | "content" | "analytics" | 'users')}
                                 className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
                                     ? 'border-blue-500 text-blue-500'
                                     : 'border-transparent text-gray-400 hover:text-gray-200'
@@ -304,7 +290,9 @@ const AdminCourseDetail = () => {
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-300 mb-1">Category</label>
-                                            <p className="text-white">{course.category.categoryName}</p>
+                                            <p className="text-white">
+                                                {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
+                                            </p>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-gray-300 mb-1">Price</label>
@@ -510,13 +498,13 @@ const AdminCourseDetail = () => {
                     </div>
                 )}
 
-                {activeTab === 'students' && (
+                {activeTab === 'users' && (
                     <div className="bg-[#151231] rounded-lg p-6">
-                        <h2 className="text-xl font-bold text-white mb-6">Enrolled Students</h2>
+                        <h2 className="text-xl font-bold text-white mb-6">Enrolled Users</h2>
                         <div className="text-center py-12">
                             <Users size={48} className="mx-auto text-gray-600 mb-4" />
-                            <h3 className="text-lg font-medium text-gray-300 mb-2">No students enrolled yet</h3>
-                            <p className="text-gray-500">Student data will appear here once users enroll in your course</p>
+                            <h3 className="text-lg font-medium text-gray-300 mb-2">No Users enrolled yet</h3>
+                            <p className="text-gray-500">User data will appear here once users enroll in your course</p>
                         </div>
                     </div>
                 )}

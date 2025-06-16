@@ -64,7 +64,7 @@ const AdminCoursesPage = () => {
             description: course.description,
             price: course.price,
             imageUrl: course.imageUrl,
-            category: course.category._id,
+            category: course.category,
             content: course.content || [],
             isPublished: course.isPublished
         });
@@ -99,7 +99,7 @@ const AdminCoursesPage = () => {
 
     const filteredCourses = courses.filter(course => {
         const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesCategory = !filterCategory || course.category._id === filterCategory;
+        const matchesCategory = !filterCategory || course.category === filterCategory;
         const matchesStatus = !filterStatus || (filterStatus === 'published' && course.isPublished) || (filterStatus === 'draft' && !course.isPublished);
         return matchesSearch && matchesCategory && matchesStatus;
     });
@@ -185,7 +185,7 @@ const AdminCoursesPage = () => {
                             <div className="p-6">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded" >
-                                        {course.category.categoryName}
+                                        {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
                                     </span>
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2" >
