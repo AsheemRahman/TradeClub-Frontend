@@ -6,10 +6,10 @@ import React, { useState, useEffect } from 'react';
 
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, BookOpen, Users, Loader2, IndianRupee, } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search, BookOpen, Users, Loader2, IndianRupee, } from 'lucide-react';
 
 import { ICourse, ICategory, ICourseFormData, } from '@/types/courseTypes';
-import { deleteCourse, getCategory, getCourse, togglePublish } from '@/app/service/admin/courseApi';
+import { deleteCourse, getCategory, getCourse } from '@/app/service/admin/courseApi';
 
 import CourseModal from '@/components/admin/CourseModal';
 
@@ -104,35 +104,6 @@ const AdminCoursesPage = () => {
         return matchesSearch && matchesCategory && matchesStatus;
     });
 
-    const togglePublishStatus = async (courseId: string): Promise<void> => {
-        const result = await Swal.fire({
-            title: 'Are you sure?',
-            text: 'Do you really want to change the status of this course?',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Yes, Change it!',
-            cancelButtonText: 'Cancel',
-        });
-        if (!result.isConfirmed) return;
-        try {
-            const course = courses.find(c => c._id === courseId);
-            if (!course) return;
-            const response = await togglePublish(courseId);
-            if (!response.status) {
-                throw new Error('Failed to toggle publish status');
-            }
-            const updatedCourses = courses.map(c => c._id === courseId ? { ...c, isPublished: !c.isPublished } : c);
-            setCourses(updatedCourses);
-            const updatedCourse = updatedCourses.find(c => c._id === courseId);
-            toast.success(`Course ${updatedCourse?.isPublished ? 'published' : 'unpublished'} successfully`);
-        } catch (error) {
-            console.error('Error toggling publish status:', error);
-            toast.error('Failed to update publish status');
-        }
-    };
-
     if (loading) {
         return (
             <div className="min-h-screen bg-[#151231] flex items-center justify-center">
@@ -194,11 +165,12 @@ const AdminCoursesPage = () => {
                         <div key={course._id} className="bg-[#151231] rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
                             <div className="relative h-48">
                                 <Image src={course.imageUrl} alt={course.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    <button onClick={() => togglePublishStatus(course._id)}
-                                        className={`p-2 rounded-full ${course.isPublished ? 'bg-green-500' : 'bg-gray-500'} text-white`}
+                                <div className="absolute top-4 right-4">
+                                    <button onClick={() => router.push(`/admin/course/${course._id}`)}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-md transition-all duration-200"
                                     >
-                                        {course.isPublished ? <Eye size={16} /> : <EyeOff size={16} />}
+                                        <Eye size={18} className="opacity-90" />
+                                        <span className="text-sm font-medium">View</span>
                                     </button>
                                 </div>
                                 <div className="absolute bottom-4 left-4">
@@ -216,7 +188,7 @@ const AdminCoursesPage = () => {
                                         {course.category.categoryName}
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-semibold text-white mb-2" onClick={() => router.push(`/admin/course/${course._id}`)}>
+                                <h3 className="text-xl font-semibold text-white mb-2" >
                                     {course.title}
                                 </h3>
                                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{course.description}</p>
