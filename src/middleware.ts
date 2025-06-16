@@ -47,7 +47,6 @@ export async function middleware(req: NextRequest) {
         }
         return NextResponse.redirect(new URL('/login', req.url));
     }
-
     return NextResponse.next();
 }
 
@@ -56,6 +55,8 @@ export const config = {
         '/home',
         '/profile',
         '/expert/dashboard',
+        '/expert/verification',
+        '/expert/verification-pending',
         '/admin/dashboard',
         '/admin/user-management',
         '/admin/expert-management',

@@ -90,7 +90,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
                     const otpPath = role === 'user' ? '/resetPassword' : '/expert/resetPassword';
                     router.replace(`${otpPath}?email=${email}`);
                 } else {
-                    router.replace(role === 'user' ? '/login' : `/expert/verification/?email=${email}`);
+                    router.replace(role === 'user' ? '/login' : `/expert/login`);
                 }
             } else {
                 setError(response.message || 'Invalid OTP');

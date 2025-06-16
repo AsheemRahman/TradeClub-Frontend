@@ -25,13 +25,11 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const isUser = role === 'user';
     const authStore = useAuthStore();
     const { data: session, status } = useSession();
-    console.log("session in login", session)
 
     useEffect(() => {
         if (status === "authenticated" && session) {
             const user = session.user;
             const accessToken = session.accessToken;
-
             const isAlreadyStored = authStore.user?.id === user.id && authStore.token === accessToken;
             if (user && accessToken && !isAlreadyStored) {
                 authStore.setUserAuth({ id: user.id, role: user.role, ...(user.role === 'expert' && { isVerified: user.isVerified }), }, accessToken);
@@ -57,8 +55,8 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             const payload = { ...formData, role };
             const response = await LoginPost(payload);
             if (response.status) {
-                const { user, accessToken } = response.data;
-                authStore.setUserAuth(user, accessToken);
+                const { user, expert, accessToken } = response.data;
+                authStore.setUserAuth(isUser ? user : expert, accessToken);
                 toast.success(response.message);
                 router.replace(isUser ? '/home' : '/expert/dashboard');
             } else {

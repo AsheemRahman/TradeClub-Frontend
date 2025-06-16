@@ -68,6 +68,17 @@ export type ExpertFormData = {
     selfie_Id: string;
 }
 
+export type IExpertVerification = {
+    experience_level?: string;
+    year_of_experience?: number;
+    markets_Traded?: string;
+    trading_style?: string;
+    DOB?: string;
+    state?: string;
+    country?: string;
+    isVerified?: boolean | string;
+}
+
 export type UpdateProfilePayload = {
     id: string;
     fullName: string;

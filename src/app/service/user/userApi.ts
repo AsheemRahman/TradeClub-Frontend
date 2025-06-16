@@ -40,7 +40,7 @@ export const resendOtp = async (email: string) => {
 
 export const getUserProfile = async () => {
     try {
-        const profile = await axiosInstance.get('/user/get-profile');
+        const profile = await axiosInstance.get(`${API_URI}/user/get-profile`);
         return profile.data;
     } catch (error) {
         handleAxiosError(error)

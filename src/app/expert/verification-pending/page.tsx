@@ -109,7 +109,7 @@ const VerificationPending = () => {
 
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button onClick={() => router.replace('/')} className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors">
+                        <button onClick={() => router.replace('/expert/dashboard')} className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-700 text-white rounded-lg font-medium hover:bg-gray-600 transition-colors">
                         <Home className="w-5 h-5" />
                         Go to Home
                     </button>

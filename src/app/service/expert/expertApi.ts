@@ -62,3 +62,13 @@ export const expertVerification = async (formData: ExpertFormData) => {
         handleAxiosError(error)
     }
 };
+
+
+export const getExpertData = async () => {
+    try {
+        const expertData = await axiosInstance.get(`${API_URI}/expert/get-expert`);
+        return expertData.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
