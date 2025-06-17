@@ -176,7 +176,7 @@ const ExpertDetailsForm = () => {
                 router.replace('/expert/verification-pending');
             }
         } catch (error) {
-            console.log("error while verification", error)
+            console.error("error while verification", error)
         }
     };
 

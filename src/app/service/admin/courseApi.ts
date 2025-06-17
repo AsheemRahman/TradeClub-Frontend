@@ -7,7 +7,7 @@ const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
-        console.log("Axios Error:", error.response?.data?.message);
+        console.error("Axios Error:", error.response?.data?.message);
         toast.error(error.response?.data?.message);
     } else {
         console.error("Unexpected error:", error);

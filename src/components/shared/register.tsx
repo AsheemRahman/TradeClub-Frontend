@@ -46,7 +46,7 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                 router.replace(`${otpPath}?email=${response.email}&type=register`);
             }
         } catch (err) {
-            console.log("error in register", err);
+            console.error("error in register", err);
             toast.error("Something went wrong during registration.");
         } finally {
             setLoading(false);

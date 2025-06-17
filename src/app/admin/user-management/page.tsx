@@ -23,7 +23,7 @@ const UserManagement = () => {
                 setUserData([]);
             }
         } catch (error) {
-            console.log("Error fetching userData", error);
+            console.error("Error fetching userData", error);
             toast.error("Failed to fetch user data");
         }
     };

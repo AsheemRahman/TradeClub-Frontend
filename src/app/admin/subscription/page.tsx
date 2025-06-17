@@ -24,7 +24,7 @@ const SubscriptionManagement: React.FC = () => {
         try {
             setLoading(true);
             const response = await fetchPlans();
-            console.log("response in load", response)
+            console.error("response in load", response)
             if (response?.status && response?.planData) {
                 setPlans(response.planData);
             }
@@ -96,7 +96,7 @@ const SubscriptionManagement: React.FC = () => {
                     await loadPlans();
                 }
             } catch (error) {
-                console.log("Error deleting plan:", error)
+                console.error("Error deleting plan:", error)
                 toast.error('Failed to delete plan');
             } finally {
                 setActionLoading(null);
@@ -123,7 +123,7 @@ const SubscriptionManagement: React.FC = () => {
                     await loadPlans();
                 }
             } catch (error) {
-                console.log("Error toggling plan status:", error)
+                console.error("Error toggling plan status:", error)
                 toast.error('Failed toggling plan status');
             } finally {
                 setActionLoading(null);
