@@ -106,7 +106,7 @@ const AdminCourseDetail = () => {
                     toast.success(`Course ${course.isPublished ? 'unpublished' : 'published'} successfully`);
                 }
             } catch (error) {
-                console.log("error in toggle", error)
+                console.error("error in toggle", error)
                 toast.error('Failed to update course status');
             }
         }
@@ -131,7 +131,7 @@ const AdminCourseDetail = () => {
                     router.push('/admin/course');
                 }
             } catch (error) {
-                console.log("error in delete", error)
+                console.error("error in delete", error)
                 toast.error('Failed to delete course');
             }
         }

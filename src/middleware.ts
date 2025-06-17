@@ -54,6 +54,7 @@ export const config = {
     matcher: [
         '/home',
         '/profile',
+        '/courses',
         '/expert/dashboard',
         '/expert/verification',
         '/expert/verification-pending',

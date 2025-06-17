@@ -32,7 +32,7 @@ const AdminLogin: React.FC = () => {
                 router.replace('/admin/dashboard');
             }
         } catch (error) {
-            console.log("error occurred when fetching data", error);
+            console.error("error occurred when fetching data", error);
         } finally {
             setIsLoading(false);
         }

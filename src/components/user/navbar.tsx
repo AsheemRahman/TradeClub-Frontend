@@ -17,7 +17,7 @@ export default function Navbar() {
     return (
         <nav className="bg-[#151231] rounded-[20px] text-white m-5 px-8 py-5">
             <div className="flex justify-between items-center">
-                <Link href="/">
+                <Link href="/home">
                     <h1 className={`${irishGrover.className} text-white text-[32px] leading-none`}>
                         TradeClub
                     </h1>
@@ -39,8 +39,8 @@ export default function Navbar() {
                 {/* Navigation Links (Desktop) */}
                 <div className="hidden lg:flex items-center gap-20">
                     <div className="flex space-x-8 mr-20">
-                        <Link href="/" className="font-['Allura'] text-xl hover:text-gray-300">Home</Link>
-                        <Link href="/e-learning" className="text-xl hover:text-gray-300">E-Learning</Link>
+                        <Link href="/home" className="font-['Allura'] text-xl hover:text-gray-300">Home</Link>
+                        <Link href="/courses" className="text-xl hover:text-gray-300">Course</Link>
                         <Link href="/faqs" className="text-xl hover:text-gray-300">FAQs</Link>
                         <Link href="/contact" className="font-['Allura'] text-xl hover:text-gray-300">Contact</Link>
                         <Link href="/resources" className="font-['Allura'] text-xl hover:text-gray-300">Resources</Link>

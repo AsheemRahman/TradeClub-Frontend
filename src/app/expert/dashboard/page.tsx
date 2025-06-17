@@ -86,8 +86,6 @@ const ExpertDashboard = () => {
             case 'settings':
                 router.push("/expert/settings");
                 break;
-            default:
-                console.log(`Action ${action} not implemented`);
         }
     }, [router]);
 
