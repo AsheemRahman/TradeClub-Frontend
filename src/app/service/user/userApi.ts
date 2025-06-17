@@ -46,7 +46,7 @@ export const getUserProfile = async () => {
 
 export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     try {
-        const updateProfile = await axiosInstance.post('/user/update-profile', updatedPayload );
+        const updateProfile = await axiosInstance.post(`${API_URI}/user/update-profile`, updatedPayload);
         return updateProfile.data;
     } catch (error) {
         handleAxiosError(error)
@@ -55,9 +55,18 @@ export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
 
 export const courseData = async () => {
     try {
-        const response = await axiosInstance.post('/user/courses', );
+        const response = await axiosInstance.get(`${API_URI}/user/courses`, { withCredentials: true, });
         return response.data;
     } catch (error) {
-        handleAxiosError(error)
+        handleAxiosError(error);
+    }
+};
+
+export const categoryData = async () => {
+    try {
+        const response = await axiosInstance.get(`${API_URI}/user/category`, { withCredentials: true, });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
     }
 };
