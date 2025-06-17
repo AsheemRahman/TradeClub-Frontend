@@ -24,7 +24,6 @@ const SubscriptionManagement: React.FC = () => {
         try {
             setLoading(true);
             const response = await fetchPlans();
-            console.error("response in load", response)
             if (response?.status && response?.planData) {
                 setPlans(response.planData);
             }

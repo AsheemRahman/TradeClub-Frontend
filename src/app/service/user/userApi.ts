@@ -17,7 +17,6 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-
 export const verifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axiosInstance.post(`${API_URI}/user/verify-otp`, { otp, email });
@@ -26,7 +25,6 @@ export const verifyOtp = async (otp: number, email: string) => {
         handleAxiosError(error)
     }
 };
-
 
 export const resendOtp = async (email: string) => {
     try {
@@ -37,7 +35,6 @@ export const resendOtp = async (email: string) => {
     }
 };
 
-
 export const getUserProfile = async () => {
     try {
         const profile = await axiosInstance.get(`${API_URI}/user/get-profile`);
@@ -47,11 +44,19 @@ export const getUserProfile = async () => {
     }
 };
 
-
 export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     try {
         const updateProfile = await axiosInstance.post('/user/update-profile', updatedPayload );
         return updateProfile.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const courseData = async () => {
+    try {
+        const response = await axiosInstance.post('/user/courses', );
+        return response.data;
     } catch (error) {
         handleAxiosError(error)
     }
