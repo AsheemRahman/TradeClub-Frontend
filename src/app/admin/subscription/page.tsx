@@ -55,7 +55,6 @@ const SubscriptionManagement: React.FC = () => {
                     toast.success("Update plan Successfully")
                     await loadPlans();
                 }
-                toast.error("Error Updating plan")
             } else {
                 const response = await createPlan(formData);
                 if (response?.status) {
