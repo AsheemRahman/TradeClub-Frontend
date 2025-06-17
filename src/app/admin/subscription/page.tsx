@@ -107,12 +107,12 @@ const SubscriptionManagement: React.FC = () => {
     const toggleStatus = async (planId: string): Promise<void> => {
         const result = await Swal.fire({
             title: 'Are you sure?',
-            text: 'This action cannot be undone!',
+            text: 'Do you want to change plan status!',
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#d33',
             cancelButtonColor: '#6b7280',
-            confirmButtonText: 'Yes, delete it!',
+            confirmButtonText: 'Yes, change it!',
         });
         if (result.isConfirmed) {
             try {

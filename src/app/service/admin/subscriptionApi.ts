@@ -55,7 +55,7 @@ export const deletePlan = async (id: string) => {
 
 export const planStatus = async (id: string) => {
     try {
-        const response = await adminAxiosInstance.put(`${API_URI}/admin/plan-status/${id}`, { withCredentials: true });
+        const response = await adminAxiosInstance.patch(`${API_URI}/admin/plan-status/${id}`, { withCredentials: true });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
