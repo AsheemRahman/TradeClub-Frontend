@@ -21,7 +21,7 @@ export const CourseListItem = ({ course, categories }: Props) => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <div className="bg-[#151231] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
             <div className="flex">
                 <div className="relative w-58  flex-shrink-0">
                     <Image src={course.imageUrl} alt={course.title} fill className="object-center rounded-l-lg" />
@@ -32,19 +32,17 @@ export const CourseListItem = ({ course, categories }: Props) => {
                             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                                 {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
                             </span>
-                            <h3 className="text-xl font-semibold mt-2">{course.title}</h3>
+                            <h3 className="text-xl text-white font-semibold mt-2">{course.title}</h3>
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-blue-600">${course.price}</div>
-                            <div className="flex items-center mt-1">
+                            <div className="text-2xl font-bold text-blue-600 mb-3">${course.price}</div>
+                            <div className="flex items-center ">
                                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                {/* <span className="ml-1 text-sm text-gray-600">{course.rating}</span> */}
+                                {/* <span className="ml-1 text-sm text-gray-600">{course.rating || 0}</span> */}
                             </div>
                         </div>
                     </div>
-
-                    <p className="text-gray-600 mb-3">{course.description}</p>
-
+                    <p className="text-gray-400 mb-3">{course.description}</p>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-500">
                             <div className="flex items-center">

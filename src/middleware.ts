@@ -55,6 +55,7 @@ export const config = {
         '/home',
         '/profile',
         '/courses',
+        '/courses/(.*)',
         '/expert/dashboard',
         '/expert/verification',
         '/expert/verification-pending',

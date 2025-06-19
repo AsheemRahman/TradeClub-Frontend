@@ -158,10 +158,10 @@ const AdminCoursesPage = () => {
                 </div>
 
                 {/* Courses Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredCourses.map(course => (
-                        <div key={course._id} className="bg-[#151231] rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-                            <div className="relative h-48">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                    {filteredCourses.map((course) => (
+                        <div key={course._id} className="flex flex-col justify-between bg-[#151231] rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow h-full">
+                            <div className="relative h-48 w-full">
                                 <Image src={course.imageUrl} alt={course.title} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                                 <div className="absolute top-4 right-4">
                                     <button onClick={() => router.push(`/admin/course/${course._id}`)}
@@ -172,40 +172,41 @@ const AdminCoursesPage = () => {
                                     </button>
                                 </div>
                                 <div className="absolute bottom-4 left-4">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${course.isPublished
-                                        ? 'bg-green-100 text-green-800'
-                                        : 'bg-yellow-100 text-yellow-800'
-                                        }`}>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${course.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                         {course.isPublished ? 'Published' : 'Draft'}
                                     </span>
                                 </div>
                             </div>
-                            <div className="p-6">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded" >
-                                        {categories.find(cat => course?.category === cat._id)?.categoryName}
-                                    </span>
-                                </div>
-                                <h3 className="text-xl font-semibold text-white mb-2" >
-                                    {course.title}
-                                </h3>
-                                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{course.description}</p>
-                                <div className="flex items-center justify-between mb-4">
-                                    <div className="flex items-center gap-4 text-sm text-gray-300">
-                                        <div className="flex items-center gap-1">
-                                            <IndianRupee size={16} />
-                                            <span>{course.price}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <Users size={16} />
-                                            <span>{course.purchasedUsers || 0}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <BookOpen size={16} />
-                                            <span>{course.content?.length || 0}</span>
+
+                            {/* Content */}
+                            <div className="p-6 flex flex-col justify-between flex-1">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                                            {categories.find((cat) => course?.category === cat._id)?.categoryName}
+                                        </span>
+                                    </div>
+                                    <h3 className="text-xl font-semibold text-white mb-2">{course.title}</h3>
+                                    <p className="text-gray-500 text-sm mb-4 line-clamp-2">{course.description}</p>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-4 text-sm text-gray-300">
+                                            <div className="flex items-center gap-1">
+                                                <IndianRupee size={16} />
+                                                <span>{course.price}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <Users size={16} />
+                                                <span>{course.purchasedUsers || 0}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <BookOpen size={16} />
+                                                <span>{course.content?.length || 0}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Actions */}
                                 <div className="flex gap-2">
                                     <button onClick={() => handleEdit(course)}
                                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
