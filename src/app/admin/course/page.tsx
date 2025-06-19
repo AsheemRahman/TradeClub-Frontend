@@ -172,7 +172,7 @@ const AdminCoursesPage = () => {
                                     </button>
                                 </div>
                                 <div className="absolute bottom-4 left-4">
-                                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${course.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                    <span className={`px-3 py-1 rounded-md text-sm font-medium ${course.isPublished ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
                                         {course.isPublished ? 'Published' : 'Draft'}
                                     </span>
                                 </div>

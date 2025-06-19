@@ -20,6 +20,9 @@ export default function CategoryManagement() {
 
     useEffect(() => {
         fetchCategories();
+    }, []);
+
+    useEffect(() => {
         let filtered = categories;
         if (searchTerm) {
             filtered = filtered.filter(cat => cat.categoryName.toLowerCase().includes(searchTerm.toLowerCase()));
