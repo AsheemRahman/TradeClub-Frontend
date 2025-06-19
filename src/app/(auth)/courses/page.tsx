@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
-import { CourseListItem } from '@/components/user/CourseListItem';
 import { CourseCard } from '@/components/user/CourseCard';
+import { CourseListItem } from '@/components/user/CourseListItem';
+import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
 import { ICategory, ICourse } from '@/types/courseTypes';
 import { categoryData, courseData } from '@/app/service/user/userApi';
-
 
 
 const CoursesPage = () => {
@@ -27,23 +26,23 @@ const CoursesPage = () => {
     const coursesPerPage = 4;
 
     useEffect(() => {
-    const fetchData = async () => {
-        setLoading(true);
-        try {
-            const [coursesRes, categoriesRes] = await Promise.all([courseData(), categoryData()]);
-            if (!coursesRes.status || !categoriesRes.status) {
-                throw new Error('Failed to fetch data');
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [coursesRes, categoriesRes] = await Promise.all([courseData(), categoryData()]);
+                if (!coursesRes.status || !categoriesRes.status) {
+                    throw new Error('Failed to fetch data');
+                }
+                setCourses(coursesRes.courses || []);
+                setCategories(categoriesRes.categories || []);
+            } catch (err) {
+                console.error(err);
+            } finally {
+                setLoading(false);
             }
-            setCourses(coursesRes.courses || []);
-            setCategories(categoriesRes.categories || []);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    };
-    fetchData();
-}, []);
+        };
+        fetchData();
+    }, []);
 
     // Filtered and sorted courses
     const filteredCourses = useMemo(() => {
@@ -104,11 +103,7 @@ const CoursesPage = () => {
                     {/* Search Bar */}
                     <div className="relative mb-4">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-200 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Search courses..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
+                        <input type="text" placeholder="Search courses..." value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 border text-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
@@ -211,8 +206,8 @@ const CoursesPage = () => {
                     }>
                         {paginatedCourses.map(course => (
                             viewMode === 'grid'
-                                ? <CourseCard key={course._id} course={course} />
-                                : <CourseListItem key={course._id} course={course} />
+                                ? <CourseCard key={course._id} course={course} categories={categories} />
+                                : <CourseListItem key={course._id} course={course} categories={categories} />
                         ))}
                     </div>
                 )}
@@ -225,7 +220,6 @@ const CoursesPage = () => {
                         >
                             Previous
                         </button>
-
                         {[...Array(totalPages)].map((_, i) => (
                             <button key={i} onClick={() => setCurrentPage(i + 1)}
                                 className={`px-4 py-2 rounded-lg ${currentPage === i + 1
@@ -236,7 +230,6 @@ const CoursesPage = () => {
                                 {i + 1}
                             </button>
                         ))}
-
                         <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}
                             className="px-4 py-2 text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 disabled:opacity-50 disabled:cursor-not-allowed"
                         >

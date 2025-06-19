@@ -1,8 +1,13 @@
 import Image from "next/image";
-import { ICourse, ICourseContent } from "@/types/courseTypes";
+import { ICategory, ICourse, ICourseContent } from "@/types/courseTypes";
 import { Clock, Star, Users } from "lucide-react";
 
-export const CourseCard = ({ course }: { course: ICourse }) => {
+type Props = {
+    course: ICourse;
+    categories: ICategory[];
+};
+
+export const CourseCard = ({ course, categories }: Props) => {
 
     const calculateTotalDuration = (content: ICourseContent[]) => {
         return content.reduce((total, item) => total + item.duration, 0);
@@ -27,6 +32,7 @@ export const CourseCard = ({ course }: { course: ICourse }) => {
                 <div className="flex items-center justify-between mb-2">
                     <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
                         {course.category}
+                        {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
                     </span>
                     <div className="flex items-center">
                         <Star className="w-4 h-4 text-yellow-400 fill-current" />

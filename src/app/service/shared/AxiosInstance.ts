@@ -40,10 +40,12 @@ axiosInstance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
-
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
-
+            const refreshToken = Cookies.get('refreshToken');
+            if (!refreshToken) {
+                useAuthStore.getState().logout();
+            }
             const newToken = await refreshAccessToken();
             if (newToken) {
                 const newToken = Cookies.get('accessToken');
@@ -54,16 +56,13 @@ axiosInstance.interceptors.response.use(
                 }
                 return axiosInstance(originalRequest);
             }
-
             useAuthStore.getState().logout();
             toast.error('Your session has expired. Please login again.');
             if (typeof window !== 'undefined') {
                 window.location.href = '/login';
             }
-
             return Promise.reject(new Error('session expired.'));
         }
-
         return Promise.reject(error);
     }
 );
