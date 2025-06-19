@@ -34,42 +34,29 @@ const AdminCourseDetail = () => {
     });
 
     useEffect(() => {
-        fetchCourseDetails();
-        fetchCategories();
+        fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
 
-    const fetchCourseDetails = async () => {
+    const fetchData = async (): Promise<void> => {
         try {
             setLoading(true);
-            const response = await getCourseByID(courseId);
-            if (response.status) {
-                setCourse(response.course);
-            } else {
-                toast.error('Failed to load course details');
+            const [courseRes, categoriesRes] = await Promise.all([getCourseByID(courseId), getCategory()]);
+            if (!courseRes.status || !categoriesRes.status) {
+                throw new Error('Failed to fetch data');
             }
+            setCourse(courseRes.course || []);
+            setCategories(categoriesRes.categories || []);
         } catch (error) {
-            console.error('Error fetching course:', error);
-            toast.error('Failed to load course details');
+            console.error('Error fetching data:', error);
+            toast.error('Failed to load data');
         } finally {
             setLoading(false);
         }
     };
 
-    const fetchCategories = async () => {
-        try {
-            const response = await getCategory();
-            if (response.status) {
-                setCategories(response.categories);
-            }
-        } catch (error) {
-            console.error('Error fetching categories:', error);
-        }
-    };
-
     const handleEditClick = () => {
         if (!course) return;
-
         setFormData({
             title: course.title,
             description: course.description,
@@ -83,7 +70,6 @@ const AdminCourseDetail = () => {
             })),
             isPublished: course.isPublished
         });
-
         setShowModal(true);
     };
 
@@ -135,11 +121,6 @@ const AdminCourseDetail = () => {
                 toast.error('Failed to delete course');
             }
         }
-    };
-
-    const handleCourseUpdate = (updatedCourse: ICourse) => {
-        setCourse(updatedCourse);
-        setShowModal(false);
     };
 
     const formatDuration = (minutes: number) => {
@@ -518,16 +499,8 @@ const AdminCourseDetail = () => {
                     setFormData={setFormData}
                     categories={categories}
                     editingCourse={course}
-                    setEditingCourse={() => setCourse(null)}
-                    setCourses={(updatedCourses) => {
-                        if (Array.isArray(updatedCourses)) {
-                            const updatedCourse = updatedCourses.find(c => c._id === course._id);
-                            if (updatedCourse) {
-                                handleCourseUpdate(updatedCourse);
-                            }
-                        }
-                    }}
-                    courses={course ? [course] : []}
+                    setEditingCourse={() => {}}
+                    fetchData={fetchData }
                 />
             )}
         </div>

@@ -10,7 +10,6 @@ import { Plus, Edit, Trash2, Eye, Search, BookOpen, Users, Loader2, IndianRupee,
 
 import { ICourse, ICategory, ICourseFormData, } from '@/types/courseTypes';
 import { deleteCourse, getCategory, getCourse } from '@/app/service/admin/courseApi';
-
 import CourseModal from '@/components/admin/CourseModal';
 
 
@@ -24,7 +23,6 @@ const AdminCoursesPage = () => {
     const [filterCategory, setFilterCategory] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState<string>('');
     const router = useRouter();
-
     const [formData, setFormData] = useState<ICourseFormData>({
         title: '',
         description: '',
@@ -185,7 +183,7 @@ const AdminCoursesPage = () => {
                             <div className="p-6">
                                 <div className="flex items-center gap-2 mb-2">
                                     <span className="text-sm text-blue-600 bg-blue-50 px-2 py-1 rounded" >
-                                        {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
+                                        {categories.find(cat => course?.category === cat._id)?.categoryName}
                                     </span>
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2" >
@@ -235,7 +233,7 @@ const AdminCoursesPage = () => {
 
             {/* Modal */}
             {showModal &&
-                <CourseModal setCourses={setCourses} courses={courses} setShowModal={setShowModal} formData={formData} setFormData={setFormData} categories={categories} editingCourse={editingCourse} setEditingCourse={setEditingCourse} />
+                <CourseModal setShowModal={setShowModal} formData={formData} setFormData={setFormData} categories={categories} editingCourse={editingCourse} setEditingCourse={setEditingCourse} fetchData={fetchData} />
             }
         </div>
     );

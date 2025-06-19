@@ -17,11 +17,10 @@ interface Props {
     categories: ICategory[];
     editingCourse: ICourse | null;
     setEditingCourse: (course: ICourse | null) => void;
-    setCourses: (course: ICourse[] | []) => void;
-    courses: ICourse[] | []
+    fetchData: () => Promise<void>;
 }
 
-const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, categories, editingCourse, setEditingCourse, setCourses, courses }) => {
+const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, categories, editingCourse, setEditingCourse, fetchData }) => {
     const [submitting, setSubmitting] = useState<boolean>(false);
     const [uploadingImage, setUploadingImage] = useState<boolean>(false);
     const [uploadingVideo, setUploadingVideo] = useState<number | null>(null);
@@ -47,7 +46,6 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-
         input.onchange = async (e: Event) => {
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
@@ -79,7 +77,6 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'video/*';
-
         input.onchange = async (e: Event) => {
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
@@ -94,7 +91,7 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
             formData.append('file', file);
             formData.append('folder', 'CourseVideos');
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData});
+                const res = await fetch('/api/upload', { method: 'POST', body: formData });
                 const data = await res.json();
                 if (data.success && data.url) {
                     updateContentItem(contentIndex, 'videoUrl', data.url);
@@ -132,13 +129,8 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
             };
             const response = editingCourse ? await editCourse(editingCourse._id, courseData) : await addCourse(courseData);
             if (response.status) {
-                if (editingCourse) {
-                    setCourses(courses.map(course => course._id === editingCourse._id ? { ...response.course, category: selectedCategory } : course));
-                    toast.success('Course updated successfully');
-                } else {
-                    setCourses([...courses, { ...response.course, category: selectedCategory }]);
-                    toast.success('Course created successfully');
-                }
+                toast.success(editingCourse ? 'Course updated successfully' : 'Course created successfully');
+                await fetchData();
             }
             setShowModal(false);
             setEditingCourse(null);
