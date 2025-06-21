@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
@@ -15,7 +16,7 @@ const ExpertDashboard = () => {
     const router = useRouter();
 
     // Function to check if expert should be redirected to verification
-    const shouldRedirectToVerification = useCallback((expertData : IExpertVerification): boolean => {
+    const shouldRedirectToVerification = useCallback((expertData: IExpertVerification): boolean => {
         if (!expertData) return false;
         // Check if essential verification fields are missing
         const requiredFields = [
@@ -91,10 +92,10 @@ const ExpertDashboard = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#151231] flex items-center justify-center mx-4 rounded-lg">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-                    <p className="mt-4 text-gray-600">Loading dashboard...</p>
+                    <p className="mt-4 text-gray-100">Loading dashboard...</p>
                 </div>
             </div>
         );
@@ -102,17 +103,14 @@ const ExpertDashboard = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#151231] flex items-center justify-center">
                 <div className="text-center">
                     <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <span className="text-red-600 text-2xl">⚠️</span>
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h2>
+                    <h2 className="text-xl font-semibold text-gray-100 mb-2">Error Loading Dashboard</h2>
                     <p className="text-gray-600 mb-4">{error}</p>
-                    <button
-                        onClick={getExpert}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                    >
+                    <button onClick={getExpert} className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
                         Try Again
                     </button>
                 </div>
@@ -122,9 +120,9 @@ const ExpertDashboard = () => {
 
     if (!expert) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#151231] flex items-center justify-center">
                 <div className="text-center">
-                    <p className="text-gray-600">No expert data available</p>
+                    <p className="text-gray-100">No expert data available</p>
                 </div>
             </div>
         );
@@ -133,31 +131,32 @@ const ExpertDashboard = () => {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="bg-white shadow-sm border-b border-gray-200 p-2 mx-8 rounded-lg">
+            <div className="bg-[#151231] shadow-sm border-b border-gray-900 p-2 mx-8 rounded-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4">
+                        {/* Left: Profile & Welcome */}
                         <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
-                                {expert.fullName ? expert.fullName.charAt(0) : 'E'}
+                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                                {expert.profilePicture ? (
+                                    <Image src={expert.profilePicture} alt="Profile" width={40} height={40} className="rounded-full object-cover"/>
+                                ) : (
+                                    <span>{expert.fullName?.charAt(0)}</span>
+                                )}
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-gray-900">
+                                <h1 className="text-xl font-bold text-gray-100">
                                     Welcome back, {expert.fullName || 'Expert'}! 👋
                                 </h1>
-                                <p className="text-sm text-gray-600">Ready to inspire minds today?</p>
+                                <p className="text-sm text-gray-400">Ready to inspire minds today?</p>
                             </div>
                         </div>
-
+                        {/* Right: Notifications and Profile */}
                         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
-                            <button
-                                className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                                aria-label="Notifications"
-                            >
+                            <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
                                 <Bell className="w-5 h-5" />
                                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
                             </button>
-                            <button
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                            <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
                                 onClick={() => router.push('/expert/profile')}
                             >
                                 Profile
@@ -205,24 +204,24 @@ const ExpertDashboard = () => {
                     <h2 className="text-lg font-semibold text-gray-100 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         <button onClick={() => handleQuickAction('messages')}
-                            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all text-left group"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200  transition-all text-left group"
                         >
                             <MessageSquare className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-900 mb-1">Student Messages</h3>
+                            <h3 className="font-semibold text-gray-300 mb-1">Student Messages</h3>
                             <p className="text-sm text-gray-600">Reply to student inquiries and questions</p>
                         </button>
                         <button onClick={() => handleQuickAction('schedule')}
-                            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all text-left group"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200 transition-all text-left group"
                         >
                             <Calendar className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-900 mb-1">Schedule Session</h3>
+                            <h3 className="font-semibold text-gray-300 mb-1">Schedule Session</h3>
                             <p className="text-sm text-gray-600">Book a live teaching session with students</p>
                         </button>
                         <button onClick={() => handleQuickAction('settings')}
-                            className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all text-left group md:col-span-2 xl:col-span-1"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200 transition-all text-left group md:col-span-2 xl:col-span-1"
                         >
-                            <Settings className="w-8 h-8 text-gray-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-900 mb-1">Account Settings</h3>
+                            <Settings className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-semibold text-gray-300 mb-1">Account Settings</h3>
                             <p className="text-sm text-gray-600">Manage your profile and preferences</p>
                         </button>
                     </div>
