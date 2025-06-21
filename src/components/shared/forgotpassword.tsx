@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { forgotPassword } from "@/app/service/shared/sharedApi";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/authStore";
 
 interface ForgotPasswordProps {
     role: 'user' | 'expert';
@@ -14,6 +15,14 @@ interface ForgotPasswordProps {
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ role }) => {
     const [email, setEmail] = useState("");
     const router = useRouter()
+    const authStore = useAuthStore();
+
+    useEffect(() => {
+        const alreadyLoggedIn = authStore.user !== null;
+        if (alreadyLoggedIn) {
+            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        }
+    }, [authStore.user, role, router])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Lock, Shield, CheckCircle, AlertCircle } from "lucide-react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { resetPassword } from "@/app/service/shared/sharedApi";
+import { useAuthStore } from "@/store/authStore";
 
 
 interface ResetPasswordProps {
@@ -23,6 +24,14 @@ const ResetPasswordPage: React.FC<ResetPasswordProps> = ({ role = 'user' }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const email = searchParams.get('email');
+    const authStore = useAuthStore();
+
+    useEffect(() => {
+        const alreadyLoggedIn = authStore.user !== null;
+        if (alreadyLoggedIn) {
+            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        }
+    }, [authStore.user, role, router])
 
     const checkPasswordStrength = (password: string) => {
         let strength = 0;

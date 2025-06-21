@@ -28,7 +28,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
 
     const handleGoogleLogin = async () => {
         try {
-            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/tutor/dashboard'});
+            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/tutor/dashboard' });
             if (result?.error) {
                 console.error("Sign-in failed", result.error);
                 toast.error("Sign in using Google failed");
@@ -40,26 +40,36 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     };
 
     useEffect(() => {
+        if (status === 'loading') return;
         const alreadyLoggedIn = authStore.user !== null;
-        if (alreadyLoggedIn || status !== 'authenticated' || !session?.user) return;
-        const sendUserToBackend = async () => {
-            const userData = {
-                fullName: session.user.name ?? "",
-                email: session.user.email ?? "",
-                profilePicture: session.user.image ?? "",
-                role,
+        if (alreadyLoggedIn || (status === 'authenticated' && session?.user)) {
+            router.replace(isUser ? '/home' : '/expert/dashboard');
+        }
+        if (!alreadyLoggedIn && status === 'authenticated' && session?.user) {
+            const sendUserToBackend = async () => {
+                const userData = {
+                    fullName: session.user.name ?? "",
+                    email: session.user.email ?? "",
+                    profilePicture: session.user.image ?? "",
+                    role,
+                };
+                try {
+                    const response = await googleSignup(userData);
+                    if (response.status) {
+                        const { user, expert, accessToken } = response.data;
+                        authStore.setUserAuth(isUser ? user : expert, accessToken);
+                        toast.success(response.message || "Google Login Successfully");
+                        router.replace(isUser ? '/home' : '/expert/dashboard');
+                    } else {
+                        toast.error(response?.message || 'Google Login failed. Please try again.');
+                    }
+                } catch (error) {
+                    console.error("Backend signup error:", error);
+                    toast.error("Google authentication failed.");
+                }
             };
-            try {
-                const response = await googleSignup(userData);
-                authStore.setUserAuth(isUser ? response.user : response.expert, response.accessToken);
-                toast.success(response.message, { toastId: "google-signin-success" });
-                router.replace(role === 'user' ? '/home' : '/tutor/dashboard');
-            } catch (error) {
-                console.error("Backend signup error:", error);
-                toast.error("Google authentication failed.");
-            }
-        };
-        sendUserToBackend();
+            sendUserToBackend();
+        }
     }, [session, status, role, authStore, isUser, router]);
 
     const handleLogin = async (e: React.FormEvent) => {

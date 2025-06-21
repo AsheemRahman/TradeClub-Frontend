@@ -10,6 +10,7 @@ import { expertVerifyOtp } from '@/app/service/expert/expertApi';
 
 import { resendOtp } from '@/app/service/user/userApi';
 import { resendExpertOtp } from '@/app/service/expert/expertApi';
+import { useAuthStore } from '@/store/authStore';
 
 
 interface OTPProps {
@@ -29,8 +30,13 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const inputRefs = useRef<HTMLInputElement[]>([]);
     const router = useRouter();
     const searchParams = useSearchParams();
+    const authStore = useAuthStore();
 
     useEffect(() => {
+        const alreadyLoggedIn = authStore.user !== null;
+        if (alreadyLoggedIn) {
+            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        }
         const emailFromQuery = searchParams.get('email');
         const typeFromQuery = searchParams.get('type');
         setEmail(emailFromQuery ?? '');
@@ -51,7 +57,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
             }, 1000);
             return () => clearInterval(interval);
         }
-    }, [searchParams]);
+    }, [searchParams, authStore.user, role, router]);
 
     const handleChange = (index: number, value: string) => {
         if (!/^\d?$/.test(value)) return;

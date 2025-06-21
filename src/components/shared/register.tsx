@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { RegisterFormData } from '@/types/types';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -14,7 +14,7 @@ import { FaFacebook } from 'react-icons/fa';
 import { registerPost } from '@/app/service/shared/sharedApi';
 import { useForm } from 'react-hook-form';
 import { registerValidation } from '@/app/utils/Validation';
-
+import { useAuthStore } from '@/store/authStore';
 
 
 interface RegisterPageProps {
@@ -29,6 +29,14 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
     const { register, handleSubmit, watch, formState: { errors }, } = useForm<RegisterFormData>();
 
     const router = useRouter();
+    const authStore = useAuthStore();
+
+    useEffect(() => {
+        const alreadyLoggedIn = authStore.user !== null;
+        if (alreadyLoggedIn) {
+            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        }
+    }, [authStore.user, role, router])
 
     const onSubmit = async (data: RegisterFormData) => {
         if (data.password !== data.confirmPassword) {
