@@ -3,7 +3,7 @@
 import { ArrowLeft, Mail, Phone, Calendar, MapPin, TrendingUp, Award, FileText, Video, Shield, User, CheckCircle, XCircle, Eye, X, MessageSquare } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-toastify';
-import { IExpert } from '@/types/types';
+import { IExpert } from '@/types/expertTypes';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, } from 'react';
 import { approveExpert, declineExpert, getExpertById } from '@/app/service/admin/adminApi';

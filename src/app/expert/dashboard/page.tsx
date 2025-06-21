@@ -6,7 +6,7 @@ import { useEffect, useState, useCallback } from 'react';
 
 import { Calendar, Bell, Clock, MessageSquare, Settings } from 'lucide-react';
 import { getExpertData } from '@/app/service/expert/expertApi';
-import { IExpert, IExpertVerification } from '@/types/types';
+import { IExpert, IExpertVerification } from '@/types/expertTypes';
 
 
 const ExpertDashboard = () => {
@@ -19,15 +19,7 @@ const ExpertDashboard = () => {
     const shouldRedirectToVerification = useCallback((expertData: IExpertVerification): boolean => {
         if (!expertData) return false;
         // Check if essential verification fields are missing
-        const requiredFields = [
-            'experience_level',
-            'year_of_experience',
-            'markets_Traded',
-            'trading_style',
-            'DOB',
-            'state',
-            'country'
-        ];
+        const requiredFields = ['experience_level', 'year_of_experience', 'markets_Traded', 'trading_style', 'DOB', 'state', 'country'];
         // If any required field is missing, redirect to verification
         const hasIncompleteProfile = requiredFields.some(field => !expertData[field as keyof IExpertVerification]);
         // Also redirect if verification status is not set (new user)
@@ -138,7 +130,7 @@ const ExpertDashboard = () => {
                         <div className="flex items-center space-x-4">
                             <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
                                 {expert.profilePicture ? (
-                                    <Image src={expert.profilePicture} alt="Profile" width={40} height={40} className="rounded-full object-cover"/>
+                                    <Image src={expert.profilePicture} alt="Profile" width={40} height={40} className="rounded-full object-cover" />
                                 ) : (
                                     <span>{expert.fullName?.charAt(0)}</span>
                                 )}
