@@ -1,7 +1,10 @@
+import Link from 'next/link';
+import { signOut } from 'next-auth/react';
+import { usePathname, useRouter } from 'next/navigation';
+
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+
 import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaSignOutAlt } from 'react-icons/fa';
 
 const menuItems = [
@@ -22,6 +25,7 @@ export default function Sidebar() {
         const response = await logoutApi("expert");
         if (response?.status) {
             authStore.logout()
+            await signOut({ callbackUrl: '/expert/login' });
             router.replace('/expert/login');
         }
     };

@@ -28,7 +28,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
 
     const handleGoogleLogin = async () => {
         try {
-            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/tutor/dashboard' });
+            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/expert/dashboard' });
             if (result?.error) {
                 console.error("Sign-in failed", result.error);
                 toast.error("Sign in using Google failed");

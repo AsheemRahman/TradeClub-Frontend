@@ -15,8 +15,8 @@ const ExpertDashboard = () => {
     const router = useRouter();
 
     // Function to check if expert should be redirected to verification
-    const shouldRedirectToVerification = useCallback((userData : IExpertVerification): boolean => {
-        if (!userData) return false;
+    const shouldRedirectToVerification = useCallback((expertData : IExpertVerification): boolean => {
+        if (!expertData) return false;
         // Check if essential verification fields are missing
         const requiredFields = [
             'experience_level',
@@ -28,9 +28,9 @@ const ExpertDashboard = () => {
             'country'
         ];
         // If any required field is missing, redirect to verification
-        const hasIncompleteProfile = requiredFields.some(field => !userData[field as keyof IExpertVerification]);
+        const hasIncompleteProfile = requiredFields.some(field => !expertData[field as keyof IExpertVerification]);
         // Also redirect if verification status is not set (new user)
-        const needsInitialVerification = !userData.isVerified || userData.isVerified === "";
+        const needsInitialVerification = !expertData.isVerified || expertData.isVerified === "";
         return hasIncompleteProfile || needsInitialVerification;
     }, []);
 
