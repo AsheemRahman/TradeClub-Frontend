@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 
 import ImageSlider from './ImageSlider';
 import { loginType } from '@/types/types';
-import { LoginPost } from '@/app/service/shared/sharedApi';
+import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
 
 import { useAuthStore } from '@/store/authStore';
 
@@ -20,37 +20,51 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const [formData, setFormData] = useState<loginType>({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const { data: session, status } = useSession();
 
     const router = useRouter();
     const isUser = role === 'user';
     const authStore = useAuthStore();
-    const { data: session, status } = useSession();
-
-    useEffect(() => {
-        if (status === "authenticated" && session) {
-            const user = session.user;
-            const accessToken = session.accessToken;
-            const isAlreadyStored = authStore.user?.id === user.id && authStore.token === accessToken;
-            if (user && accessToken && !isAlreadyStored) {
-                authStore.setUserAuth({ id: user.id, role: user.role, ...(user.role === 'expert' && { isVerified: user.isVerified }), }, accessToken);
-                router.replace(isUser ? '/home' : '/expert/dashboard');
-            }
-        }
-    }, [status, session, router, isUser, authStore]);
 
     const handleGoogleLogin = async () => {
         try {
-            await signIn('google', { callbackUrl: role === 'user' ? '/home' : '/expert/dashboard' });
+            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/tutor/dashboard'});
+            if (result?.error) {
+                console.error("Sign-in failed", result.error);
+                toast.error("Sign in using Google failed");
+            }
         } catch (error) {
             console.error(error);
             toast.error("Error during Google Sign-in");
         }
     };
 
+    useEffect(() => {
+        const alreadyLoggedIn = authStore.user !== null;
+        if (alreadyLoggedIn || status !== 'authenticated' || !session?.user) return;
+        const sendUserToBackend = async () => {
+            const userData = {
+                fullName: session.user.name ?? "",
+                email: session.user.email ?? "",
+                profilePicture: session.user.image ?? "",
+                role,
+            };
+            try {
+                const response = await googleSignup(userData);
+                authStore.setUserAuth(isUser ? response.user : response.expert, response.accessToken);
+                toast.success(response.message, { toastId: "google-signin-success" });
+                router.replace(role === 'user' ? '/home' : '/tutor/dashboard');
+            } catch (error) {
+                console.error("Backend signup error:", error);
+                toast.error("Google authentication failed.");
+            }
+        };
+        sendUserToBackend();
+    }, [session, status, role, authStore, isUser, router]);
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-
         try {
             const payload = { ...formData, role };
             const response = await LoginPost(payload);
@@ -72,10 +86,8 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     return (
         <div className="flex justify-center items-center">
             <div className="flex flex-col items-center md:flex-row bg-[#151231] text-[#fefeeb] rounded-[10px] mx-5 overflow-hidden shadow-lg w-full h-[550px]">
-
                 {/* Image Section */}
                 <ImageSlider />
-
                 {/* Form Section */}
                 <div className="w-full px-6 md:px-20 py-6">
                     <form method="post" className="flex flex-col gap-4" onSubmit={handleLogin}>

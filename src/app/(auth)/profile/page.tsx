@@ -20,6 +20,7 @@ import { purchaseHistory, subscription } from '@/lib/mockData'
 import { UpdateProfilePayload } from '@/types/types';
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
+import { signOut } from 'next-auth/react';
 
 
 
@@ -201,6 +202,7 @@ const UserProfile = () => {
     const handleLogout = async () => {
         const response = await logoutApi("user");
         if (response?.status) {
+            await signOut({ callbackUrl: '/login' });
             authStore.logout()
             router.replace('/login');
         }

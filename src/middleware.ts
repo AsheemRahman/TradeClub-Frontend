@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { TokenPayload } from './types/types';
-import { getToken } from 'next-auth/jwt';
-
-
-const secret = process.env.NEXTAUTH_SECRET;
 
 
 export async function middleware(req: NextRequest) {
@@ -15,8 +11,7 @@ export async function middleware(req: NextRequest) {
         return NextResponse.next();
     }
 
-    const googleToken = await getToken({ req, secret });
-    const token = req.cookies.get('accessToken')?.value || req.cookies.get('admin-accessToken')?.value || (googleToken?.accessToken as string | undefined);
+    const token = req.cookies.get('accessToken')?.value || req.cookies.get('admin-accessToken')?.value
     const refreshToken = req.cookies.get('refreshToken')?.value;
     const adminRefreshToken = req.cookies.get('admin-refreshToken')?.value;
 
@@ -25,7 +20,7 @@ export async function middleware(req: NextRequest) {
     if (token) {
         try {
             const decoded = jwt.decode(token) as TokenPayload | null;
-            role = decoded?.role || googleToken?.role;
+            role = decoded?.role
         } catch (error) {
             console.error('Error decoding token:', error);
         }
