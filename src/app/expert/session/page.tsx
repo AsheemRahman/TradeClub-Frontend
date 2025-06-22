@@ -26,6 +26,7 @@ const ExpertScheduleManager = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
     const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
+    const [viewHalf, setViewHalf] = useState<'first' | 'second'>('first');
 
     // Mock data - replace with actual API calls
     const [mockAvailability, setMockAvailability] = useState<AvailabilitySlot[]>([
@@ -43,7 +44,7 @@ const ExpertScheduleManager = () => {
 
     useEffect(() => {
         generateCalendarDays();
-    }, [currentDate, mockAvailability]);
+    }, [currentDate, mockAvailability, viewHalf]);
 
     useEffect(() => {
         if (selectedDate) {
@@ -56,12 +57,12 @@ const ExpertScheduleManager = () => {
     const generateCalendarDays = () => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        const firstDay = new Date(year, month, 1);
         const lastDay = new Date(year, month + 1, 0);
+        const start = viewHalf === 'first' ? 1 : 17;
+        const end = viewHalf === 'first' ? 16 : lastDay.getDate();
         const days: CalendarDay[] = [];
-        for (let i = 0; i < 16; i++) {
-            const date = new Date(year, month, firstDay.getDate() + i);
-            if (date > lastDay) break;
+        for (let i = start; i <= end; i++) {
+            const date = new Date(year, month, i);
             const dateStr = date.toISOString().split('T')[0];
             const slots = mockAvailability.filter(slot => slot.date === dateStr);
             days.push({
@@ -80,13 +81,25 @@ const ExpertScheduleManager = () => {
     };
 
     const handleNavigateMonth = (direction: 'prev' | 'next') => {
-        const newDate = new Date(currentDate);
         if (direction === 'prev') {
-            newDate.setMonth(newDate.getMonth() - 1);
+            if (viewHalf === 'second') {
+                setViewHalf('first');
+            } else {
+                const newDate = new Date(currentDate);
+                newDate.setMonth(newDate.getMonth() - 1);
+                setCurrentDate(newDate);
+                setViewHalf('second');
+            }
         } else {
-            newDate.setMonth(newDate.getMonth() + 1);
+            if (viewHalf === 'first') {
+                setViewHalf('second');
+            } else {
+                const newDate = new Date(currentDate);
+                newDate.setMonth(newDate.getMonth() + 1);
+                setCurrentDate(newDate);
+                setViewHalf('first');
+            }
         }
-        setCurrentDate(newDate);
         setSelectedDate(null);
     };
 

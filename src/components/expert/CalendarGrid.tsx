@@ -35,10 +35,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ currentDate, calenda
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
+    const years = [2025, 2026];
+
     const getSlotColor = (slotCount: number) => {
         if (slotCount === 0) return 'bg-red-500';
         if (slotCount <= 3) return 'bg-orange-500';
-        if (slotCount <= 9) return 'bg-yellow-500';
+        if (slotCount <= 6) return 'bg-yellow-500';
         return 'bg-green-500';
     };
 
@@ -56,7 +58,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ currentDate, calenda
                             onMonthChange(newDate);
                         }}
                     >
-                        <option>{`${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`}</option>
+                        {years.map((year) => monthNames.map((month) => (
+                            <option key={`${month}-${year}`} className='bg-white text-black'>
+                                {`${month} ${year}`}
+                            </option>
+                        ))
+                        )}
                     </select>
                 </div>
 
@@ -66,8 +73,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ currentDate, calenda
                     >
                         <ChevronLeft className="w-6 h-6" />
                     </button>
-                    <button
-                        onClick={() => onNavigateMonth('next')}
+                    <button onClick={() => onNavigateMonth('next')}
                         className="bg-orange-600 hover:bg-orange-700 p-3 rounded-lg transition-colors"
                     >
                         <ChevronRight className="w-6 h-6" />
