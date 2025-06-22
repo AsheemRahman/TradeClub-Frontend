@@ -5,14 +5,17 @@ import { usePathname, useRouter } from 'next/navigation';
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
 
-import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaSignOutAlt } from 'react-icons/fa';
+import { FaChartPie, FaUserFriends, FaShoppingCart, FaSignOutAlt, FaWallet, FaCalendarAlt, FaComments } from 'react-icons/fa';
 
 const menuItems = [
     { label: 'Dashboard', icon: <FaChartPie />, href: '/expert/dashboard', highlighted: true },
+    { label: 'Appointments', icon: <FaUserFriends />, href: '/expert/appointments' },
     { label: 'Profile', icon: <FaUserFriends />, href: '/expert/profile' },
-    { label: 'Chat', icon: <FaUserFriends />, href: '/expert/chat' },
-    { label: 'Wallet', icon: <FaUserTie />, href: '/expert/wallet' },
+    { label: 'Session', icon: <FaCalendarAlt />, href: '/expert/session' },
+    { label: 'Chat', icon: <FaComments />, href: '/expert/chat' },
+    { label: 'Wallet', icon: <FaWallet />, href: '/expert/wallet' },
     { label: 'Purchases', icon: <FaShoppingCart />, href: '/expert/purchase' },
+    { label: 'Rating', icon: <FaShoppingCart />, href: '/expert/rating' },
     { label: 'Logout', icon: <FaSignOutAlt /> },
 ];
 
