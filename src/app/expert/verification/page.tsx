@@ -2,7 +2,7 @@
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Upload, Calendar, MapPin, User, Briefcase, TrendingUp, Camera, FileText, CreditCard, Image } from 'lucide-react';
-import { ExpertFormData } from '@/types/types';
+import { ExpertFormData } from '@/types/expertTypes';
 import { toast } from 'react-toastify';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { expertVerification } from '@/app/service/expert/expertApi';
