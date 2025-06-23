@@ -1,21 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight, } from 'lucide-react';
-
-interface AvailabilitySlot {
-    _id: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    isBooked: boolean;
-}
-
-interface CalendarDay {
-    date: Date;
-    dayName: string;
-    dayNumber: number;
-    availableSlots: number;
-    slots: AvailabilitySlot[];
-}
+import { CalendarDay } from '@/types/sessionTypes';
 
 
 // Calendar Grid Component

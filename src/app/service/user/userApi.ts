@@ -4,9 +4,6 @@ import axiosInstance from "../shared/AxiosInstance";
 import { UpdateProfilePayload } from "@/types/types";
 
 
-const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
         console.error("Axios Error:", error.response?.data?.message);
@@ -19,7 +16,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const verifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/user/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`/user/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -28,7 +25,7 @@ export const verifyOtp = async (otp: number, email: string) => {
 
 export const resendOtp = async (email: string) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/user/resend-otp`, { email })
+        const response = await axiosInstance.post(`/user/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -37,7 +34,7 @@ export const resendOtp = async (email: string) => {
 
 export const getUserProfile = async () => {
     try {
-        const profile = await axiosInstance.get(`${API_URI}/user/get-profile`);
+        const profile = await axiosInstance.get(`/user/get-profile`);
         return profile.data;
     } catch (error) {
         handleAxiosError(error)
@@ -46,7 +43,7 @@ export const getUserProfile = async () => {
 
 export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     try {
-        const updateProfile = await axiosInstance.post(`${API_URI}/user/update-profile`, updatedPayload);
+        const updateProfile = await axiosInstance.post(`/user/update-profile`, updatedPayload);
         return updateProfile.data;
     } catch (error) {
         handleAxiosError(error)
@@ -55,7 +52,7 @@ export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
 
 export const courseData = async () => {
     try {
-        const response = await axiosInstance.get(`${API_URI}/user/courses`, { withCredentials: true, });
+        const response = await axiosInstance.get(`/user/courses`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -64,7 +61,7 @@ export const courseData = async () => {
 
 export const categoryData = async () => {
     try {
-        const response = await axiosInstance.get(`${API_URI}/user/category`, { withCredentials: true, });
+        const response = await axiosInstance.get(`/user/category`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

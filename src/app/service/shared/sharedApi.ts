@@ -3,8 +3,6 @@ import { toast } from 'react-toastify'
 import axiosInstance from "./AxiosInstance";
 
 
-const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
-
 interface RegisterPayload {
     fullName: string;
     email: string;
@@ -41,7 +39,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const registerPost = async (userData: RegisterPayload) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${userData.role}/register`, userData, { withCredentials: true, });
+        const response = await axiosInstance.post(`/${userData.role}/register`, userData,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error);
@@ -51,7 +49,7 @@ export const registerPost = async (userData: RegisterPayload) => {
 
 export const LoginPost = async (formData: loginType) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`/${formData.role}/login`, formData,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -65,7 +63,7 @@ export const forgotPassword = async (email: string, role: string) => {
         return;
     }
     try {
-        const response = await axiosInstance.post(`${API_URI}/${role}/forgot-password`, { email })
+        const response = await axiosInstance.post(`/${role}/forgot-password`, { email })
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -79,7 +77,7 @@ export const resetPassword = async (email: string, password: string, role: strin
         return;
     }
     try {
-        const response = await axiosInstance.patch(`${API_URI}/${role}/reset-password`, { email, password })
+        const response = await axiosInstance.patch(`/${role}/reset-password`, { email, password })
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -89,7 +87,7 @@ export const resetPassword = async (email: string, password: string, role: strin
 
 export const googleSignup = async (userData: googleLogin) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${userData.role}/google-login`, userData, { withCredentials: true, })
+        const response = await axiosInstance.post(`/${userData.role}/google-login`, userData,)
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -99,7 +97,7 @@ export const googleSignup = async (userData: googleLogin) => {
 
 export const logoutApi = async (role: string) => {
     try {
-        const response = await axiosInstance.get(`${API_URI}/${role}/logout`, { withCredentials: true })
+        const response = await axiosInstance.get(`/${role}/logout`,)
         return response
     } catch (error: unknown) {
         handleAxiosError(error)

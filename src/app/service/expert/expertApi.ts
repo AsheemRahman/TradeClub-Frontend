@@ -4,9 +4,6 @@ import axiosInstance from "../shared/AxiosInstance";
 import { ExpertProfileFormData, ExpertFormData } from "@/types/expertTypes";
 
 
-const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
-
-
 interface userloginType {
     email: string;
     password: string;
@@ -25,7 +22,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const expertVerifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/expert/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`/expert/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -34,7 +31,7 @@ export const expertVerifyOtp = async (otp: number, email: string) => {
 
 export const resendExpertOtp = async (email: string) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/expert/resend-otp`, { email })
+        const response = await axiosInstance.post(`/expert/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -43,7 +40,7 @@ export const resendExpertOtp = async (email: string) => {
 
 export const expertLoginPost = async (formData: userloginType) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/${formData.role}/login`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`/${formData.role}/login`, formData);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -52,7 +49,7 @@ export const expertLoginPost = async (formData: userloginType) => {
 
 export const expertVerification = async (formData: ExpertFormData) => {
     try {
-        const response = await axiosInstance.post(`${API_URI}/expert/verification`, formData, { withCredentials: true, });
+        const response = await axiosInstance.post(`/expert/verification`, formData);
         return response;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -61,7 +58,7 @@ export const expertVerification = async (formData: ExpertFormData) => {
 
 export const getExpertData = async () => {
     try {
-        const expertData = await axiosInstance.get(`${API_URI}/expert/get-expert`);
+        const expertData = await axiosInstance.get(`/expert/get-expert`);
         return expertData.data;
     } catch (error) {
         handleAxiosError(error)
@@ -70,7 +67,7 @@ export const getExpertData = async () => {
 
 export const updateProfile = async (updatedPayload: ExpertProfileFormData) => {
     try {
-        const updateProfile = await axiosInstance.post(`${API_URI}/expert/update-profile`, updatedPayload);
+        const updateProfile = await axiosInstance.post(`/expert/update-profile`, updatedPayload);
         return updateProfile.data;
     } catch (error) {
         handleAxiosError(error)
