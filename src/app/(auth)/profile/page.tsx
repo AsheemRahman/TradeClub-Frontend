@@ -183,7 +183,7 @@ const UserProfile = () => {
             }, 1000);
 
         } catch (error) {
-            console.log("error while resend otp", error)
+            console.error("error while resend otp", error)
             toast.error("Failed to resend OTP.");
         }
     }

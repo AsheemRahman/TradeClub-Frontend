@@ -1,25 +1,12 @@
-"use client"
+"use client";
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { AvailabilitySlot, CalendarDay } from '@/types/sessionTypes';
+
 import { CalendarGrid } from '@/components/expert/CalendarGrid';
 import { TimeSlotManager } from '@/components/expert/TimeSlotManager';
-import React, { useState, useEffect } from 'react';
-
-
-interface AvailabilitySlot {
-    _id: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-    isBooked: boolean;
-}
-
-interface CalendarDay {
-    date: Date;
-    dayName: string;
-    dayNumber: number;
-    availableSlots: number;
-    slots: AvailabilitySlot[];
-}
-
+import { addSlot, deleteSlot, editSlot, slotAvailability } from '@/app/service/expert/sessionApi';
+const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const ExpertScheduleManager = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -27,34 +14,26 @@ const ExpertScheduleManager = () => {
     const [availableSlots, setAvailableSlots] = useState<AvailabilitySlot[]>([]);
     const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
     const [viewHalf, setViewHalf] = useState<'first' | 'second'>('first');
+    const [selectedDateSlots, setSelectedDateSlots] = useState<AvailabilitySlot[]>([]);
 
-    // Mock data - replace with actual API calls
-    const [mockAvailability, setMockAvailability] = useState<AvailabilitySlot[]>([
-        { _id: '1', date: '2025-05-01', startTime: '07:30', endTime: '08:30', isBooked: false },
-        { _id: '2', date: '2025-05-01', startTime: '08:30', endTime: '09:30', isBooked: false },
-        { _id: '3', date: '2025-05-01', startTime: '09:00', endTime: '10:00', isBooked: false },
-        { _id: '4', date: '2025-05-03', startTime: '07:30', endTime: '08:30', isBooked: false },
-        { _id: '5', date: '2025-05-03', startTime: '08:30', endTime: '09:30', isBooked: false },
-        { _id: '6', date: '2025-05-05', startTime: '07:30', endTime: '08:30', isBooked: true },
-        { _id: '7', date: '2025-05-05', startTime: '08:30', endTime: '09:30', isBooked: false },
-        { _id: '8', date: '2025-05-05', startTime: '09:30', endTime: '10:30', isBooked: false },
-    ]);
 
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    useEffect(() => {
-        generateCalendarDays();
-    }, [currentDate, mockAvailability, viewHalf]);
-
-    useEffect(() => {
-        if (selectedDate) {
-            const dateStr = selectedDate.toISOString().split('T')[0];
-            const daySlots = mockAvailability.filter(slot => slot.date === dateStr);
-            setAvailableSlots(daySlots);
+    const fetchSlots = useCallback(async () => {
+        try {
+            const data = await slotAvailability();
+            const slots = data.slots || [];
+            setAvailableSlots(slots);
+            return slots;
+        } catch (error) {
+            console.error("Failed to fetch slots", error);
+            return [];
         }
-    }, [selectedDate, mockAvailability]);
+    }, []);
 
-    const generateCalendarDays = () => {
+    useEffect(() => {
+        fetchSlots();
+    }, [fetchSlots]);
+
+    const generateCalendarDays = useCallback(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
         const lastDay = new Date(year, month + 1, 0);
@@ -63,29 +42,51 @@ const ExpertScheduleManager = () => {
         const days: CalendarDay[] = [];
         for (let i = start; i <= end; i++) {
             const date = new Date(year, month, i);
-            const dateStr = date.toISOString().split('T')[0];
-            const slots = mockAvailability.filter(slot => slot.date === dateStr);
+            const dateStr = getDateString(date);
+            const slots = availableSlots.filter(slot => slot.date === dateStr);
             days.push({
                 date,
                 dayName: dayNames[date.getDay()],
-                dayNumber: date.getDate(),
+                dayNumber: i,
                 availableSlots: slots.length,
-                slots
+                slots,
             });
         }
         setCalendarDays(days);
+    }, [currentDate, viewHalf, availableSlots]);
+
+    useEffect(() => {
+        generateCalendarDays();
+    }, [generateCalendarDays]);
+
+    // Helper function to get date string without timezone issues
+    const getDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
     };
+
+    useEffect(() => {
+        if (selectedDate) {
+            const dateStr = getDateString(selectedDate);
+            const daySlots = availableSlots.filter(slot => { return slot.date === dateStr;});
+            setSelectedDateSlots(daySlots);
+        } else {
+            setSelectedDateSlots([]);
+        }
+    }, [selectedDate, availableSlots]);
 
     const handleDateSelect = (day: CalendarDay) => {
         setSelectedDate(day.date);
     };
 
     const handleNavigateMonth = (direction: 'prev' | 'next') => {
+        const newDate = new Date(currentDate);
         if (direction === 'prev') {
             if (viewHalf === 'second') {
                 setViewHalf('first');
             } else {
-                const newDate = new Date(currentDate);
                 newDate.setMonth(newDate.getMonth() - 1);
                 setCurrentDate(newDate);
                 setViewHalf('second');
@@ -94,7 +95,6 @@ const ExpertScheduleManager = () => {
             if (viewHalf === 'first') {
                 setViewHalf('second');
             } else {
-                const newDate = new Date(currentDate);
                 newDate.setMonth(newDate.getMonth() + 1);
                 setCurrentDate(newDate);
                 setViewHalf('first');
@@ -108,29 +108,68 @@ const ExpertScheduleManager = () => {
         setSelectedDate(null);
     };
 
-    const handleSlotsUpdate = (updatedSlots: AvailabilitySlot[]) => {
-        // Update the specific date's slots in mockAvailability
-        if (selectedDate) {
-            const dateStr = selectedDate.toISOString().split('T')[0];
-            const otherSlots = mockAvailability.filter(slot => slot.date !== dateStr);
-            const newMockAvailability = [...otherSlots, ...updatedSlots.filter(slot => slot.date === dateStr)];
-            setMockAvailability(newMockAvailability);
+    const handleSlotsUpdate = async (updatedSlots: AvailabilitySlot[]) => {
+        if (!selectedDate) return;
+        const dateStr = getDateString(selectedDate);
+        const previousSlots = availableSlots.filter(slot => slot.date === dateStr);
+        // Find new slots (those without _id or with temporary _id)
+        const newSlots = updatedSlots.filter(
+            slot => !slot._id || slot._id.startsWith('temp-') || !previousSlots.some(prev => prev._id === slot._id)
+        );
+        // Find edited slots
+        const editedSlots = updatedSlots.filter(slot => {
+            const prev = previousSlots.find(prev => prev._id === slot._id);
+            return prev && !slot._id?.startsWith('temp-') && (prev.startTime !== slot.startTime || prev.endTime !== slot.endTime);
+        });
+        // Find deleted slots
+        const deletedSlots = previousSlots.filter(
+            prev => !updatedSlots.some(slot => slot._id === prev._id)
+        );
+        try {
+            // Execute API calls
+            const apiPromises = [];
+            // Add new slots
+            for (const slot of newSlots) {
+                const { ...slotData } = slot;
+                apiPromises.push(addSlot(slotData));
+            }
+            // Edit existing slots
+            for (const slot of editedSlots) {
+                apiPromises.push(editSlot(slot));
+            }
+            // Delete slots
+            for (const slot of deletedSlots) {
+                if (slot._id) {
+                    apiPromises.push(deleteSlot(slot._id));
+                }
+            }
+            await Promise.all(apiPromises);
+            await fetchSlots();
+        } catch (error) {
+            console.error("Slot update failed:", error);
+            // Optionally, you could show an error message to the user here
         }
     };
 
     return (
-        <div className="min-h-screen  text-white px-6">
+        <div className="min-h-screen text-white px-6">
             <div className="max-w-6xl mx-auto">
-                {/* Header */}
                 <h1 className="text-4xl font-bold mb-8">Manage Your Schedule</h1>
 
-                {/* Calendar Grid Component */}
-                <CalendarGrid currentDate={currentDate} calendarDays={calendarDays} selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect} onNavigateMonth={handleNavigateMonth} onMonthChange={handleMonthChange}
+                <CalendarGrid
+                    currentDate={currentDate}
+                    calendarDays={calendarDays}
+                    selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect}
+                    onNavigateMonth={handleNavigateMonth}
+                    onMonthChange={handleMonthChange}
                 />
 
-                {/* Time Slot Manager Component */}
-                <TimeSlotManager selectedDate={selectedDate} availableSlots={availableSlots} onSlotsUpdate={handleSlotsUpdate} />
+                <TimeSlotManager
+                    selectedDate={selectedDate}
+                    availableSlots={selectedDateSlots}
+                    onSlotsUpdate={handleSlotsUpdate}
+                />
             </div>
         </div>
     );
