@@ -1,53 +1,43 @@
 import React from 'react';
 import Link from 'next/link';
-import { FaYoutube, FaDiscord, FaInstagram, FaTelegram, FaTwitter, FaFacebook } from 'react-icons/fa';
+import { FaYoutube, FaDiscord, FaInstagram, FaTelegram, FaTwitter, FaFacebook, } from 'react-icons/fa';
 import { Irish_Grover } from 'next/font/google';
+
 
 const irishGrover = Irish_Grover({
     weight: '400',
     subsets: ['latin'],
 });
 
+
 const UserFooter = () => {
     return (
-        <footer className="bg-[#151231] text-white rounded-[20px] m-5 py-10 px-8">
+        <footer className="bg-[#151231] text-white rounded-[20px] m-5 py-10 px-6 sm:px-8">
             <div className="max-w-7xl mx-auto">
                 {/* Top section with logo and social icons */}
-                <div className="flex justify-between items-center border-b border-gray-700 pb-6">
+                <div className="flex flex-col md:flex-row justify-between items-center border-b border-gray-700 pb-6 gap-4">
                     <h1 className={`${irishGrover.className} text-white text-[32px] leading-none`}>
                         TradeClub
                     </h1>
-                    <div className="flex gap-3">
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaYoutube className="text-lg" />
-                        </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaDiscord className="text-lg" />
-                        </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaInstagram className="text-lg" />
-                        </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaTelegram className="text-lg" />
-                        </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaTwitter className="text-lg" />
-                        </Link>
-                        <Link href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
-                            <FaFacebook className="text-lg" />
-                        </Link>
+                    <div className="flex flex-wrap justify-center gap-3">
+                        {[FaYoutube, FaDiscord, FaInstagram, FaTelegram, FaTwitter, FaFacebook].map((Icon, index) => (
+                            <Link key={index} href="#" className="bg-[#E54B00] p-2 rounded-full hover:opacity-70">
+                                <Icon className="text-lg" />
+                            </Link>
+                        ))}
                     </div>
                 </div>
 
                 {/* Main footer links section */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 py-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 py-8 px-8">
+                    {/* Quick Links */}
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Quick Links</h3>
-                        <ul className="space-y-3 opacity-70 ">
-                            <li className='hover:opacity-60'><Link href="/about">About us</Link></li>
-                            <li className='hover:opacity-60'><Link href="/terms">Term of Service</Link></li>
-                            <li className='hover:opacity-60'><Link href="/privacy">Privacy Policy</Link></li>
-                            <li className='hover:opacity-60'><Link href="/help">Help Center</Link></li>
+                        <ul className="space-y-3 opacity-70">
+                            <li className="hover:opacity-60"><Link href="/about">About us</Link></li>
+                            <li className="hover:opacity-60"><Link href="/terms">Term of Service</Link></li>
+                            <li className="hover:opacity-60"><Link href="/privacy">Privacy Policy</Link></li>
+                            <li className="hover:opacity-60"><Link href="/help">Help Center</Link></li>
                             <li className="flex items-center gap-2">
                                 <span>English</span>
                                 <span className="bg-[#E54B00] text-white rounded-full p-1">
@@ -71,42 +61,44 @@ const UserFooter = () => {
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Supports</h3>
                         <ul className="space-y-3 opacity-70">
-                            <li className='hover:opacity-60'><Link href="/contact">Contact</Link></li>
-                            <li className='hover:opacity-60'><Link href="/faqs">FAQs</Link></li>
-                            <li className='hover:opacity-60'><Link href="/community-support">Community Support</Link></li>
-                            <li className='hover:opacity-60'><Link href="/educations">Educations</Link></li>
-                            <li className='hover:opacity-60'><Link href="/email-support">Email Support</Link></li>
+                            <li className="hover:opacity-60"><Link href="/contact">Contact</Link></li>
+                            <li className="hover:opacity-60"><Link href="/faqs">FAQs</Link></li>
+                            <li className="hover:opacity-60"><Link href="/community-support">Community Support</Link></li>
+                            <li className="hover:opacity-60"><Link href="/educations">Educations</Link></li>
+                            <li className="hover:opacity-60"><Link href="/email-support">Email Support</Link></li>
                         </ul>
                     </div>
 
                     {/* We Provide */}
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">We Provide</h3>
-                        <ul className="space-y-3  opacity-70 ">
-                            <li className='hover:opacity-60'><Link href="/learn-trading">Learn Trading</Link></li>
-                            <li className='hover:opacity-60'><Link href="/videocall">Videocall with expert</Link></li>
-                            <li className='hover:opacity-60'><Link href="/chat">Real-Time Chat</Link></li>
-                            <li className='hover:opacity-60'><Link href="/insights">Trade Insights</Link></li>
-                            <li className='hover:opacity-60'><Link href="/subscription">Subscription Plan</Link></li>
-                            <li className='hover:opacity-60'><Link href="/community">Cummunity Support</Link></li>
+                        <ul className="space-y-3 opacity-70">
+                            <li className="hover:opacity-60"><Link href="/learn-trading">Learn Trading</Link></li>
+                            <li className="hover:opacity-60"><Link href="/videocall">Videocall with expert</Link></li>
+                            <li className="hover:opacity-60"><Link href="/chat">Real-Time Chat</Link></li>
+                            <li className="hover:opacity-60"><Link href="/insights">Trade Insights</Link></li>
+                            <li className="hover:opacity-60"><Link href="/subscription">Subscription Plan</Link></li>
+                            <li className="hover:opacity-60"><Link href="/community">Community Support</Link></li>
                         </ul>
                     </div>
 
                     {/* Newsletter */}
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Newsletter</h3>
-                        <p className="mb-4 opacity-70 ">Never miss any updated about us by subscribing to our newsletter</p>
-                        <div className="flex bg-transparent border border-gray-700 rounded-full px-8 py-1.5 " >
-                            <input type="email" placeholder="Enter your email" />
-                            <button className="bg-[#E54B00] text-white px-6 py-2 rounded-full">
+                        <p className="mb-4 opacity-70">Never miss any update about us by subscribing to our newsletter</p>
+                        <form className="flex flex-col sm:flex-row items-center gap-3">
+                            <input type="email" placeholder="Enter your email"
+                                className="flex-1 px-4 py-2 rounded-full text-black outline-none w-full sm:w-auto"
+                            />
+                            <button type="submit" className="bg-[#E54B00] text-white px-6 py-2 rounded-full">
                                 Subscribe
                             </button>
-                        </div>
+                        </form>
                     </div>
                 </div>
 
                 {/* Bottom copyright section */}
-                <div className="border-t border-gray-700 pt-4 flex flex-col md:flex-row justify-between text-sm text-gray-400">
+                <div className="border-t border-gray-700 pt-4 flex flex-col md:flex-row justify-between items-center text-sm text-gray-400 gap-2">
                     <div>© 2024 TradeCall. All Rights Reserved.</div>
                     <div className="flex gap-4">
                         <Link href="/terms">Terms Condition</Link>

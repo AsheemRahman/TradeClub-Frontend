@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-const TradeClubHero = () => {
+const JoinOptions = () => {
     const [isVisible, setIsVisible] = useState(false);
     const router = useRouter();
     useEffect(() => {
@@ -167,4 +167,4 @@ const TradeClubHero = () => {
     );
 };
 
-export default TradeClubHero;
+export default JoinOptions;
