@@ -40,7 +40,7 @@ export const resendExpertOtp = async (email: string) => {
 
 export const expertLoginPost = async (formData: userloginType) => {
     try {
-        const response = await axiosInstance.post(`/${formData.role}/login`, formData);
+        const response = await axiosInstance.post(`/${formData.role}/login`, formData,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -49,7 +49,7 @@ export const expertLoginPost = async (formData: userloginType) => {
 
 export const expertVerification = async (formData: ExpertFormData) => {
     try {
-        const response = await axiosInstance.post(`/expert/verification`, formData);
+        const response = await axiosInstance.post(`/expert/verification`, formData,);
         return response;
     } catch (error: unknown) {
         handleAxiosError(error)

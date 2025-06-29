@@ -1,6 +1,6 @@
 import axios from "axios";
-import { toast } from 'react-toastify';
 import axiosInstance from "../shared/AxiosInstance";
+import { toast } from 'react-toastify';
 import { UpdateProfilePayload } from "@/types/types";
 
 
@@ -62,6 +62,15 @@ export const courseData = async () => {
 export const categoryData = async () => {
     try {
         const response = await axiosInstance.get(`/user/category`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const SubscriptionData = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/fetch-plans`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

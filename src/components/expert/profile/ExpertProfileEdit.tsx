@@ -51,11 +51,11 @@ export const ExpertProfileEdit: React.FC<ExpertProfileEditProps> = ({ expertData
         }
     };
 
-    const handleImageChange = (file: File | null) => {
-        if (!file) return;
+    const handleImageChange = (url: string | null) => {
+        if (!url) return;
         setFormData(prev => ({
             ...prev,
-            profilePicture: file.name
+            profilePicture: url
         }));
     };
 

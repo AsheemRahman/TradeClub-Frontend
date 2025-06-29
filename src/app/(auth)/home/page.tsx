@@ -1,8 +1,12 @@
-import TradeClubHero from "@/components/user/JoinOptions";
+import { HomeHero } from '@/components/user/HomeComponent';
+import { SubscriptionPlans } from '@/components/user/SubscriptionList';
 
 
 export default function Home() {
     return (
-        <TradeClubHero />
+        <div className="font-sans">
+            <HomeHero />
+            <SubscriptionPlans />
+        </div>
     );
 }

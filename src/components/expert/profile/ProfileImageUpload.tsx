@@ -1,38 +1,59 @@
 import Image from 'next/image';
-import React, { useState, useRef } from 'react';
-
+import React, { useRef, useState } from 'react';
+import { toast } from 'react-toastify';
 import { Button } from '../../ui/Button';
 
 interface ProfileImageUploadProps {
     currentImage?: string;
-    onImageChange: (file: File | null) => void;
+    onImageChange: (url: string | null) => void;
     error?: string;
 }
 
 export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ currentImage, onImageChange, error }) => {
     const [preview, setPreview] = useState<string | null>(currentImage || null);
+    const [uploading, setUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
-        if (file) {
-            // Validate file type
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
-                return;
+        if (!file) return;
+
+        // ✅ Validate file
+        if (!file.type.startsWith('image/')) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error('File size must be less than 5MB');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('folder', 'profile-pictures');
+
+        try {
+            setUploading(true);
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.error || 'Upload failed');
             }
 
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setPreview(reader.result as string);
-            };
-            reader.readAsDataURL(file);
-            onImageChange(file);
+            setPreview(data.url);
+            onImageChange(data.url); // Send S3 URL back to parent
+            toast.success('Image uploaded successfully!');
+        } catch (err) {
+            console.error('Upload error:', err);
+            toast.error('File upload failed');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -64,7 +85,9 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ currentI
                         )}
                     </div>
                     {preview && (
-                        <button type="button" onClick={removeImage}
+                        <button
+                            type="button"
+                            onClick={removeImage}
                             className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
                         >
                             ×
@@ -73,9 +96,20 @@ export const ProfileImageUpload: React.FC<ProfileImageUploadProps> = ({ currentI
                 </div>
 
                 <div>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden"/>
-                    <Button type="button" variant="secondary"onClick={() => fileInputRef.current?.click()}>
-                        Choose Image
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="hidden"
+                    />
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploading}
+                    >
+                        {uploading ? 'Uploading...' : 'Choose Image'}
                     </Button>
                     <p className="text-xs text-gray-500 mt-1">
                         JPG, PNG, GIF up to 5MB
