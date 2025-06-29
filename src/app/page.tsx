@@ -13,6 +13,8 @@ import { HomeHero } from '@/components/user/HomeComponent';
 
 import { RetroGrid } from "@/components/magicui/retro-grid";
 import { VelocityScroll } from "@/components/magicui/scroll-based-velocity";
+import { SubscriptionPlans } from '@/components/user/SubscriptionList';
+
 
 export default function Home() {
   const [showWelcome, setShowWelcome] = useState(true);
@@ -34,6 +36,7 @@ export default function Home() {
           </div>
           <VelocityScroll>Crypto Forex Stock </VelocityScroll>
           <JoinOptions />
+          <SubscriptionPlans />
           <UserFooter />
         </>
       )}

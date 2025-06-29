@@ -3,7 +3,6 @@ import { loginType } from "@/types/types";
 import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
 
-const API_URI = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -18,7 +17,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const loginPost = async (userData: loginType) => {
     try {
-        const response = await adminAxiosInstance.post(`${API_URI}/admin/login`, { ...userData }, { withCredentials: true })
+        const response = await adminAxiosInstance.post(`/admin/login`, { ...userData },)
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -27,7 +26,7 @@ export const loginPost = async (userData: loginType) => {
 
 export const adminLogout = async () => {
     try {
-        const response = await adminAxiosInstance.get(`${API_URI}/admin/logout`, { withCredentials: true })
+        const response = await adminAxiosInstance.get(`/admin/logout`,)
         return response
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -36,7 +35,7 @@ export const adminLogout = async () => {
 
 export const getUserDetails = async () => {
     try {
-        const response = await adminAxiosInstance.get(`${API_URI}/admin/get-users`, { withCredentials: true });
+        const response = await adminAxiosInstance.get(`admin/get-users`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error)
@@ -45,7 +44,7 @@ export const getUserDetails = async () => {
 
 export const userStatus = async (id: string, status: boolean) => {
     try {
-        const response = await adminAxiosInstance.patch(`${API_URI}/admin/user-status/${id}`, { status }, { withCredentials: true });
+        const response = await adminAxiosInstance.patch(`/admin/user-status/${id}`, { status },);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -54,7 +53,7 @@ export const userStatus = async (id: string, status: boolean) => {
 
 export const getExpertDetails = async () => {
     try {
-        const response = await adminAxiosInstance.get(`${API_URI}/admin/get-experts`, { withCredentials: true })
+        const response = await adminAxiosInstance.get(`/admin/get-experts`,)
         return response.data
     } catch (error) {
         handleAxiosError(error)
@@ -63,7 +62,7 @@ export const getExpertDetails = async () => {
 
 export const expertStatus = async (id: string, status: boolean) => {
     try {
-        const response = await adminAxiosInstance.patch(`${API_URI}/admin/expert-status/${id}`, { status }, { withCredentials: true });
+        const response = await adminAxiosInstance.patch(`/admin/expert-status/${id}`, { status },);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -72,7 +71,7 @@ export const expertStatus = async (id: string, status: boolean) => {
 
 export const getExpertById = async (id: string) => {
     try {
-        const response = await adminAxiosInstance.get(`${API_URI}/admin/getExpert/${id}`, { withCredentials: true });
+        const response = await adminAxiosInstance.get(`/admin/getExpert/${id}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -81,7 +80,7 @@ export const getExpertById = async (id: string) => {
 
 export const approveExpert = async (id: string) => {
     try {
-        const response = await adminAxiosInstance.patch(`${API_URI}/admin/approve-expert`, { id }, { withCredentials: true });
+        const response = await adminAxiosInstance.patch(`/admin/approve-expert`, { id },);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -90,7 +89,7 @@ export const approveExpert = async (id: string) => {
 
 export const declineExpert = async (id: string, rejectionReason: string) => {
     try {
-        const response = await adminAxiosInstance.patch(`${API_URI}/admin/decline-expert`, { id, rejectionReason }, { withCredentials: true });
+        const response = await adminAxiosInstance.patch(`/admin/decline-expert`, { id, rejectionReason },);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
