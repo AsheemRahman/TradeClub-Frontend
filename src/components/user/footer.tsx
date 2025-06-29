@@ -86,15 +86,14 @@ const UserFooter = () => {
                     <div>
                         <h3 className="text-xl font-medium text-[#E54B00] mb-4">Newsletter</h3>
                         <p className="mb-4 opacity-70">Never miss any update about us by subscribing to our newsletter</p>
-                        <form className="flex flex-col sm:flex-row items-center gap-3">
-                            <input type="email" placeholder="Enter your email"
-                                className="flex-1 px-4 py-2 rounded-full text-black outline-none w-full sm:w-auto"
-                            />
-                            <button type="submit" className="bg-[#E54B00] text-white px-6 py-2 rounded-full">
+                        <form className="flex flex-col sm:flex-row items-stretch sm:items-center">
+                            <input type="email" placeholder="Enter your email" className="flex-1 px-4 py-2 border-l border-t border-b border-gray-500 rounded-l-xl  text-white outline-none w-full" />
+                            <button type="submit" className="bg-[#E54B00] text-white px-6 py-2 border-r border-t border-b border-gray-500 rounded-r-xl w-full sm:w-auto">
                                 Subscribe
                             </button>
                         </form>
                     </div>
+
                 </div>
 
                 {/* Bottom copyright section */}
