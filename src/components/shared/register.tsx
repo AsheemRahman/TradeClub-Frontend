@@ -15,6 +15,8 @@ import { registerPost } from '@/app/service/shared/sharedApi';
 import { useForm } from 'react-hook-form';
 import { registerValidation } from '@/app/utils/Validation';
 import { useAuthStore } from '@/store/authStore';
+import { TermsModal } from './TermsModal';
+import { PrivacyModal } from './PolicyModal';
 
 
 interface RegisterPageProps {
@@ -26,6 +28,8 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
     const [loading, setLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const { register, handleSubmit, watch, formState: { errors }, } = useForm<RegisterFormData>();
 
     const router = useRouter();
@@ -129,16 +133,16 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                         </div>
 
                         {/* Terms */}
-                        <div className="my-3 flex items-center ">
+                        <div className="my-3 flex items-center text-sm">
                             <input type="checkbox" id="terms" className="h-6 w-6" {...register("checkBox", registerValidation.checkBox)} />
-                            <label htmlFor="terms" className="ml-4 text-m text-gray-300">
+                            <label htmlFor="terms" className="ml-4 text-gray-300">
                                 By Creating An Account You Are Agreeing To Our{" "}
-                                <Link href="/terms" className="text-blue-500 hover:underline" >
+                                <button onClick={() => setIsTermsOpen(true)} className="text-blue-500 hover:underline cursor-pointer">
                                     Terms of Service
-                                </Link>{" "}and{" "}
-                                <Link href="/privacy" className="text-blue-500 hover:underline">
+                                </button>{" "}and{" "}
+                                <button onClick={() => setIsPrivacyOpen(true)} className="text-blue-500 hover:underline cursor-pointer">
                                     Privacy Policy
-                                </Link>
+                                </button>
                             </label>
                         </div>
                         {errors.checkBox && <p className="text-red-500 text-sm">{errors.checkBox.message}</p>}
@@ -171,6 +175,9 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role }) => {
                     </div>
                 </div>
             </div>
+            {/* modal */}
+            <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
         </div>
     );
 }

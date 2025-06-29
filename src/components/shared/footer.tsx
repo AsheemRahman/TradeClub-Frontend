@@ -1,6 +1,11 @@
-import Link from 'next/link';
+import { useState } from "react";
+import { PrivacyModal } from "./PolicyModal";
+import { TermsModal } from "./TermsModal";
+
 
 export default function Footer() {
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const currentYear = new Date().getFullYear();
 
     return (
@@ -9,15 +14,18 @@ export default function Footer() {
                 <div className='opacity-70 ml-10'>
                     &copy; {currentYear} TradeClub. All Rights Reserved.
                 </div>
-                <div className="space-x-4 mr-20 ">
-                    <Link href="/terms" className=" opacity-70 hover:text-[#E54B00]">
+                <div className="space-x-4 mr-20 " >
+                    <button className=" opacity-70 hover:text-[#E54B00] cursor-pointer" onClick={() => setIsTermsOpen(true)}>
                         Terms Condition
-                    </Link>
-                    <Link href="/policy" className="opacity-70 hover:text-[#E54B00]">
+                    </button>
+                    <button className="opacity-70 hover:text-[#E54B00] cursor-pointer" onClick={() => setIsPrivacyOpen(true)}>
                         Privacy Policy
-                    </Link>
+                    </button>
                 </div>
             </div>
+            {/* Modals */}
+            <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
         </footer>
     );
 }

@@ -1,7 +1,11 @@
-import React from 'react';
+"use client"
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaYoutube, FaDiscord, FaInstagram, FaTelegram, FaTwitter, FaFacebook, } from 'react-icons/fa';
 import { Irish_Grover } from 'next/font/google';
+import { TermsModal } from '../shared/TermsModal';
+import { PrivacyModal } from '../shared/PolicyModal';
 
 
 const irishGrover = Irish_Grover({
@@ -11,6 +15,9 @@ const irishGrover = Irish_Grover({
 
 
 const UserFooter = () => {
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+
     return (
         <footer className="bg-[#151231] text-white rounded-[20px] m-5 py-10 px-6 sm:px-8">
             <div className="max-w-7xl mx-auto">
@@ -104,6 +111,8 @@ const UserFooter = () => {
                     </div>
                 </div>
             </div>
+            <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
+            <PrivacyModal isOpen={isPrivacyOpen} onClose={() => setIsPrivacyOpen(false)} />
         </footer>
     );
 };
