@@ -1,6 +1,5 @@
 import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
-
 import { toast } from 'react-toastify';
 import { UpdateProfilePayload } from "@/types/types";
 
