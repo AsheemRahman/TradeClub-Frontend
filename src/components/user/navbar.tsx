@@ -39,7 +39,7 @@ export default function Navbar() {
                 {/* Navigation Links (Desktop) */}
                 <div className="hidden lg:flex items-center gap-20">
                     <div className="flex space-x-8 mr-20">
-                        <Link href="/home" className="font-['Allura'] text-xl hover:text-gray-300">Home</Link>
+                        <Link href={user ? '/home' : '/'} className="font-['Allura'] text-xl hover:text-gray-300">Home</Link>
                         <Link href="/courses" className="text-xl hover:text-gray-300">Course</Link>
                         <Link href="/faqs" className="text-xl hover:text-gray-300">FAQs</Link>
                         <Link href="/contact" className="font-['Allura'] text-xl hover:text-gray-300">Contact</Link>
@@ -51,7 +51,7 @@ export default function Navbar() {
                     <div className="flex items-center space-x-4 ml-20">
                         {!user ? (
                             <>
-                                <Link href="/" className="px-4 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] flex items-center font-medium">
+                                <Link href={user ? '/home' : '/'} className="px-4 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] flex items-center font-medium">
                                     Get Started
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
                                         <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
@@ -73,7 +73,7 @@ export default function Navbar() {
             {/* Mobile Menu */}
             {isMenuOpen && (
                 <div className="lg:hidden mt-4 space-y-4">
-                    <Link href="/" className="block text-xl hover:text-gray-300">Home</Link>
+                    <Link href={user ? '/home' : '/'} className="block text-xl hover:text-gray-300">Home</Link>
                     <Link href="/learning" className="block text-xl hover:text-gray-300">E-Learning</Link>
                     <Link href="/faqs" className="block text-xl hover:text-gray-300">FAQs</Link>
                     <Link href="/contact" className="block text-xl hover:text-gray-300">Contact</Link>

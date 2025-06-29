@@ -12,7 +12,7 @@ const JoinOptions = () => {
     }, []);
 
     return (
-        <div className="min-h-screen  text-white relative overflow-hidden">
+        <div className="min-h-screen  text-white relative overflow-hidden border-b border-gray-600">
             {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-4 -right-4 w-72 h-72 bg-gradient-to-br from-orange-500/20 to-red-500/20 rounded-full blur-3xl animate-pulse"></div>

@@ -1,23 +1,28 @@
-
 "use client";
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
 import WelcomeScreen from '@/components/user/welcomeScreen';
-import UserFooter from "@/components/user/footer";
 import Navbar from "@/components/user/navbar";
-
-import JoinOptions from '@/components/user/JoinOptions';
 import { HomeHero } from '@/components/user/HomeComponent';
+import JoinOptions from '@/components/user/JoinOptions';
+import { SubscriptionPlans } from '@/components/user/SubscriptionList';
+import UserFooter from "@/components/user/footer";
 
 import { RetroGrid } from "@/components/magicui/retro-grid";
 import { VelocityScroll } from "@/components/magicui/scroll-based-velocity";
-import { SubscriptionPlans } from '@/components/user/SubscriptionList';
-
 
 export default function Home() {
-  const [showWelcome, setShowWelcome] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    const hasVisited = sessionStorage.getItem("hasVisited");
+    if (!hasVisited) {
+      setShowWelcome(true);
+      sessionStorage.setItem("hasVisited", "true");
+    }
+  }, []);
 
   return (
     <main className="min-h-screen">

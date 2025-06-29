@@ -93,7 +93,6 @@ const UserFooter = () => {
                             </button>
                         </form>
                     </div>
-
                 </div>
 
                 {/* Bottom copyright section */}
