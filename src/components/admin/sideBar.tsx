@@ -13,7 +13,7 @@ const menuItems = [
     { label: 'Course', icon: <FaGraduationCap />, href: '/admin/course' },
     { label: 'Subscription Plan', icon: <FaMoneyBillWave />, href: '/admin/subscription' },
     { label: 'Purchases', icon: <FaShoppingCart />, href: '/admin/purchases' },
-    { label: 'Coupons', icon: <FaTicketAlt />, href: '/admin/coupons' },
+    { label: 'Coupons', icon: <FaTicketAlt />, href: '/admin/coupon' },
     { label: 'Logout', icon: <FaSignOutAlt /> },
 ];
 
