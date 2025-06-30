@@ -70,7 +70,7 @@ const ExpertScheduleManager = () => {
     useEffect(() => {
         if (selectedDate) {
             const dateStr = getDateString(selectedDate);
-            const daySlots = availableSlots.filter(slot => { return slot.date === dateStr;});
+            const daySlots = availableSlots.filter(slot => { return slot.date === dateStr; });
             setSelectedDateSlots(daySlots);
         } else {
             setSelectedDateSlots([]);
@@ -156,20 +156,11 @@ const ExpertScheduleManager = () => {
             <div className="max-w-6xl mx-auto">
                 <h1 className="text-4xl font-bold mb-8">Manage Your Schedule</h1>
 
-                <CalendarGrid
-                    currentDate={currentDate}
-                    calendarDays={calendarDays}
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    onNavigateMonth={handleNavigateMonth}
-                    onMonthChange={handleMonthChange}
+                <CalendarGrid currentDate={currentDate} calendarDays={calendarDays} selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect} onNavigateMonth={handleNavigateMonth} onMonthChange={handleMonthChange}
                 />
 
-                <TimeSlotManager
-                    selectedDate={selectedDate}
-                    availableSlots={selectedDateSlots}
-                    onSlotsUpdate={handleSlotsUpdate}
-                />
+                <TimeSlotManager selectedDate={selectedDate} availableSlots={selectedDateSlots} onSlotsUpdate={handleSlotsUpdate} />
             </div>
         </div>
     );
