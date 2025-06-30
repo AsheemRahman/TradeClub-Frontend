@@ -12,6 +12,7 @@ import { Button } from '../../../components/ui/Button';
 import { ProfileField } from '@/components/expert/profile/ProfileField';
 import { ProfileInfoCard } from '@/components/expert/profile/ProfileInfoCard';
 import { ExperienceBadge, StatusBadge } from '@/components/expert/profile/Badge';
+import { User } from 'lucide-react';
 
 
 export default function ExpertProfilePage() {
@@ -90,7 +91,7 @@ export default function ExpertProfilePage() {
                         <div className="flex items-center justify-between my-3">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
-                                    {/* <profile className="w-8 h-8 text-white" /> */}
+                                    <User className="w-8 h-8 text-white" />
                                 </div>
                                 <div>
                                     <h1 className="text-4xl font-bold text-white">Profile</h1>
