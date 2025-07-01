@@ -1,20 +1,31 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Copy, Calendar, Users, Percent, DollarSign, Tag } from 'lucide-react';
+import Swal from 'sweetalert2';
+import { toast } from 'react-toastify';
 import { CouponModal } from '@/components/admin/CouponModal';
-import { mockCoupons } from '@/lib/mockData';
-import { Coupon } from '@/types/types';
-
+import { ICoupon } from '@/types/types';
+import { couponStatus, createCoupon, deleteCoupon, fetchCoupon, updateCoupon } from '@/app/service/admin/adminApi';
+import { Plus, Search, Edit2, Trash2, Copy, Calendar, Users, Percent, Tag, IndianRupee } from 'lucide-react';
 
 const CouponManagement: React.FC = () => {
-    const [coupons, setCoupons] = useState<Coupon[] | []>(mockCoupons as Coupon[]);
-    const [filteredCoupons, setFilteredCoupons] = useState<Coupon[]>(mockCoupons as Coupon[]);
+    const [coupons, setCoupons] = useState<ICoupon[] | []>([]);
+    const [filteredCoupons, setFilteredCoupons] = useState<ICoupon[] | []>([]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
     const [filterTarget, setFilterTarget] = useState<string>('all');
     const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
-    const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
+    const [editingCoupon, setEditingCoupon] = useState<ICoupon | null>(null);
+
+    useEffect(() => {
+        const getCoupons = async () => {
+            const response = await fetchCoupon();
+            if (response.status) {
+                setCoupons(response.coupons);
+            }
+        };
+        getCoupons();
+    }, []);
 
     useEffect(() => {
         let filtered = [...coupons];
@@ -35,32 +46,82 @@ const CouponManagement: React.FC = () => {
         setFilteredCoupons(filtered);
     }, [coupons, searchTerm, filterStatus, filterTarget]);
 
-    const handleCreateCoupon = (couponData: Omit<Coupon, '_id' | 'usedCount' | 'createdAt'>) => {
-        const newCoupon: Coupon = {
-            ...couponData,
-            _id: Date.now().toString(),
-            usedCount: 0,
-            createdAt: new Date(),
-        };
-        setCoupons([newCoupon, ...coupons]);
-        setShowCreateModal(false);
-    };
-
-    const handleEditCoupon = (couponData: Coupon) => {
-        setCoupons(coupons.map(c => c._id === couponData._id ? couponData : c));
-        setEditingCoupon(null);
-    };
-
-    const handleDeleteCoupon = (id: string) => {
-        if (window.confirm('Are you sure you want to delete this coupon?')) {
-            setCoupons(coupons.filter(c => c._id !== id));
+    const handleCreateCoupon = async (couponData: Omit<ICoupon, '_id' | 'usedCount' | 'createdAt'>) => {
+        try {
+            const response = await createCoupon(couponData);
+            if (response.status && response.coupon) {
+                const newCoupon: ICoupon = response.coupon;
+                setCoupons(prev => [newCoupon, ...prev]);
+                setShowCreateModal(false);
+                toast.success("create coupon successfully.");
+            } else {
+                toast.error("Failed to create coupon.");
+            }
+        } catch (error) {
+            console.error("Failed to create coupon:", error);
+            toast.error("An error occurred while creating coupon.");
         }
     };
 
-    const handleToggleStatus = (id: string) => {
-        setCoupons(coupons.map(c =>
-            c._id === id ? { ...c, isActive: !c.isActive } : c
-        ));
+    const handleEditCoupon = async (couponData: ICoupon) => {
+        if (!couponData._id) {
+            toast.error("Coupon ID is missing.");
+            return;
+        }
+        try {
+            const response = await updateCoupon(couponData._id, couponData);
+            if(response.status){
+                setCoupons(coupons.map(c => c._id === response.coupon._id ? response.coupon : c));
+                setEditingCoupon(null);
+                toast.success("Update coupon successfully");
+            }
+        } catch (error) {
+            console.error("Failed to update coupon:", error);
+            toast.error("Failed to update coupon");
+        }
+    };
+
+    const handleDeleteCoupon = async (id: string) => {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: 'Do you really want to delete this coupon?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+        });
+        if (result.isConfirmed) {
+            try {
+                await deleteCoupon(id);
+                setCoupons(coupons.filter(c => c._id !== id));
+                Swal.fire('Deleted!', 'The coupon has been deleted.', 'success');
+            } catch (error) {
+                console.error("Failed to delete coupon:", error);
+                Swal.fire('Error!', 'Failed to delete the coupon.', 'error');
+            }
+        }
+    };
+
+    const handleToggleStatus = async (id: string) => {
+        try {
+            const updated = await couponStatus(id);
+            setCoupons(coupons.map(c => c._id === id ? updated : c));
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: `Coupon has been ${updated.isActive ? 'activated' : 'deactivated'}.`,
+                timer: 2000,
+                showConfirmButton: false,
+            });
+        } catch (error) {
+            console.error("Failed to toggle coupon status:", error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to update the coupon status.',
+            });
+        }
     };
 
     const formatDate = (date: Date | string): string => {
@@ -76,7 +137,7 @@ const CouponManagement: React.FC = () => {
         return Math.min((used / limit) * 100, 100);
     };
 
-    const getTargetBadgeColor = (target: Coupon['target']): string => {
+    const getTargetBadgeColor = (target: ICoupon['target']): string => {
         const colors: Record<string, string> = {
             all: 'bg-blue-100 text-blue-800',
             new_joiners: 'bg-green-100 text-green-800',
@@ -149,7 +210,7 @@ const CouponManagement: React.FC = () => {
                         <div className="bg-white rounded-lg p-6 shadow-sm border">
                             <div className="flex items-center">
                                 <div className="p-2 bg-yellow-100 rounded-lg">
-                                    <DollarSign className="w-6 h-6 text-yellow-600" />
+                                    <IndianRupee className="w-6 h-6 text-yellow-600" />
                                 </div>
                                 <div className="ml-4">
                                     <p className="text-sm font-medium text-gray-600">Avg. Discount</p>
@@ -241,7 +302,7 @@ const CouponManagement: React.FC = () => {
                                                     {coupon.discountType === 'percentage' ? (
                                                         <Percent className="w-4 h-4 text-green-600 mr-1" />
                                                     ) : (
-                                                        <DollarSign className="w-4 h-4 text-green-600 mr-1" />
+                                                        <IndianRupee className="w-4 h-4 text-green-600 mr-1" />
                                                     )}
                                                     <span className="font-semibold text-green-600">
                                                         {coupon.discountValue}

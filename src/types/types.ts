@@ -39,7 +39,7 @@ export type UpdateProfilePayload = {
     profilePicture: string;
 }
 
-export interface Coupon {
+export interface ICoupon {
     _id?: string;
     code: string;
     description?: string;
