@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 
 import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
-import { Plus, Edit, Trash2, Eye, Search, BookOpen, Users, Loader2, IndianRupee, } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, Search, BookOpen, Users, Loader2, IndianRupee, GraduationCap, } from 'lucide-react';
 
 import { ICourse, ICategory, ICourseFormData, } from '@/types/courseTypes';
 import { deleteCourse, getCategory, getCourse } from '@/app/service/admin/courseApi';
@@ -117,45 +117,63 @@ const AdminCoursesPage = () => {
         <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-6">
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-white">Course Management</h1>
-                            <p className="text-gray-600 mt-1">Manage your courses, content, and publishing status</p>
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between my-3">
+                            <div className="flex items-center gap-4">
+                                <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                                    <GraduationCap className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Course Management</h1>
+                                    <p className="text-white/80 mt-2 text-md">Manage your courses, content, and publishing status</p>
+                                </div>
+                            </div>
+                            <div className="relative flex items-center gap-1 mr-5">
+                                <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                                    <Plus size={20} />
+                                    Add New Course
+                                </button>
+                            </div>
                         </div>
-                        <button onClick={() => setShowModal(true)} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg flex items-center gap-2 transition-colors">
-                            <Plus size={20} />
-                            Add New Course
-                        </button>
                     </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
+                    <div className="absolute inset-0 bg-black/20 z-0"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
+                        <div className="relative z-10">
+                            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                             <input type="text" placeholder="Search courses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder:text-gray-300"
                             />
                         </div>
                         <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}
-                            className="px-4 py-2 border text-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2 relative z-10 border text-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent"
                         >
-                            <option value="" className='text-black'>All Categories</option>
+                            <option value="" className="text-black">All Categories</option>
                             {categories.map(category => (
-                                <option key={category._id} value={category._id} className='text-black'>{category.categoryName}</option>
+                                <option key={category._id} value={category._id} className="text-black">
+                                    {category.categoryName}
+                                </option>
                             ))}
                         </select>
                         <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}
-                            className="px-4 py-2 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="px-4 py-2 relative z-10 border border-gray-300 text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent"
                         >
-                            <option value="" className='text-black'>All Status</option>
-                            <option value="published" className='text-black'>Published</option>
-                            <option value="draft" className='text-black'>Draft</option>
+                            <option value="" className="text-black">All Status</option>
+                            <option value="published" className="text-black">Published</option>
+                            <option value="draft" className="text-black">Draft</option>
                         </select>
                     </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32 z-0"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24 z-0"></div>
                 </div>
+
 
                 {/* Courses Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">

@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, Check, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, Check, Eye, EyeOff, Loader2, Package } from 'lucide-react';
 import { ISubscriptionFormData, ISubscriptionPlan } from '@/types/subscriptionTypes';
 import SubscriptionPlanModal from '@/components/admin/SubscriptionPlanModal';
 import { fetchPlans, createPlan, updatePlan, deletePlan, planStatus } from '@/app/service/admin/subscriptionApi';
@@ -145,27 +145,35 @@ const SubscriptionManagement: React.FC = () => {
         <div className="min-h-screen ">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-3">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-white mb-2">
-                                Subscription Management
-                            </h1>
-                            <p className="text-slate-600">
-                                Manage your subscription plans and pricing tiers
-                            </p>
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between my-3">
+                            <div className="flex items-center gap-4">
+                                <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                                    <Package className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Subscription Management</h1>
+                                    <p className="text-white/80 mt-2 text-md">Manage your subscription plans and pricing tiers</p>
+                                </div>
+                            </div>
+                            <div className="relative flex items-center gap-1 mr-5">
+                                <button onClick={handleAddNew} disabled={actionLoading === 'submit'}
+                                    className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {actionLoading === 'submit' ? (
+                                        <Loader2 className="animate-spin" size={20} />
+                                    ) : (
+                                        <Plus size={20} />
+                                    )}
+                                    Add New Plan
+                                </button>
+                            </div>
                         </div>
-                        <button onClick={handleAddNew} disabled={actionLoading === 'submit'}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {actionLoading === 'submit' ? (
-                                <Loader2 className="animate-spin" size={20} />
-                            ) : (
-                                <Plus size={20} />
-                            )}
-                            Add New Plan
-                        </button>
                     </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
                 </div>
 
                 {/* Stats Cards */}

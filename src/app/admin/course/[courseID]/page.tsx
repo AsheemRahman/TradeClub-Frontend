@@ -163,15 +163,17 @@ const AdminCourseDetail = () => {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="bg-[#151231] border-b rounded-t-xl border-gray-800">
+            {/* <div className="bg-[#151231] border-b rounded-t-xl border-gray-800"> */}
+            <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-t-xl shadow-2xl">
+                <div className="absolute inset-0 bg-black/20"></div>
                 <div className="max-w-7xl mx-auto px-6 py-6">
                     <div className="flex items-center justify-between mb-6">
-                        <button onClick={() => router.push('/admin/course')} className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors">
+                        <button onClick={() => router.push('/admin/course')} className="flex relative items-center gap-2 text-gray-900 hover:text-white transition-colors">
                             <ArrowLeft size={20} />
                             Back to Courses
                         </button>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex relative items-center gap-3">
                             <button onClick={handleEditClick} className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                                 <Edit size={16} />
                                 Edit
@@ -209,15 +211,15 @@ const AdminCourseDetail = () => {
                                     {categories.find(cat => course?.category === cat._id)?.categoryName || 'Unknown'}
                                 </span>
                             </div>
-                            <h1 className="text-4xl font-bold text-white mb-4">{course.title}</h1>
-                            <p className="text-xl text-gray-300 mb-6">{course.description}</p>
+                            <h1 className="relative text-4xl font-bold text-white mb-4">{course.title}</h1>
+                            <p className="relative text-xl text-gray-300 mb-6">{course.description}</p>
                         </div>
 
                         {/* Course Image */}
                         <div className="lg:col-span-1">
                             <div className="relative">
                                 <Image src={course.imageUrl} alt={course.title} width={300} height={200} className="w-full h-48 object-cover rounded-lg" />
-                                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                                <div className="absolute inset-0 bg-opacity-50 flex items-center justify-center rounded-lg ">
                                     <div className="text-center text-white">
                                         <div className="text-2xl font-bold">{course.price}</div>
                                         <div className="text-sm">Course Price</div>
@@ -227,6 +229,9 @@ const AdminCourseDetail = () => {
                         </div>
                     </div>
                 </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
+                <div className="absolute top-0 left-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
             </div>
 
             {/* Content */}
@@ -499,8 +504,8 @@ const AdminCourseDetail = () => {
                     setFormData={setFormData}
                     categories={categories}
                     editingCourse={course}
-                    setEditingCourse={() => {}}
-                    fetchData={fetchData }
+                    setEditingCourse={() => { }}
+                    fetchData={fetchData}
                 />
             )}
         </div>
