@@ -12,7 +12,7 @@ const menuItems = [
     { label: 'Appointments', icon: <FaUserFriends />, href: '/expert/appointments' },
     { label: 'Profile', icon: <FaUserFriends />, href: '/expert/profile' },
     { label: 'Session', icon: <FaCalendarAlt />, href: '/expert/session' },
-    { label: 'Chat', icon: <FaComments />, href: '/expert/chat' },
+    { label: 'Message', icon: <FaComments />, href: '/expert/message' },
     { label: 'Wallet', icon: <FaWallet />, href: '/expert/wallet' },
     { label: 'Purchases', icon: <FaShoppingCart />, href: '/expert/purchase' },
     { label: 'Rating', icon: <FaShoppingCart />, href: '/expert/rating' },

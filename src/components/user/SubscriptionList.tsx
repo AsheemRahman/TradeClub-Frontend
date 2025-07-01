@@ -21,7 +21,7 @@ export const SubscriptionPlans = () => {
                     setPlans(activePlans || []);
                 }
             } catch (error) {
-                console.log("error while fetching plan", error)
+                console.error("error while fetching plan", error)
             } finally {
                 setLoading(false);
             }

@@ -73,3 +73,12 @@ export const updateProfile = async (updatedPayload: ExpertProfileFormData) => {
         handleAxiosError(error)
     }
 };
+
+export const fetchWallet = async () => {
+    try {
+        const response = await axiosInstance.get(`/expert/wallet`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
