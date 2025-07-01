@@ -4,9 +4,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
-import { Calendar, Bell, Clock, MessageSquare, Settings } from 'lucide-react';
+import { Calendar, Bell, Clock, MessageSquare, Settings, } from 'lucide-react';
 import { getExpertData } from '@/app/service/expert/expertApi';
 import { IExpert, IExpertVerification } from '@/types/expertTypes';
+import { Button } from '@/components/ui/Button';
 
 
 const ExpertDashboard = () => {
@@ -123,39 +124,36 @@ const ExpertDashboard = () => {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="bg-[#151231] shadow-sm border-b border-gray-900 p-2 mx-8 rounded-lg">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4">
-                        {/* Left: Profile & Welcome */}
-                        <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-5 mb-4 mx-8 ">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10">
+                    <div className="flex items-center justify-between my-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
                                 {expert.profilePicture ? (
-                                    <Image src={expert.profilePicture} alt="Profile" width={40} height={40} className="rounded-full object-cover" />
+                                    <Image src={expert.profilePicture} alt="Profile" width={60} height={60} className="rounded-full object-cover" />
                                 ) : (
                                     <span>{expert.fullName?.charAt(0)}</span>
                                 )}
                             </div>
                             <div>
-                                <h1 className="text-xl font-bold text-gray-100">
-                                    Welcome back, {expert.fullName || 'Expert'}! 👋
-                                </h1>
-                                <p className="text-sm text-gray-400">Ready to inspire minds today?</p>
+                                <h1 className="text-4xl font-bold text-white">Welcome back, {expert.fullName || 'Expert'}! 👋</h1>
+                                <p className="text-white/80 text-lg">Ready to inspire minds today?</p>
                             </div>
                         </div>
-                        {/* Right: Notifications and Profile */}
-                        <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
+                        <div className="flex space-x-3">
                             <button className="relative p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
                                 <Bell className="w-5 h-5" />
                                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
                             </button>
-                            <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
-                                onClick={() => router.push('/expert/profile')}
-                            >
+                            <Button onClick={() => router.push('/expert/profile')}>
                                 Profile
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

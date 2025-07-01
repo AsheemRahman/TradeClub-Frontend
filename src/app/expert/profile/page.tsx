@@ -12,6 +12,7 @@ import { Button } from '../../../components/ui/Button';
 import { ProfileField } from '@/components/expert/profile/ProfileField';
 import { ProfileInfoCard } from '@/components/expert/profile/ProfileInfoCard';
 import { ExperienceBadge, StatusBadge } from '@/components/expert/profile/Badge';
+
 import { User } from 'lucide-react';
 
 
