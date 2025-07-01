@@ -155,7 +155,7 @@ export default function CategoryManagement() {
                                 </div>
                                 <div>
                                     <h1 className="text-3xl font-bold text-white">Category Management</h1>
-                                    <p className="text-white/80 mt-2 text-md">Manage your course categories</p>
+                                    <p className="text-white/80 mt-1 text-md">Manage your course categories</p>
                                 </div>
                             </div>
                             <div className="relative flex items-center gap-1 mr-5">
@@ -171,11 +171,12 @@ export default function CategoryManagement() {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                    <div className="bg-white rounded-xl p-6 shadow-sm border">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm">Total Categories</p>
+                                <p className="text-white text-sm">Total Categories</p>
                                 <p className="text-3xl font-bold text-gray-900">{categories.length}</p>
                             </div>
                             <div className="bg-blue-100 p-3 rounded-full">
@@ -183,21 +184,23 @@ export default function CategoryManagement() {
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border">
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm">Active Categories</p>
-                                <p className="text-3xl font-bold text-green-600">{categories.filter(c => c.isActive).length}</p>
+                                <p className="text-white text-sm">Active Categories</p>
+                                <p className="text-3xl font-bold text-black">{categories.filter(c => c.isActive).length}</p>
                             </div>
                             <div className="bg-green-100 p-3 rounded-full">
                                 <CheckCircle className="text-green-600" size={24} />
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white rounded-xl p-6 shadow-sm border">
+                    <div className="group relative overflow-hidden bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg p-6 shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-gray-600 text-sm">Inactive Categories</p>
+                                <p className="text-white text-sm">Inactive Categories</p>
                                 <p className="text-3xl font-bold text-red-600">{categories.filter(c => !c.isActive).length}</p>
                             </div>
                             <div className="bg-red-100 p-3 rounded-full">
@@ -210,7 +213,7 @@ export default function CategoryManagement() {
                 {/* Search and Filter */}
                 <div className="relative flex flex-col sm:flex-row gap-4 overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
                     <div className="relative flex-1 z-10">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20}/>
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={20} />
                         <input type="text" placeholder="Search categories..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 text-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-transparent placeholder:text-gray-300"
                         />

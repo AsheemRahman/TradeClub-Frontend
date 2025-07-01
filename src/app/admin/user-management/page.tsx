@@ -69,7 +69,7 @@ const UserManagement = () => {
                             </div>
                             <div>
                                 <h1 className="text-3xl font-bold text-white">Customer Management</h1>
-                                <p className="text-white/80 mt-2 text-md">Manage customer and verify</p>
+                                <p className="text-white/80 mt-1 text-md">Manage customer and verify</p>
                             </div>
                         </div>
                         <div className="relative flex items-center gap-1 mr-5">

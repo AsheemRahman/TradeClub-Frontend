@@ -127,7 +127,7 @@ const AdminCoursesPage = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-3xl font-bold text-white">Course Management</h1>
-                                    <p className="text-white/80 mt-2 text-md">Manage your courses, content, and publishing status</p>
+                                    <p className="text-white/80 mt-1 text-md">Manage your courses, content, and publishing status</p>
                                 </div>
                             </div>
                             <div className="relative flex items-center gap-1 mr-5">

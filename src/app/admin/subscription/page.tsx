@@ -155,7 +155,7 @@ const SubscriptionManagement: React.FC = () => {
                                 </div>
                                 <div>
                                     <h1 className="text-3xl font-bold text-white">Subscription Management</h1>
-                                    <p className="text-white/80 mt-2 text-md">Manage your subscription plans and pricing tiers</p>
+                                    <p className="text-white/80 mt-1 text-md">Manage your subscription plans and pricing tiers</p>
                                 </div>
                             </div>
                             <div className="relative flex items-center gap-1 mr-5">

@@ -78,7 +78,7 @@ const UserManagement = () => {
                             </div>
                             <div>
                                 <h1 className="text-3xl font-bold text-white">Expert Management</h1>
-                                <p className="text-white/80 mt-2 text-md">Manage Expert , Verify and Approve</p>
+                                <p className="text-white/80 mt-1 text-md">Manage Expert , Verify and Approve</p>
                             </div>
                         </div>
                         <div className="relative flex items-center gap-1 mr-5">
