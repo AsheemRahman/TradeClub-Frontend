@@ -70,7 +70,7 @@ const CouponManagement: React.FC = () => {
         }
         try {
             const response = await updateCoupon(couponData._id, couponData);
-            if(response.status){
+            if (response.status) {
                 setCoupons(coupons.map(c => c._id === response.coupon._id ? response.coupon : c));
                 setEditingCoupon(null);
                 toast.success("Update coupon successfully");
@@ -215,7 +215,7 @@ const CouponManagement: React.FC = () => {
                                 <div className="ml-4">
                                     <p className="text-sm font-medium text-gray-600">Avg. Discount</p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {Math.round(coupons.reduce((sum, c) => sum + c.discountValue, 0) / coupons.length)}
+                                        {Math.round(coupons.reduce((sum, c) => sum + c.discountValue, 0) / coupons.length) || 0}
                                         {coupons[0]?.discountType === 'percentage' ? '%' : '$'}
                                     </p>
                                 </div>
@@ -277,108 +277,122 @@ const CouponManagement: React.FC = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {filteredCoupons.map((coupon) => (
-                                        <tr key={coupon._id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4">
-                                                <div>
-                                                    <div className="flex items-center">
-                                                        <span className="font-mono font-semibold text-gray-900">
-                                                            {coupon.code}
-                                                        </span>
-                                                        <button
-                                                            onClick={() => navigator.clipboard.writeText(coupon.code)}
-                                                            className="ml-2 p-1 text-gray-400 hover:text-gray-600"
-                                                        >
-                                                            <Copy className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                    {coupon.description && (
-                                                        <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    {coupon.discountType === 'percentage' ? (
-                                                        <Percent className="w-4 h-4 text-green-600 mr-1" />
-                                                    ) : (
-                                                        <IndianRupee className="w-4 h-4 text-green-600 mr-1" />
-                                                    )}
-                                                    <span className="font-semibold text-green-600">
-                                                        {coupon.discountValue}
-                                                        {coupon.discountType === 'percentage' ? '%' : ''}
-                                                    </span>
-                                                </div>
-                                                {coupon.minPurchaseAmount && (
-                                                    <p className="text-xs text-gray-500 mt-1">
-                                                        Min: ${coupon.minPurchaseAmount}
-                                                    </p>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTargetBadgeColor(coupon.target)}`}>
-                                                    {coupon.target.replace('_', ' ')}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div>
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <span className="text-sm font-medium text-gray-900">
-                                                            {coupon.usedCount}{coupon.usageLimit ? `/${coupon.usageLimit}` : ''}
-                                                        </span>
-                                                        {coupon.usageLimit && (
-                                                            <span className="text-xs text-gray-500">
-                                                                {Math.round(getUsagePercentage(coupon.usedCount, coupon.usageLimit))}%
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    {coupon.usageLimit && (
-                                                        <div className="w-full bg-gray-200 rounded-full h-2">
-                                                            <div
-                                                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                                                style={{ width: `${getUsagePercentage(coupon.usedCount, coupon.usageLimit)}%` }}
-                                                            />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center">
-                                                    <Calendar className="w-4 h-4 text-gray-400 mr-2" />
-                                                    <span className="text-sm text-gray-900">
-                                                        {formatDate(coupon.expiresAt)}
-                                                    </span>
-                                                </div>
-                                                {new Date(coupon.expiresAt) < new Date() && (
-                                                    <span className="text-xs text-red-600 mt-1 block">Expired</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <button onClick={() => handleToggleStatus(coupon._id!)}
-                                                    className={`inline-flex px-2 py-1 text-xs font-medium rounded-full transition-colors ${coupon.isActive
-                                                        ? 'bg-green-100 text-green-800 hover:bg-green-200'
-                                                        : 'bg-red-100 text-red-800 hover:bg-red-200'
-                                                        }`}
-                                                >
-                                                    {coupon.isActive ? 'Active' : 'Inactive'}
-                                                </button>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex items-center justify-center space-x-2">
-                                                    <button onClick={() => setEditingCoupon(coupon)}
-                                                        className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                    </button>
-                                                    <button onClick={() => handleDeleteCoupon(coupon._id!)}
-                                                        className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
-                                                </div>
+                                    {coupons.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-center py-6 text-gray-500">
+                                                No coupons available.
                                             </td>
                                         </tr>
-                                    ))}
+                                    ) : filteredCoupons.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="text-center py-6 text-gray-500">
+                                                No coupons match your filters or search.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredCoupons.map((coupon) => (
+                                            <tr key={coupon._id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4">
+                                                    <div>
+                                                        <div className="flex items-center">
+                                                            <span className="font-mono font-semibold text-gray-900">
+                                                                {coupon.code}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => navigator.clipboard.writeText(coupon.code)}
+                                                                className="ml-2 p-1 text-gray-400 hover:text-gray-600"
+                                                            >
+                                                                <Copy className="w-4 h-4" />
+                                                            </button>
+                                                        </div>
+                                                        {coupon.description && (
+                                                            <p className="text-sm text-gray-600 mt-1">{coupon.description}</p>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        {coupon.discountType === 'percentage' ? (
+                                                            <Percent className="w-4 h-4 text-green-600 mr-1" />
+                                                        ) : (
+                                                            <IndianRupee className="w-4 h-4 text-green-600 mr-1" />
+                                                        )}
+                                                        <span className="font-semibold text-green-600">
+                                                            {coupon.discountValue}
+                                                            {coupon.discountType === 'percentage' ? '%' : ''}
+                                                        </span>
+                                                    </div>
+                                                    {coupon.minPurchaseAmount && (
+                                                        <p className="text-xs text-gray-500 mt-1">
+                                                            Min: ${coupon.minPurchaseAmount}
+                                                        </p>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getTargetBadgeColor(coupon.target)}`}>
+                                                        {coupon.target.replace('_', ' ')}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div>
+                                                        <div className="flex items-center justify-between mb-1">
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {coupon.usedCount}{coupon.usageLimit ? `/${coupon.usageLimit}` : ''}
+                                                            </span>
+                                                            {coupon.usageLimit && (
+                                                                <span className="text-xs text-gray-500">
+                                                                    {Math.round(getUsagePercentage(coupon.usedCount, coupon.usageLimit))}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {coupon.usageLimit && (
+                                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                                <div
+                                                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                                    style={{ width: `${getUsagePercentage(coupon.usedCount, coupon.usageLimit)}%` }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center">
+                                                        <Calendar className="w-4 h-4 text-gray-400 mr-2" />
+                                                        <span className="text-sm text-gray-900">
+                                                            {formatDate(coupon.expiresAt)}
+                                                        </span>
+                                                    </div>
+                                                    {new Date(coupon.expiresAt) < new Date() && (
+                                                        <span className="text-xs text-red-600 mt-1 block">Expired</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <button onClick={() => handleToggleStatus(coupon._id!)}
+                                                        className={`inline-flex px-2 py-1 text-xs font-medium rounded-full transition-colors ${coupon.isActive
+                                                            ? 'bg-green-100 text-green-800 hover:bg-green-200'
+                                                            : 'bg-red-100 text-red-800 hover:bg-red-200'
+                                                            }`}
+                                                    >
+                                                        {coupon.isActive ? 'Active' : 'Inactive'}
+                                                    </button>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <div className="flex items-center justify-center space-x-2">
+                                                        <button onClick={() => setEditingCoupon(coupon)}
+                                                            className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                        </button>
+                                                        <button onClick={() => handleDeleteCoupon(coupon._id!)}
+                                                            className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
