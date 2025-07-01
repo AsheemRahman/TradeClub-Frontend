@@ -1,31 +1,38 @@
-import { useState } from "react";
+import { Coupon } from "@/types/types";
+import React, { useState } from "react";
 
+type CouponModalProps = {
+    coupon?: Coupon | null;
+    onSave: (couponData: Coupon) => void;
+    onClose: () => void;
+};
 
-export const CouponModal = ({ coupon, onSave, onClose }) => {
+export const CouponModal: React.FC<CouponModalProps> = ({ coupon, onSave, onClose }) => {
     const [formData, setFormData] = useState({
-        code: coupon?.code || '',
-        description: coupon?.description || '',
-        discountType: coupon?.discountType || 'percentage',
-        discountValue: coupon?.discountValue || '',
-        minPurchaseAmount: coupon?.minPurchaseAmount || '',
-        usageLimit: coupon?.usageLimit || '',
-        expiresAt: coupon?.expiresAt ? new Date(coupon.expiresAt).toISOString().split('T')[0] : '',
-        isActive: coupon?.isActive !== undefined ? coupon.isActive : true,
-        target: coupon?.target || 'all'
+        code: coupon?.code || "",
+        description: coupon?.description || "",
+        discountType: coupon?.discountType || "percentage",
+        discountValue: coupon?.discountValue?.toString() || "",
+        minPurchaseAmount: coupon?.minPurchaseAmount?.toString() || "",
+        usageLimit: coupon?.usageLimit?.toString() || "",
+        expiresAt: coupon?.expiresAt
+            ? new Date(coupon.expiresAt).toISOString().split("T")[0]
+            : "",
+        isActive: coupon?.isActive ?? true,
+        target: coupon?.target || "all",
     });
 
     const handleSubmit = () => {
-        ;
-        const couponData = {
+        const couponData:Coupon = {
             ...formData,
             expiresAt: new Date(formData.expiresAt),
             discountValue: Number(formData.discountValue),
-            minPurchaseAmount: formData.minPurchaseAmount ? Number(formData.minPurchaseAmount) : undefined,
-            usageLimit: formData.usageLimit ? Number(formData.usageLimit) : undefined
+            minPurchaseAmount: formData.minPurchaseAmount
+                ? Number(formData.minPurchaseAmount)
+                : undefined,
+            usageLimit: formData.usageLimit ? Number(formData.usageLimit) : undefined,
         };
-        if (coupon) {
-            couponData._id = coupon._id;
-        }
+        if (coupon?._id) couponData._id = coupon._id;
         onSave(couponData);
     };
 
@@ -34,45 +41,42 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
             <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div className="p-6">
                     <h2 className="text-xl font-bold text-gray-900 mb-4">
-                        {coupon ? 'Edit Coupon' : 'Create New Coupon'}
+                        {coupon ? "Edit Coupon" : "Create New Coupon"}
                     </h2>
+
                     <div className="space-y-4">
+                        {/* Coupon Code */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Coupon Code *
                             </label>
-                            <input
-                                type="text"
-                                required
-                                value={formData.code}
+                            <input type="text" required value={formData.code} placeholder="WELCOME20"
                                 onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
-                                placeholder="WELCOME20"
                             />
                         </div>
 
+                        {/* Description */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Description
                             </label>
-                            <textarea
-                                value={formData.description}
+                            <textarea value={formData.description} placeholder="Describe this coupon..." rows={2}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                rows={2}
-                                placeholder="Describe this coupon..."
                             />
                         </div>
 
+                        {/* Discount Type and Value */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Discount Type *
                                 </label>
-                                <select
-                                    required
-                                    value={formData.discountType}
-                                    onChange={(e) => setFormData({ ...formData, discountType: e.target.value })}
+                                <select required value={formData.discountType}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, discountType: e.target.value as 'percentage' | 'fixed' })
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 >
                                     <option value="percentage">Percentage</option>
@@ -88,15 +92,18 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                                     type="number"
                                     required
                                     min="0"
-                                    step={formData.discountType === 'percentage' ? '1' : '0.01'}
+                                    step={formData.discountType === "percentage" ? "1" : "0.01"}
                                     value={formData.discountValue}
-                                    onChange={(e) => setFormData({ ...formData, discountValue: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, discountValue: e.target.value })
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder={formData.discountType === 'percentage' ? '20' : '10.00'}
+                                    placeholder={formData.discountType === "percentage" ? "20" : "10.00"}
                                 />
                             </div>
                         </div>
 
+                        {/* Min Purchase Amount & Usage Limit */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -107,7 +114,9 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                                     min="0"
                                     step="0.01"
                                     value={formData.minPurchaseAmount}
-                                    onChange={(e) => setFormData({ ...formData, minPurchaseAmount: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, minPurchaseAmount: e.target.value })
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="0.00"
                                 />
@@ -121,21 +130,22 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                                     type="number"
                                     min="1"
                                     value={formData.usageLimit}
-                                    onChange={(e) => setFormData({ ...formData, usageLimit: e.target.value })}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, usageLimit: e.target.value })
+                                    }
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     placeholder="Unlimited"
                                 />
                             </div>
                         </div>
 
+                        {/* Target Audience */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Target Audience *
                             </label>
-                            <select
-                                required
-                                value={formData.target}
-                                onChange={(e) => setFormData({ ...formData, target: e.target.value })}
+                            <select required value={formData.target}
+                                onChange={(e) => setFormData({ ...formData, target: e.target.value as "all" | "new_joiners" | "specific_users" | "premium_users" | "first_purchase" })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                                 <option value="all">All Users</option>
@@ -146,26 +156,26 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                             </select>
                         </div>
 
+                        {/* Expiry Date */}
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                 Expiry Date *
                             </label>
-                            <input
-                                type="date"
-                                required
-                                value={formData.expiresAt}
+                            <input type="date" required value={formData.expiresAt} min={new Date().toISOString().split("T")[0]}
                                 onChange={(e) => setFormData({ ...formData, expiresAt: e.target.value })}
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                min={new Date().toISOString().split('T')[0]}
                             />
                         </div>
 
+                        {/* Active Checkbox */}
                         <div className="flex items-center">
                             <input
                                 type="checkbox"
                                 id="isActive"
                                 checked={formData.isActive}
-                                onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, isActive: e.target.checked })
+                                }
                                 className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                             />
                             <label htmlFor="isActive" className="ml-2 block text-sm text-gray-900">
@@ -173,6 +183,7 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                             </label>
                         </div>
 
+                        {/* Action Buttons */}
                         <div className="flex justify-end space-x-3 pt-4">
                             <button
                                 type="button"
@@ -186,7 +197,7 @@ export const CouponModal = ({ coupon, onSave, onClose }) => {
                                 onClick={handleSubmit}
                                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
-                                {coupon ? 'Update' : 'Create'} Coupon
+                                {coupon ? "Update" : "Create"} Coupon
                             </button>
                         </div>
                     </div>

@@ -1,28 +1,15 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Copy, Calendar, Users, Percent, DollarSign, Tag, Download, Upload } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Copy, Calendar, Users, Percent, DollarSign, Tag } from 'lucide-react';
 import { CouponModal } from '@/components/admin/CouponModal';
 import { mockCoupons } from '@/lib/mockData';
+import { Coupon } from '@/types/types';
 
-interface Coupon {
-    _id: string;
-    code: string;
-    description?: string;
-    discountType: 'percentage' | 'fixed';
-    discountValue: number;
-    minPurchaseAmount?: number;
-    usageLimit?: number;
-    usedCount: number;
-    expiresAt: string | Date;
-    isActive: boolean;
-    target: 'all' | 'new_joiners' | 'specific_users' | 'premium_users' | 'first_purchase';
-    createdAt?: Date;
-}
 
 const CouponManagement: React.FC = () => {
-    const [coupons, setCoupons] = useState<Coupon[]>(mockCoupons);
-    const [filteredCoupons, setFilteredCoupons] = useState<Coupon[]>(mockCoupons);
+    const [coupons, setCoupons] = useState<Coupon[] | []>(mockCoupons as Coupon[]);
+    const [filteredCoupons, setFilteredCoupons] = useState<Coupon[]>(mockCoupons as Coupon[]);
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all');
     const [filterTarget, setFilterTarget] = useState<string>('all');
@@ -84,8 +71,8 @@ const CouponManagement: React.FC = () => {
         });
     };
 
-    const getUsagePercentage = (used: number, limit?: number): number => {
-        if (!limit) return 0;
+    const getUsagePercentage = (used?: number, limit?: number): number => {
+        if (!limit || !used) return 0;
         return Math.min((used / limit) * 100, 100);
     };
 
@@ -101,26 +88,17 @@ const CouponManagement: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 p-6">
+        <div className="min-h-screen">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="bg-[#151231] rounded-lg shadow-sm p-6 flex items-center justify-between mb-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">Coupon Management</h1>
+                            <h1 className="text-3xl font-bold text-white">Coupon Management</h1>
                             <p className="text-gray-600 mt-1">Create and manage discount coupons</p>
                         </div>
                         <div className="flex space-x-3">
-                            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                <Download className="w-4 h-4 mr-2" />
-                                Export
-                            </button>
-                            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
-                                <Upload className="w-4 h-4 mr-2" />
-                                Import
-                            </button>
-                            <button
-                                onClick={() => setShowCreateModal(true)}
+                            <button onClick={() => setShowCreateModal(true)}
                                 className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                             >
                                 <Plus className="w-4 h-4 mr-2" />
@@ -163,7 +141,7 @@ const CouponManagement: React.FC = () => {
                                 <div className="ml-4">
                                     <p className="text-sm font-medium text-gray-600">Total Uses</p>
                                     <p className="text-2xl font-bold text-gray-900">
-                                        {coupons.reduce((sum, c) => sum + c.usedCount, 0)}
+                                        {coupons.reduce((sum, c) => sum + (c.usedCount ?? 0), 0)}
                                     </p>
                                 </div>
                             </div>
@@ -198,18 +176,14 @@ const CouponManagement: React.FC = () => {
                                         className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full md:w-64"
                                     />
                                 </div>
-                                <select
-                                    value={filterStatus}
-                                    onChange={(e) => setFilterStatus(e.target.value)}
+                                <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as 'all' | 'active' | 'inactive')}
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 >
                                     <option value="all">All Status</option>
                                     <option value="active">Active</option>
                                     <option value="inactive">Inactive</option>
                                 </select>
-                                <select
-                                    value={filterTarget}
-                                    onChange={(e) => setFilterTarget(e.target.value)}
+                                <select value={filterTarget} onChange={(e) => setFilterTarget(e.target.value)}
                                     className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 >
                                     <option value="all">All Targets</option>
@@ -319,8 +293,7 @@ const CouponManagement: React.FC = () => {
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <button
-                                                    onClick={() => handleToggleStatus(coupon._id)}
+                                                <button onClick={() => handleToggleStatus(coupon._id!)}
                                                     className={`inline-flex px-2 py-1 text-xs font-medium rounded-full transition-colors ${coupon.isActive
                                                         ? 'bg-green-100 text-green-800 hover:bg-green-200'
                                                         : 'bg-red-100 text-red-800 hover:bg-red-200'
@@ -331,14 +304,12 @@ const CouponManagement: React.FC = () => {
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <div className="flex items-center justify-center space-x-2">
-                                                    <button
-                                                        onClick={() => setEditingCoupon(coupon)}
+                                                    <button onClick={() => setEditingCoupon(coupon)}
                                                         className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                                     >
                                                         <Edit2 className="w-4 h-4" />
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDeleteCoupon(coupon._id)}
+                                                    <button onClick={() => handleDeleteCoupon(coupon._id!)}
                                                         className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     >
                                                         <Trash2 className="w-4 h-4" />
