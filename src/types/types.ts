@@ -36,5 +36,20 @@ export type UpdateProfilePayload = {
     fullName: string;
     phoneNumber: string;
     newPassword?: string;
-    profilePicture : string;
+    profilePicture: string;
+}
+
+export interface ICoupon {
+    _id?: string;
+    code: string;
+    description?: string;
+    discountType: 'percentage' | 'fixed';
+    discountValue: number;
+    minPurchaseAmount?: number;
+    usageLimit?: number;
+    usedCount?: number;
+    expiresAt: string | Date;
+    isActive: boolean;
+    target: 'all' | 'new_joiners' | 'specific_users' | 'premium_users' | 'first_purchase';
+    createdAt?: Date;
 }

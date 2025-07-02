@@ -1,5 +1,5 @@
 import axios from "axios";
-import { loginType } from "@/types/types";
+import { ICoupon, loginType } from "@/types/types";
 import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
 
@@ -96,4 +96,47 @@ export const declineExpert = async (id: string, rejectionReason: string) => {
     }
 };
 
+export const fetchCoupon = async () => {
+    try {
+        const response = await adminAxiosInstance.get(`/admin/coupons`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
 
+export const createCoupon = async (couponData: ICoupon) => {
+    try {
+        const response = await adminAxiosInstance.post(`/admin/create-coupon`, couponData);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const updateCoupon = async (id: string, couponData: ICoupon) => {
+    try {
+        const response = await adminAxiosInstance.put(`/admin/update-coupon/${id}`, couponData);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const deleteCoupon = async (id: string) => {
+    try {
+        const response = await adminAxiosInstance.delete(`/admin/delete-coupon/${id}`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const couponStatus = async (id: string) => {
+    try {
+        const response = await adminAxiosInstance.patch(`/admin/coupon-status/${id}`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
