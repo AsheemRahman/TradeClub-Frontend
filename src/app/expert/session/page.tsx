@@ -6,6 +6,9 @@ import { AvailabilitySlot, CalendarDay } from '@/types/sessionTypes';
 import { CalendarGrid } from '@/components/expert/CalendarGrid';
 import { TimeSlotManager } from '@/components/expert/TimeSlotManager';
 import { addSlot, deleteSlot, editSlot, slotAvailability } from '@/app/service/expert/sessionApi';
+import HeaderCard from '@/components/expert/HeaderCard';
+import { Calendar } from 'lucide-react';
+import { toast } from 'react-toastify';
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
 const ExpertScheduleManager = () => {
@@ -70,7 +73,7 @@ const ExpertScheduleManager = () => {
     useEffect(() => {
         if (selectedDate) {
             const dateStr = getDateString(selectedDate);
-            const daySlots = availableSlots.filter(slot => { return slot.date === dateStr;});
+            const daySlots = availableSlots.filter(slot => { return slot.date === dateStr; });
             setSelectedDateSlots(daySlots);
         } else {
             setSelectedDateSlots([]);
@@ -147,29 +150,21 @@ const ExpertScheduleManager = () => {
             await fetchSlots();
         } catch (error) {
             console.error("Slot update failed:", error);
-            // Optionally, you could show an error message to the user here
+            toast.error("Slot update failed")
         }
     };
 
     return (
         <div className="min-h-screen text-white px-6">
             <div className="max-w-6xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8">Manage Your Schedule</h1>
 
-                <CalendarGrid
-                    currentDate={currentDate}
-                    calendarDays={calendarDays}
-                    selectedDate={selectedDate}
-                    onDateSelect={handleDateSelect}
-                    onNavigateMonth={handleNavigateMonth}
-                    onMonthChange={handleMonthChange}
+                <HeaderCard title="Manage Your Schedule" description="Manage your session and slots." Icon={Calendar} />
+
+                <CalendarGrid currentDate={currentDate} calendarDays={calendarDays} selectedDate={selectedDate}
+                    onDateSelect={handleDateSelect} onNavigateMonth={handleNavigateMonth} onMonthChange={handleMonthChange}
                 />
 
-                <TimeSlotManager
-                    selectedDate={selectedDate}
-                    availableSlots={selectedDateSlots}
-                    onSlotsUpdate={handleSlotsUpdate}
-                />
+                <TimeSlotManager selectedDate={selectedDate} availableSlots={selectedDateSlots} onSlotsUpdate={handleSlotsUpdate} />
             </div>
         </div>
     );

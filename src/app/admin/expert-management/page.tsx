@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { UserType } from '@/types/types';
 
 import { toast } from 'react-toastify';
-import { Search } from 'lucide-react';
+import { BadgeCheck, Search } from 'lucide-react';
 import UserTable from '@/components/admin/TableComponent';
 
 import { getExpertDetails, expertStatus } from '@/app/service/admin/adminApi';
@@ -68,18 +68,31 @@ const UserManagement = () => {
 
     return (
         <div>
-            <div className="bg-[#151231] rounded-lg shadow-sm p-6 mb-6 flex justify-between items-center">
-                <div>
-                    <h1 className="text-3xl font-bold text-white">Expert Management</h1>
-                    <p className="text-gray-600 mt-1">Manage experts and verify</p>
+            <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
+                <div className="absolute inset-0 bg-black/20"></div>
+                <div className="relative z-10">
+                    <div className="flex items-center justify-between my-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                                <BadgeCheck className="w-8 h-8 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="text-3xl font-bold text-white">Expert Management</h1>
+                                <p className="text-white/80 mt-1 text-md">Manage Expert , Verify and Approve</p>
+                            </div>
+                        </div>
+                        <div className="relative flex items-center gap-1 mr-5">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                            <input type="text" placeholder="Search by name or email" className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-white bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
+                    </div>
                 </div>
-                <div className="relative flex items-center gap-1 mr-5">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                    <input type="text" placeholder="Search by name or email" className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-white bg-transparent focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
+
             <UserTable userData={filteredData} toggleStatus={changeStatus} role="expert" />
         </div>
     );

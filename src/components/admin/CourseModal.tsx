@@ -1,14 +1,13 @@
 "use client";
 
-import Image from 'next/image';
-import React, { useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'react-toastify';
-import { X, Loader2, Upload, Plus, Trash2, Video, Check, Save } from 'lucide-react';
+import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 
 import { addCourse, editCourse } from '@/app/service/admin/courseApi';
-import { ICategory, ICourse, ICourseContent, ICourseFormData } from '@/types/courseTypes';
-
+import { ICategory, ICourse, ICourseFormData } from '@/types/courseTypes';
+import { courseValidation } from '@/app/utils/Validation';
 
 interface Props {
     setShowModal: (value: boolean) => void;
@@ -20,27 +19,24 @@ interface Props {
     fetchData: () => Promise<void>;
 }
 
-const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, categories, editingCourse, setEditingCourse, fetchData }) => {
-    const [submitting, setSubmitting] = useState<boolean>(false);
-    const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, editingCourse, setEditingCourse, fetchData, }) => {
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [uploadingVideo, setUploadingVideo] = useState<number | null>(null);
 
-    const addContentItem = (): void => {
-        setFormData({ ...formData, content: [...formData.content, { title: '', videoUrl: '', duration: 0 }] });
-    };
+    const { register, handleSubmit, control, setValue, reset, watch, formState: { errors, isSubmitting }, } = useForm<ICourseFormData>({
+        defaultValues: formData,
+    });
 
-    const updateContentItem = (index: number, field: keyof ICourseContent, value: string | number): void => {
-        const updatedContent = formData.content.map((item, i) => i === index ? { ...item, [field]: value } : item);
-        setFormData({ ...formData, content: updatedContent });
-    };
+    const { fields, append, remove } = useFieldArray({
+        control,
+        name: 'content',
+    });
 
-    const removeContentItem = (index: number): void => {
-        setFormData({ ...formData, content: formData.content.filter((_, i) => i !== index) });
-    };
+    const imageUrl = watch('imageUrl');
 
-    const resetForm = (): void => {
-        setFormData({ title: '', description: '', price: 0, imageUrl: '', category: '', content: [], isPublished: false });
-    };
+    useEffect(() => {
+        reset(formData);
+    }, [formData, reset]);
 
     const handleImageUpload = async () => {
         const input = document.createElement('input');
@@ -51,21 +47,21 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
             const file = target.files?.[0];
             if (!file) return;
             setUploadingImage(true);
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folder', 'Course');
+            const data = new FormData();
+            data.append('file', file);
+            data.append('folder', 'Course');
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData, });
-                const data = await res.json();
-                if (data.success && data.url) {
-                    setFormData(prev => ({ ...prev, imageUrl: data.url }));
-                    toast.success('File uploaded successfully!');
+                const res = await fetch('/api/upload', { method: 'POST', body: data });
+                const result = await res.json();
+                if (result.success && result.url) {
+                    setValue('imageUrl', result.url);
+                    toast.success('Image uploaded successfully');
                 } else {
-                    throw new Error(data.error || 'Upload failed');
+                    throw new Error(result.error || 'Upload failed');
                 }
-            } catch (err) {
-                console.error('Upload error:', err);
-                toast.error('File upload failed');
+            } catch (error) {
+                console.log("image error in course", error);
+                toast.error('Image upload failed');
             } finally {
                 setUploadingImage(false);
             }
@@ -73,7 +69,7 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
         input.click();
     };
 
-    const handleVideoUpload = async (contentIndex: number) => {
+    const handleVideoUpload = async (index: number) => {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'video/*';
@@ -81,26 +77,19 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
             if (!file) return;
-            // Validate file size (max 100MB)
-            if (file.size > 100 * 1024 * 1024) {
-                toast.error('Video size should be less than 100MB');
-                return;
-            }
-            setUploadingVideo(contentIndex);
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('folder', 'CourseVideos');
+            if (file.size > 100 * 1024 * 1024) return toast.error('Max size 100MB');
+            setUploadingVideo(index);
+            const data = new FormData();
+            data.append('file', file);
+            data.append('folder', 'CourseVideos');
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: formData });
-                const data = await res.json();
-                if (data.success && data.url) {
-                    updateContentItem(contentIndex, 'videoUrl', data.url);
-                    toast.success('Video uploaded successfully!');
-                } else {
-                    throw new Error(data.error || 'Upload failed');
-                }
-            } catch (err) {
-                console.error('Upload error:', err);
+                const res = await fetch('/api/upload', { method: 'POST', body: data });
+                const result = await res.json();
+                if (result.success && result.url) {
+                    setValue(`content.${index}.videoUrl`, result.url);
+                    toast.success('Video uploaded');
+                } else throw new Error();
+            } catch {
                 toast.error('Video upload failed');
             } finally {
                 setUploadingVideo(null);
@@ -109,226 +98,117 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, setFormData, cat
         input.click();
     };
 
-    const handleSubmit = async (e: React.FormEvent): Promise<void> => {
-        e.preventDefault();
+    const onSubmit = async (data: ICourseFormData) => {
+        if (!data.imageUrl) {
+            toast.error('Course image is required');
+            return;
+        }
+        if (!data.content || data.content.length === 0) {
+            toast.error('At least one content item is required');
+            return;
+        }
+        const isContentValid = data.content.every(
+            (item) => item.title && item.duration > 0 && item.videoUrl
+        );
+        if (!isContentValid) {
+            toast.error('Each content must have title, duration > 0, and video URL');
+            return;
+        }
         try {
-            setSubmitting(true);
-            const selectedCategory = categories.find(cat => cat._id === formData.category);
-            if (!selectedCategory) {
-                toast.error('Please select a valid category');
-                return;
-            }
-            const courseData = {
-                title: formData.title,
-                description: formData.description,
-                price: formData.price,
-                imageUrl: formData.imageUrl,
-                category: formData.category,
-                content: formData.content,
-                isPublished: formData.isPublished
-            };
-            const response = editingCourse ? await editCourse(editingCourse._id, courseData) : await addCourse(courseData);
+            const response = editingCourse
+                ? await editCourse(editingCourse._id, data)
+                : await addCourse(data);
             if (response.status) {
-                toast.success(editingCourse ? 'Course updated successfully' : 'Course created successfully');
+                toast.success(editingCourse ? 'Course updated' : 'Course created');
                 await fetchData();
+                setShowModal(false);
+                setEditingCourse(null);
+                reset();
             }
-            setShowModal(false);
-            setEditingCourse(null);
-            resetForm();
-        } catch (error) {
-            console.error('Error saving course:', error);
-            toast.error(`Failed to ${editingCourse ? 'update' : 'create'} course`);
-        } finally {
-            setSubmitting(false);
+        } catch {
+            toast.error('Save failed');
         }
     };
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="p-6 border-b">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-2xl font-bold text-gray-900">
-                            {editingCourse ? 'Edit Course' : 'Create New Course'}
-                        </h2>
-                        <button onClick={() => { setShowModal(false); setEditingCourse(null); resetForm(); }} className="text-gray-400 hover:text-gray-600">
-                            <X size={24} />
-                        </button>
-                    </div>
-                </div>
-
-                <div className="p-6 space-y-6">
-                    {/* Title & Price */}
+                <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Course Title *
-                            </label>
-                            <input type="text" required value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="Enter course title"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                            <label>Course Title *</label>
+                            <input {...register('title', courseValidation.title)} className="w-full border px-3 py-2 rounded" />
+                            {errors.title && <p className="text-red-500 text-sm">{errors.title.message}</p>}
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Price ($) *
-                            </label>
-                            <input type="number" required value={formData.price} onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })} placeholder="000"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
+                            <label>Price ($) *</label>
+                            <input type="number" {...register('price', courseValidation.price)} className="w-full border px-3 py-2 rounded" />
+                            {errors.price && <p className="text-red-500 text-sm">{errors.price.message}</p>}
                         </div>
                     </div>
 
-                    {/* Description */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
-                        <textarea required rows={4} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} placeholder="Enter course description"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        />
+                        <label>Description *</label>
+                        <textarea rows={4} {...register('description', courseValidation.description)} className="w-full border px-3 py-2 rounded" />
+                        {errors.description && <p className="text-red-500 text-sm">{errors.description.message}</p>}
                     </div>
 
-                    {/* Category & Image */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
-                            <select required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            >
-                                <option value="">Select Category</option>
-                                {categories.map(category => (
-                                    <option key={category._id} value={category._id}>{category.categoryName}</option>
-                                ))}
+                            <label>Category *</label>
+                            <select {...register('category', courseValidation.category)} className="w-full border px-3 py-2 rounded">
+                                <option value="">Select</option>
+                                {categories.map(cat => <option key={cat._id} value={cat._id}>{cat.categoryName}</option>)}
                             </select>
+                            {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Image URL *</label>
-                            <div className="space-y-3">
-                                <button type="button" onClick={handleImageUpload} disabled={uploadingImage}
-                                    className="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 hover:bg-blue-50 transition-colors flex flex-col items-center gap-2 text-gray-600 hover:text-blue-600"
-                                >
-                                    {uploadingImage ? (
-                                        <>
-                                            <Loader2 className="w-6 h-6 animate-spin" />
-                                            <span className="text-sm">Uploading...</span>
-                                        </>
-                                    ) : (
-                                        <div className='flex items-center space-x-3.5'>
-                                            <Upload className="w-6 h-6" />
-                                            <div className="text-center">
-                                                <span className="text-sm font-medium">Click to upload image</span>
-                                                <div className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</div>
-                                            </div>
-                                        </div>
-                                    )}
-                                </button>
-                                {formData.imageUrl && (
-                                    <div className="relative rounded-lg overflow-hidden border border-gray-200">
-                                        <Image src={formData.imageUrl} alt="Course preview" width={200} height={120} className="w-full h-24 object-cover" />
-                                        <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
-                                            <Check size={12} />
-                                        </div>
-                                        <button type="button" onClick={() => setFormData({ ...formData, imageUrl: '' })} className="absolute top-2 left-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600">
-                                            <X size={12} />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
+                            <label>Course Image *</label>
+                            <input type="hidden" {...register('imageUrl', courseValidation.imageUrl)} />
+                            <button type="button" onClick={handleImageUpload} className="w-full border-dashed border px-3 py-2 rounded flex justify-center items-center">
+                                {uploadingImage ? <Loader2 className="animate-spin" /> : <Upload />} Upload Image
+                            </button>
+                            {!imageUrl && <p className="text-red-500 text-sm">Course image is required</p>}
                         </div>
                     </div>
 
                     {/* Course Content */}
                     <div>
-                        <div className="flex justify-between items-center mb-4">
-                            <label className="block text-sm font-medium text-gray-700">Course Content</label>
-                            <button type="button" onClick={addContentItem}
-                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-                            >
-                                <Plus size={16} /> Add Content
-                            </button>
+                        <div className="flex justify-between items-center mb-2">
+                            <label>Course Content</label>
+                            <button type="button" onClick={() => append({ title: '', duration: 0, videoUrl: '' })} className="text-blue-600 flex items-center gap-1"><Plus size={16} /> Add</button>
                         </div>
-                        {formData.content.map((item, index) => (
-                            <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                                        <Video size={16} /> Content Item {index + 1}
-                                    </h4>
-                                    <button type="button" onClick={() => removeContentItem(index)} className="text-red-600 hover:text-red-700">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                                <div className="grid grid-cols-1 gap-4 mb-4">
-                                    <div className='flex space-x-3'>
-                                        <div className='w-[90%]'>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Content Title</label>
-                                            <input type="text" value={item.title} onChange={(e) => updateContentItem(index, 'title', e.target.value)} placeholder="Enter content title"
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-                                            <input type="number" value={item.duration} onChange={(e) => updateContentItem(index, 'duration', parseInt(e.target.value) || 0)}
-                                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Enter duration"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Video Content</label>
-                                        <div className="space-y-3">
-                                            <div className="flex gap-2">
-                                                <input type="url" value={item.videoUrl} onChange={(e) => updateContentItem(index, 'videoUrl', e.target.value)} placeholder="Enter video URL or upload"
-                                                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                                <button type="button" onClick={() => handleVideoUpload(index)} disabled={uploadingVideo === index}
-                                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg flex items-center gap-2 transition-colors"
-                                                >
-                                                    {uploadingVideo === index ? (
-                                                        <Loader2 size={16} className="animate-spin" />
-                                                    ) : (
-                                                        <Upload size={16} />
-                                                    )}
-                                                    {uploadingVideo === index ? 'Uploading...' : 'Upload'}
-                                                </button>
-                                            </div>
-                                            {item.videoUrl && (
-                                                <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded">
-                                                    <Check size={16} />
-                                                    <span>Video URL added</span>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+
+                        {fields.map((field, index) => (
+                            <div key={field.id} className="border p-4 rounded mb-4">
+                                <input {...register(`content.${index}.title`, courseValidation.contentTitle)} className="w-full mb-2 border px-3 py-1 rounded" placeholder="Content title" />
+                                {errors.content?.[index]?.title && <p className="text-red-500 text-sm">{errors.content[index]?.title?.message}</p>}
+
+                                <input type="number" {...register(`content.${index}.duration`, courseValidation.contentDuration)} className="w-full mb-2 border px-3 py-1 rounded" placeholder="Duration" />
+                                {errors.content?.[index]?.duration && <p className="text-red-500 text-sm">{errors.content[index]?.duration?.message}</p>}
+
+                                <input {...register(`content.${index}.videoUrl`, courseValidation.videoUrl)} className="w-full mb-2 border px-3 py-1 rounded" placeholder="Video URL" />
+                                <button type="button" onClick={() => handleVideoUpload(index)} disabled={uploadingVideo === index} className="text-sm text-blue-600 flex items-center gap-1">
+                                    {uploadingVideo === index ? <Loader2 className="animate-spin" /> : <Upload size={16} />} Upload Video
+                                </button>
+
+                                <button type="button" onClick={() => remove(index)} className="text-sm text-red-600 mt-2 flex items-center gap-1"><Trash2 size={14} /> Remove</button>
                             </div>
                         ))}
                     </div>
 
-                    {/* Publish Checkbox */}
                     <div className="flex items-center gap-2">
-                        <input type="checkbox" id="isPublished" checked={formData.isPublished} onChange={(e) => setFormData({ ...formData, isPublished: e.target.checked })}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                        />
-                        <label htmlFor="isPublished" className="text-sm font-medium text-gray-700">Publish this course immediately</label>
+                        <input type="checkbox" {...register('isPublished')} />
+                        <label>Publish this course immediately</label>
                     </div>
 
-                    {/* Submit Buttons */}
-                    <div className="flex gap-4 pt-4">
-                        <button type="button" onClick={handleSubmit} disabled={submitting}
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-6 py-3 rounded-lg flex items-center justify-center gap-2 transition-colors"
-                        >
-                            {submitting ? (
-                                <Loader2 size={20} className="animate-spin" />
-                            ) : (
-                                <Save size={20} />
-                            )}
-                            {submitting ? (editingCourse ? 'Updating...' : 'Creating...') : (editingCourse ? 'Update Course' : 'Create Course')}
+                    <div className="flex gap-4">
+                        <button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded">
+                            {isSubmitting ? 'Saving...' : editingCourse ? 'Update Course' : 'Create Course'}
                         </button>
-                        <button type="button" onClick={() => { setShowModal(false); setEditingCourse(null); resetForm(); }} disabled={submitting}
-                            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
-                        >
-                            Cancel
-                        </button>
+                        <button type="button" onClick={() => { setShowModal(false); setEditingCourse(null); reset(); }} className="px-6 py-3 border rounded">Cancel</button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     );

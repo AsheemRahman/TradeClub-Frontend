@@ -3,6 +3,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { adminLogout } from '@/app/service/admin/adminApi';
 
 import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen } from 'react-icons/fa';
+import { Crown } from 'lucide-react';
 
 
 const menuItems = [
@@ -18,7 +19,6 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
-
     const router = useRouter();
     const pathname = usePathname();
 
@@ -30,26 +30,67 @@ export default function Sidebar() {
     };
 
     return (
-        <div className="bg-[#151231] w-64 flex flex-col ml-5 p-4 rounded-xl text-white">
-            {menuItems.map((item) => {
-                const isActive = item.href && pathname.startsWith(item.href);
-                return item.href ? (
-                    <Link key={item.label} href={item.href} className={`flex items-center gap-2 px-4 py-4 my-2 rounded-lg cursor-pointer transition-all
-                        ${isActive ? 'bg-[#E54B00] text-white font-bold' : 'hover:bg-[#090719] text-3xl text-gray-300'}`}>
-                        <div className="flex gap-5 ml-8">
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="text-sm">{item.label}</span>
+        <div>
+            <div style={{ backgroundColor: '#151231' }} className="w-72 flex flex-col ml-5 rounded-lg text-white shadow-2xl overflow-hidden">
+
+                {/* Header Section */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-6 mb-4">
+                    <div className="absolute inset-0 bg-black/10"></div>
+                    <div className="relative z-10 flex items-center gap-4">
+                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                            <Crown className="w-8 h-8 text-white" />
                         </div>
-                    </Link>
-                ) : (
-                    <button key={item.label} onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 my-3 rounded-lg cursor-pointer transition-all hover:bg-red-600 text-white">
-                        <div className="flex gap-5 ml-8">
-                            <span className="text-lg">{item.icon}</span>
-                            <span className="text-sm">{item.label}</span>
+                        <div>
+                            <h2 className="text-2xl font-bold text-white">Admin Panel</h2>
+                            <p className="text-white/80 text-sm">Manage your platform</p>
                         </div>
-                    </button>
-                );
-            })}
+                    </div>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                    <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+                </div>
+
+                {/* Navigation Menu */}
+                <div className="flex-1 px-6 pb-6">
+                    <nav className="space-y-4">
+                        {menuItems.map((item) => {
+                            const isActive = pathname === item.href;
+                            if (item.href) {
+                                return (
+                                    <Link key={item.label} href={item.href}>
+                                        <div className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden
+                                            ${isActive ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold shadow-lg shadow-orange-500/25' : 'hover:bg-purple-900/30 text-gray-300 hover:text-white'}`}
+                                        >
+                                            {isActive && (
+                                                <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-red-400/20 animate-pulse"></div>
+                                            )}
+                                            <div className="relative z-10 flex items-center gap-4 w-full">
+                                                <div className={`flex-shrink-0 transition-all duration-300 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
+                                                    <span className="text-xl">{item.icon}</span>
+                                                </div>
+                                                <span className="text-sm font-medium">{item.label}</span>
+                                                {isActive && (
+                                                    <div className="ml-auto w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                );
+                            } else {
+                                return (
+                                    <button key={item.label} onClick={handleLogout}
+                                        className="w-full flex items-center gap-4 px-5 py-4 rounded-xl cursor-pointer transition-all duration-300 group hover:bg-red-600/20 text-gray-300 hover:text-red-400 border border-transparent hover:border-red-500/30"
+                                    >
+                                        <div className="flex-shrink-0 transition-all duration-300 group-hover:scale-105">
+                                            <span className="text-xl">{item.icon}</span>
+                                        </div>
+                                        <span className="text-sm font-medium">{item.label}</span>
+                                    </button>
+                                );
+                            }
+                        })}
+                    </nav>
+                </div>
+            </div>
         </div>
     );
 }

@@ -37,3 +37,36 @@ export const registerValidation = {
         required: "You must accept the terms",
     }
 }
+
+export const courseValidation = {
+    title: {
+        required: 'Title is required',
+        minLength: { value: 3, message: 'Title must be at least 3 characters' },
+    },
+    price: {
+        required: 'Price is required',
+        valueAsNumber: true,
+        min: { value: 1, message: 'Price must be greater than 0' },
+    },
+    description: {
+        required: 'Description is required',
+        minLength: { value: 10, message: 'Description must be at least 10 characters' },
+    },
+    category: {
+        required: 'Category is required',
+    },
+    imageUrl: {
+        required: 'Course image is required',
+    },
+    contentTitle: {
+        required: 'Content title is required',
+    },
+    contentDuration: {
+        required: 'Duration is required',
+        valueAsNumber: true,
+        min: { value: 1, message: 'Duration must be greater than 0' },
+    },
+    videoUrl: {
+        required: 'Video URL is required',
+    },
+};

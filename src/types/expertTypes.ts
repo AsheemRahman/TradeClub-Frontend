@@ -69,7 +69,7 @@ export interface ExpertProfile {
 }
 
 export interface ExpertProfileFormData {
-    id:string;
+    id: string;
     fullName: string;
     phoneNumber: string;
     currentPassword: string;
@@ -78,4 +78,19 @@ export interface ExpertProfileFormData {
     markets_Traded: string;
     trading_style: string;
     profilePicture: string;
+}
+
+export interface Transaction {
+    orderId: string;
+    amount: number;
+    type: 'credit' | 'debit';
+    transactionDate: Date;
+}
+
+export interface WalletData {
+    balance: number;
+    totalEarnings: number;
+    totalWithdrawn: number;
+    lastTransactionAt?: Date;
+    transactions: Transaction[];
 }
