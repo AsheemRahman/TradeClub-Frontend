@@ -1,6 +1,7 @@
 import axios from "axios";
 import { toast } from 'react-toastify'
 import axiosInstance from "./AxiosInstance";
+import { ICourse } from "@/types/courseTypes";
 
 
 interface RegisterPayload {
@@ -103,3 +104,12 @@ export const logoutApi = async (role: string) => {
         handleAxiosError(error)
     }
 }
+
+export const handlePurchase = async (course: ICourse) => {
+    try {
+        const res = await axiosInstance.post(`/create-checkout-session`, { course, });
+        window.location.href = res.data.url;
+    } catch (error) {
+        console.error('Stripe Payment Error', error);
+    }
+};

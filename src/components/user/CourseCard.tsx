@@ -5,9 +5,10 @@ import { Clock, Star, Users } from "lucide-react";
 type Props = {
     course: ICourse;
     categories: ICategory[];
+    onPurchase: () => void;
 };
 
-export const CourseCard = ({ course, categories }: Props) => {
+export const CourseCard = ({ course, categories, onPurchase }: Props) => {
 
     const calculateTotalDuration = (content: ICourseContent[]) => {
         return content.reduce((total, item) => total + item.duration, 0);
@@ -52,9 +53,8 @@ export const CourseCard = ({ course, categories }: Props) => {
                         {course.purchasedUsers || 0} users
                     </div>
                 </div>
-
-                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors mt-auto">
-                    View Course
+                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={onPurchase}>
+                    Buy Now
                 </button>
             </div>
         </div>
