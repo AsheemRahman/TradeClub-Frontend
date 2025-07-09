@@ -34,7 +34,7 @@ export default function Home() {
 
       {!showWelcome && (
         <>
-          <div className="relative w-full overflow-hidden">
+          <div className="font-sans relative w-full overflow-hidden">
             <RetroGrid />
             <Navbar />
             <HomeHero />
