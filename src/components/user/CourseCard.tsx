@@ -1,6 +1,9 @@
 import Image from "next/image";
 import { ICategory, ICourse, ICourseContent } from "@/types/courseTypes";
 import { Clock, Star, Users } from "lucide-react";
+import { useAuthStore } from '@/store/authStore';
+import { useRouter } from "next/navigation";
+import { toast } from "react-toastify";
 
 type Props = {
     course: ICourse;
@@ -9,6 +12,8 @@ type Props = {
 };
 
 export const CourseCard = ({ course, categories, onPurchase }: Props) => {
+    const { user } = useAuthStore();
+    const router = useRouter()
 
     const calculateTotalDuration = (content: ICourseContent[]) => {
         return content.reduce((total, item) => total + item.duration, 0);
@@ -19,6 +24,15 @@ export const CourseCard = ({ course, categories, onPurchase }: Props) => {
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
     };
+
+    const handleBuy = () => {
+        if (user) {
+            onPurchase()
+        } else {
+            router.push('/login')
+            toast.error("Login to buy course")
+        }
+    }
 
     return (
         <div className="bg-[#151231] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
@@ -53,7 +67,9 @@ export const CourseCard = ({ course, categories, onPurchase }: Props) => {
                         {course.purchasedUsers || 0} users
                     </div>
                 </div>
-                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={onPurchase}>
+                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+                    onClick={handleBuy}
+                >
                     Buy Now
                 </button>
             </div>
