@@ -89,7 +89,7 @@ export const SubscriptionPlans = () => {
                         )} */}
 
                         <div className="text-center mb-8">
-                            <div className={`inline-flex bg-gradient-to-r ${plan.gradient} w-16 h-16 rounded-2xl items-center justify-center mb-4`}>
+                            <div className={`inline-flex bg-gradient-to-r w-16 h-16 rounded-2xl items-center justify-center mb-4`}>
                                 <Users className="w-8 h-8 text-blue-600" />
                             </div>
 

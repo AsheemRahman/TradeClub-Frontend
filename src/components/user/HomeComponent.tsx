@@ -191,7 +191,7 @@ export const HomeHero = () => {
                                 <Bell className="w-5 h-5 text-white mr-2" />
                                 <span className="text-white font-semibold text-sm">Trade Alert</span>
                             </div>
-                            <p className="text-white/90 text-xs">AAPL showing strong bullish pattern. Consider entry at $182.</p>
+                            <p className="text-white/90 text-xs">Connect with verified trading experts through video calls and live chat.</p>
                         </div>
 
                         {/* Floating learning badge */}
