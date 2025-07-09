@@ -104,7 +104,7 @@ const CoursesPage = () => {
                     {/* Search Bar */}
                     <div className="relative mb-4">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-200 w-5 h-5" />
-                        <input type="text" placeholder="Search courses..." value={searchTerm}  onChange={(e) => setSearchTerm(e.target.value)}
+                        <input type="text" placeholder="Search courses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                             className="w-full pl-10 pr-4 py-3 border text-white border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
                     </div>
@@ -122,9 +122,7 @@ const CoursesPage = () => {
                             <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                 <Grid className="w-4 h-4" />
                             </button>
-                            <button onClick={() => setViewMode('list')}
-                                className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}
-                            >
+                            <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                 <List className="w-4 h-4" />
                             </button>
                         </div>
@@ -208,7 +206,7 @@ const CoursesPage = () => {
                         {paginatedCourses.map(course => (
                             viewMode === 'grid'
                                 ? <CourseCard key={course._id} course={course} categories={categories} onPurchase={() => handlePurchase(course)} />
-                                : <CourseListItem key={course._id} course={course} categories={categories} />
+                                : <CourseListItem key={course._id} course={course} categories={categories} onPurchase={() => handlePurchase(course)} />
                         ))}
                     </div>
                 )}
