@@ -76,3 +76,21 @@ export const SubscriptionData = async () => {
         handleAxiosError(error);
     }
 };
+
+export const getCourseById = async (id : string) => {
+    try {
+        const response = await axiosInstance.get(`/user/course/${id}`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const checkEnrolled = async (id : string) => {
+    try {
+        const response = await axiosInstance.get(`/user/check-enrolled/${id}`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};

@@ -34,6 +34,10 @@ export const CourseCard = ({ course, categories, onPurchase }: Props) => {
         }
     }
 
+    const handleViewDetails = () => {
+        router.push(`/courses/${course._id}`);
+    };
+
     return (
         <div className="bg-[#151231] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300 flex flex-col h-full">
             <div className="relative w-full h-48 flex-shrink-0">
@@ -67,11 +71,14 @@ export const CourseCard = ({ course, categories, onPurchase }: Props) => {
                         {course.purchasedUsers || 0} users
                     </div>
                 </div>
-                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
-                    onClick={handleBuy}
-                >
-                    Buy Now
-                </button>
+                <div className="flex gap-2 mt-auto">
+                    <button className="w-full bg-gray-600 text-white py-2 px-4 rounded hover:bg-gray-700 transition" onClick={handleViewDetails}>
+                        View Details
+                    </button>
+                    <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={handleBuy}>
+                        Buy Now
+                    </button>
+                </div>
             </div>
         </div>
     );

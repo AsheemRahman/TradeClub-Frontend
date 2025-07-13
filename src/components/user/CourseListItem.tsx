@@ -33,7 +33,11 @@ export const CourseListItem = ({ course, categories, onPurchase }: Props) => {
             router.push('/login')
             toast.error("Login to buy course")
         }
-    }
+    };
+
+    const handleViewDetails = () => {
+        router.push(`/courses/${course._id}`);
+    };
 
     return (
         <div className="bg-[#151231] rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -66,12 +70,17 @@ export const CourseListItem = ({ course, categories, onPurchase }: Props) => {
                             </div>
                             <div className="flex items-center">
                                 <Users className="w-4 h-4 mr-1" />
-                                {/* {course.studentsCount} students */}
+                                {course.purchasedUsers} Customers
                             </div>
                         </div>
-                        <button className="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700 transition-colors" onClick={handleBuy}>
-                            Buy Now
-                        </button>
+                        <div className="flex gap-2 mt-auto text-sm">
+                            <button className="w-full bg-gray-600 text-white py-2 px-6 rounded hover:bg-gray-700 transition" onClick={handleViewDetails}>
+                                View Details
+                            </button>
+                            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition" onClick={handleBuy}>
+                                Buy Now
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
