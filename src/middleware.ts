@@ -49,6 +49,8 @@ export const config = {
     matcher: [
         '/home',
         '/profile',
+        '/my-learning',
+        '/my-learning/(.*)',
         '/expert/dashboard',
         '/expert/profile',
         '/expert/profile/edit',

@@ -62,10 +62,12 @@ const CourseDetailsPage = () => {
     }
 
     const getTotalLessons = () => course?.content?.length || 0;
+
     const getTotalDuration = () => {
         const total = course?.content?.reduce((sum, c) => sum + c.duration, 0) || 0;
         return Math.round((total / 60) * 10) / 10;
     };
+
     const formatDuration = (min: number) => `${Math.floor(min / 60)}h ${min % 60}m`;
 
     if (loading) {
@@ -218,7 +220,7 @@ const CourseDetailsPage = () => {
                                 { id: 'reviews', label: 'Reviews', icon: Star }
                             ].map((tab) => (
                                 <button key={tab.id} onClick={() => setActiveTab(tab.id as "overview" | "curriculum" | "reviews")}
-                                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-300 
+                                    className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium transition-all duration-300
                                         ${activeTab === tab.id ? 'bg-purple-600 text-white shadow-lg' : 'text-gray-400 hover:text-white hover:bg-gray-700/50'}`}
                                 >
                                     <tab.icon className="w-4 h-4" />
@@ -237,7 +239,7 @@ const CourseDetailsPage = () => {
                                             {course.description}
                                         </p>
                                         <p className="text-gray-300 leading-relaxed">
-                                            This comprehensive course will take you from beginner to advanced developer. You&apos;ll learn the latest technologies and best practices used by top companies around the world.
+                                            This comprehensive course will take you from a beginner to a confident trader. You&apos;ll learn proven strategies, tools, and real-world techniques used by professional traders and top financial experts through TradeClub.
                                         </p>
                                     </div>
 
@@ -262,8 +264,7 @@ const CourseDetailsPage = () => {
                                     <h2 className="text-3xl font-bold text-white mb-6">Course Content</h2>
                                     <div className="space-y-3">
                                         {course.content.slice(0, showAllContent ? undefined : 5).map((item, index) => (
-                                            <div
-                                                key={index}
+                                            <div key={index}
                                                 className="group bg-gray-800/50 hover:bg-gray-700/50 p-6 rounded-xl border border-gray-700/50 hover:border-purple-500/30 transition-all duration-300"
                                             >
                                                 <div className="flex items-center justify-between">
@@ -291,7 +292,7 @@ const CourseDetailsPage = () => {
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         {isEnrolled ? (
-                                                            <Play className="w-5 h-5 text-purple-400" />
+                                                            <Play className="w-5 h-5 text-purple-400" onClick={() => router.push(`/my-learning/${course._id}`)} />
                                                         ) : (
                                                             <Lock className="w-5 h-5 text-gray-500" />
                                                         )}
@@ -302,8 +303,7 @@ const CourseDetailsPage = () => {
                                     </div>
 
                                     {course.content.length > 5 && (
-                                        <button
-                                            onClick={() => setShowAllContent(!showAllContent)}
+                                        <button onClick={() => setShowAllContent(!showAllContent)}
                                             className="mt-6 px-6 py-3 bg-purple-600/20 text-purple-300 rounded-lg hover:bg-purple-600/30 transition-all duration-300 border border-purple-500/30"
                                         >
                                             {showAllContent ? 'Show Less' : `Show ${course.content.length - 5} More Lessons`}

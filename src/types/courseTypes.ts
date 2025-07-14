@@ -1,10 +1,11 @@
 export interface ICourseContent {
+    _id: string,
     title: string;
     videoUrl: string;
     duration: number;
 }
 
-export interface ICategory  {
+export interface ICategory {
     _id: string;
     categoryName: string;
     isActive: boolean;
@@ -34,4 +35,29 @@ export interface ICourseFormData {
     category: string;
     content: ICourseContent[];
     isPublished: boolean;
+}
+
+export interface IVideoProgress {
+    contentId: string;
+    watchedDuration: number;
+    isCompleted: boolean;
+    lastWatchedAt?: string;
+}
+
+export interface ICourseProgress {
+    _id: string;
+    user: string;
+    course: string;
+    progress: IVideoProgress[];
+    totalCompletedPercent: number;
+    lastWatchedAt?: string;
+    completedAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface IPurchasedCourse {
+    course: ICourse;
+    progress: ICourseProgress;
+    purchaseDate: string;
 }
