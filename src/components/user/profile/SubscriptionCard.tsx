@@ -34,8 +34,8 @@ const SubscriptionCard = () => {
                 </div>
                 <div className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/50">
                     <p className="text-slate-400 text-sm mb-1">Status</p>
-                    <div className={`font-bold text-lg flex items-center gap-2 ${isActive ? 'text-green-400' : 'text-red-400'  }`}>
-                        <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-400' : 'bg-red-400' }`}></div>
+                    <div className={`font-bold text-lg flex items-center gap-2 ${isActive ? 'text-green-400' : 'text-red-400'}`}>
+                        <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-400' : 'bg-red-400'}`}></div>
                         {subscription.status}
                     </div>
                 </div>
@@ -43,11 +43,9 @@ const SubscriptionCard = () => {
                     <p className="text-slate-400 text-sm mb-1">Renewal Date</p>
                     <p className="font-bold text-white text-lg">{formatDate(subscription.endDate)}</p>
                 </div>
-                <div className="bg-slate-700/30 p-4 rounded-xl border border-slate-600/50 flex items-center">
-                    <button className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-400 hover:to-purple-400 transition-all duration-200 font-medium shadow-lg">
-                        Manage Subscription
-                    </button>
-                </div>
+                <button className="bg-slate-700/30 w-full border border-slate-600/50  text-white px-6 py-3 rounded-xl hover:bg-blue-300 hover:text-black transition-all duration-200 font-medium text-lg ">
+                    Manage Subscription
+                </button>
             </div>
         </div>
     );

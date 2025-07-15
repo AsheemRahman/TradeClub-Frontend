@@ -2,6 +2,7 @@ import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
 import { UpdateProfilePayload } from "@/types/types";
+import { ICourse } from "@/types/courseTypes";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -101,5 +102,14 @@ export const createOrder = async (sessionId: string, courseId: string) => {
         return response.data;
     } catch (error) {
         handleAxiosError(error);
+    }
+};
+
+export const handlePurchase = async (course: ICourse) => {
+    try {
+        const res = await axiosInstance.post(`/user/create-checkout-session`, { course, });
+        window.location.href = res.data.url;
+    } catch (error) {
+        handleAxiosError(error)
     }
 };

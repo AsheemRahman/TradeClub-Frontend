@@ -379,7 +379,7 @@ const UserProfile = () => {
                                                     <p className="text-slate-500 text-sm">{purchase.createdAt}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="font-bold text-white text-xl">${purchase.amount}</p>
+                                                    <p className="font-bold text-white text-xl mb-4">${purchase.amount}</p>
                                                     <span className={`text-sm px-3 py-1 rounded-lg font-medium ${purchase.status === 'completed'
                                                         ? 'bg-green-500/20 text-green-300 border border-green-500/30'
                                                         : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'

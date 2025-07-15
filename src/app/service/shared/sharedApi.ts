@@ -1,8 +1,7 @@
 import axios from "axios";
-import { toast } from 'react-toastify'
 import axiosInstance from "./AxiosInstance";
-import { ICourse } from "@/types/courseTypes";
 
+import { toast } from 'react-toastify'
 
 interface RegisterPayload {
     fullName: string;
@@ -11,7 +10,6 @@ interface RegisterPayload {
     password: string;
     role: 'user' | 'expert';
 }
-
 
 interface loginType {
     email: string;
@@ -25,7 +23,6 @@ interface googleLogin {
     profilePicture?: string,
     role: 'user' | 'expert';
 }
-
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -104,12 +101,3 @@ export const logoutApi = async (role: string) => {
         handleAxiosError(error)
     }
 }
-
-export const handlePurchase = async (course: ICourse) => {
-    try {
-        const res = await axiosInstance.post(`/create-checkout-session`, { course, });
-        window.location.href = res.data.url;
-    } catch (error) {
-        handleAxiosError(error)
-    }
-};

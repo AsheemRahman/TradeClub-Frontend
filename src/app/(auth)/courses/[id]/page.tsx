@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, Award, CheckCircle, ArrowRight, Share2, Globe, PlayCircle, Timer, Target, Zap, ShieldCheck, Tags } from 'lucide-react';
 import { ICourse, ICategory } from '@/types/courseTypes';
 import { useAuthStore } from '@/store/authStore';
-import { handlePurchase } from '@/app/service/shared/sharedApi';
+import { handlePurchase } from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
 import { categoryData, checkEnrolled, getCourseById } from '@/app/service/user/userApi';
 
