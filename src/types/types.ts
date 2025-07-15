@@ -53,3 +53,17 @@ export interface ICoupon {
     target: 'all' | 'new_joiners' | 'specific_users' | 'premium_users' | 'first_purchase';
     createdAt?: Date;
 }
+
+export interface IOrder {
+    _id?:string
+    userId: string;
+    courseId: string;
+    courseTitle: string;
+    coursePrice: number;
+    currency: string;
+    stripeSessionId: string;
+    paymentIntentId: string;
+    paymentStatus: 'paid' | 'unpaid' | 'pending' | 'failed';
+    createdAt: Date;
+    updatedAt: Date;
+}

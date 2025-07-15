@@ -77,7 +77,7 @@ export const SubscriptionData = async () => {
     }
 };
 
-export const getCourseById = async (id : string) => {
+export const getCourseById = async (id: string) => {
     try {
         const response = await axiosInstance.get(`/user/course/${id}`,);
         return response.data;
@@ -86,9 +86,18 @@ export const getCourseById = async (id : string) => {
     }
 };
 
-export const checkEnrolled = async (id : string) => {
+export const checkEnrolled = async (id: string) => {
     try {
         const response = await axiosInstance.get(`/user/check-enrolled/${id}`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const createOrder = async (sessionId: string, courseId: string) => {
+    try {
+        const response = await axiosInstance.post(`/user/create-order`, { sessionId, courseId });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

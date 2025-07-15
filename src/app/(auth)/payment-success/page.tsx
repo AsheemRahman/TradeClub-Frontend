@@ -2,37 +2,58 @@
 
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Download, Share2, ArrowRight, Sparkles, CreditCard, Mail, Calendar, Clock, Package, User } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { createOrder } from '@/app/service/user/userApi';
+import { toast } from 'react-toastify';
+import { IOrder } from '@/types/types';
+
 
 interface PaymentSuccessProps {
-    transactionId?: string;
-    amount?: string;
-    currency?: string;
     customerEmail?: string;
-    productName?: string;
-    purchaseDate?: string;
     customerName?: string;
-    paymentMethod?: string;
-    onContinue?: () => void;
-    onDownload?: () => void;
-    onShare?: () => void;
 }
 
-const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
-    transactionId = "TXN-2025-789456123",
-    amount = "149.99",
-    currency = "USD",
-    customerEmail = "customer@example.com",
-    productName = "Premium Pro Subscription",
-    purchaseDate = "July 3, 2025",
-    customerName = "John Doe",
-    paymentMethod = "**** 4242",
-    onContinue,
-    onDownload,
-    onShare
-}) => {
+const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "customer@example.com", customerName = "John Doe", }) => {
+    const [order, setOrder] = useState<IOrder | null>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [detailsAnimated, setDetailsAnimated] = useState(false);
     const [successAnimated, setSuccessAnimated] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    const searchParams = useSearchParams();
+    const sessionId = searchParams.get("session_id");
+    const courseId = searchParams.get("courseId");
+    const router = useRouter();
+
+    useEffect(() => {
+        if (sessionId && courseId) {
+            const create = async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
+                    const response = await createOrder(sessionId, courseId);
+                    if (response?.status) {
+                        toast.success("Order placed successfully");
+                        setOrder(response.order);
+                    } else {
+                        toast.error("Failed to place order");
+                        setError("Failed to create order");
+                    }
+                } catch (error) {
+                    console.error("Error in success page:", error);
+                    toast.error("Something went wrong");
+                    setError("An error occurred while processing your order");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            create();
+        } else {
+            setLoading(false);
+            setError("Missing session ID or course ID");
+        }
+    }, [sessionId, courseId]);
 
     useEffect(() => {
         const timer1 = setTimeout(() => setIsVisible(true), 100);
@@ -47,37 +68,151 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
     }, []);
 
     const handleContinue = () => {
-        if (onContinue) {
-            onContinue();
+        if (courseId) {
+            router.push(`/my-learning/${courseId}`);
         } else {
-            window.location.href = '/profile';
+            router.push('/my-learning');
         }
     };
 
     const handleDownload = () => {
-        if (onDownload) {
-            onDownload();
-        } else {
-            console.log('Download receipt');
-        }
+        if (!order) return;
+
+        // Create a simple receipt content
+        const receiptContent = `
+Payment Receipt
+===============
+
+Transaction ID: ${order._id}
+Course: ${order.courseTitle}
+Amount: ${formatCurrency(order.coursePrice, order.currency)}
+Payment Status: ${order.paymentStatus.toUpperCase()}
+Date: ${formatDate(order.createdAt)}
+Customer: ${customerName}
+Email: ${customerEmail}
+
+Thank you for your purchase!
+        `;
+        // Create and download the receipt
+        const blob = new Blob([receiptContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `receipt-${order._id}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     };
 
     const handleShare = () => {
-        if (onShare) {
-            onShare();
+        const shareData = {
+            title: 'Payment Successful!',
+            text: `Successfully purchased ${order?.courseTitle || 'course'}`,
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            navigator.share(shareData).catch(err => {
+                console.error('Error sharing:', err);
+                copyToClipboard();
+            });
         } else {
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Payment Successful!',
-                    text: `Successfully purchased ${productName}`,
-                    url: window.location.href
-                });
-            }
+            copyToClipboard();
         }
     };
 
+    const copyToClipboard = () => {
+        const shareText = `🎉 Just completed my purchase of "${order?.courseTitle}" - excited to start learning!`;
+        navigator.clipboard.writeText(shareText).then(() => {
+            toast.success('Share text copied to clipboard!');
+        }).catch(() => {
+            toast.error('Failed to copy to clipboard');
+        });
+    };
+
+    const formatDate = (dateInput: Date | string) => {
+        try {
+            const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        } catch {
+            return 'Invalid date';
+        }
+    };
+
+    const formatCurrency = (amount: number, currency: string = 'USD') => {
+        if (isNaN(amount)) return 'N/A';
+
+        const currencySymbols: { [key: string]: string } = {
+            'USD': '$',
+            'INR': '₹',
+            'EUR': '€',
+            'GBP': '£'
+        };
+
+        const symbol = currencySymbols[currency] || currency;
+        return `${symbol}${amount.toFixed(2)}`;
+    };
+
+    const truncateId = (id: string) => {
+        if (!id) return 'N/A';
+        return id.length > 12 ? `${id.substring(0, 12)}...` : id;
+    };
+
+    const getStatusColor = (status: string) => {
+        switch (status) {
+            case 'paid':
+                return 'text-emerald-400 bg-emerald-500/20 border-emerald-400/30';
+            case 'pending':
+                return 'text-yellow-400 bg-yellow-500/20 border-yellow-400/30';
+            case 'failed':
+                return 'text-red-400 bg-red-500/20 border-red-400/30';
+            default:
+                return 'text-gray-400 bg-gray-500/20 border-gray-400/30';
+        }
+    };
+
+    // Loading state
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center mx-5 rounded-lg">
+                <div className="text-center">
+                    <div className="w-16 h-16 border-4 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-white text-lg">Processing your order...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-6 mx-5 rounded-lg">
+                <div className=" rounded-xl p-8 text-center max-w-md">
+                    <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-red-400 text-2xl">⚠️</span>
+                    </div>
+                    <h2 className="text-2xl font-bold text-red-400 mb-2">Error</h2>
+                    <p className="text-gray-300 mb-6">{error}</p>
+                    <button
+                        onClick={() => router.push('/')}
+                        className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition-colors"
+                    >
+                        Return Home
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen  flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 rounded-full blur-3xl animate-pulse"></div>
@@ -102,8 +237,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 min-h-[80vh]">
 
                     {/* LEFT SIDE - Transaction Details */}
-                    <div className={`transition-all duration-1000 transform ${detailsAnimated ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'
-                        }`}>
+                    <div className={`transition-all duration-1000 transform ${detailsAnimated ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
                         <div className="relative h-full">
                             {/* Glow effect */}
                             <div className="absolute -inset-4 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 rounded-3xl blur-xl"></div>
@@ -126,7 +260,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                             <div>
                                                 <p className="text-gray-300 text-sm mb-1">Total Amount</p>
                                                 <p className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                                                    {currency === 'USD' ? '$' : currency}{amount}
+                                                    {order ? formatCurrency(order.coursePrice, order.currency) : 'N/A'}
                                                 </p>
                                             </div>
                                             <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center">
@@ -142,11 +276,27 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                                 <Package className="w-6 h-6 text-white" />
                                             </div>
                                             <div className="flex-1">
-                                                <p className="text-gray-300 text-sm mb-1">Product</p>
-                                                <p className="text-white font-semibold text-lg mb-2">{productName}</p>
+                                                <p className="text-gray-300 text-sm mb-1">Course</p>
+                                                <p className="text-white font-semibold text-lg mb-2">{order?.courseTitle || 'N/A'}</p>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                                    <span className="text-emerald-300 text-sm">Active License</span>
+                                                    <span className="text-emerald-300 text-sm">Lifetime Access</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Payment Status */}
+                                    <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                                        <div className="flex items-center gap-4">
+                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-400 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                <CheckCircle className="w-6 h-6 text-white" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-gray-300 text-sm mb-2">Payment Status</p>
+                                                <div className={`px-3 py-1 rounded-full text-sm font-semibold border inline-flex items-center gap-2 ${getStatusColor(order?.paymentStatus || 'pending')}`}>
+                                                    <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
+                                                    {order?.paymentStatus?.toUpperCase() || 'PENDING'}
                                                 </div>
                                             </div>
                                         </div>
@@ -173,14 +323,16 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                         </div>
                                     </div>
 
-                                    {/* Payment Method & Date */}
-                                    <div className="grid grid-cols-2 gap-4">
+                                    {/* Transaction ID & Date */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
                                             <div className="flex items-center gap-3 mb-2">
-                                                <CreditCard className="w-4 h-4 text-gray-400" />
-                                                <p className="text-gray-400 text-sm">Payment</p>
+                                                <Clock className="w-4 h-4 text-gray-400" />
+                                                <p className="text-gray-400 text-sm">Transaction ID</p>
                                             </div>
-                                            <p className="text-white font-semibold">{paymentMethod}</p>
+                                            <p className="text-white font-mono text-sm bg-white/10 px-3 py-2 rounded-lg break-all">
+                                                {order?._id ? truncateId(order._id) : 'N/A'}
+                                            </p>
                                         </div>
 
                                         <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
@@ -188,19 +340,10 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                                 <Calendar className="w-4 h-4 text-gray-400" />
                                                 <p className="text-gray-400 text-sm">Date</p>
                                             </div>
-                                            <p className="text-white font-semibold">{purchaseDate}</p>
+                                            <p className="text-white font-semibold text-sm">
+                                                {order?.createdAt ? formatDate(order.createdAt) : 'N/A'}
+                                            </p>
                                         </div>
-                                    </div>
-
-                                    {/* Transaction ID */}
-                                    <div className="bg-white/5 rounded-2xl p-4 border border-white/10">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <Clock className="w-4 h-4 text-gray-400" />
-                                            <p className="text-gray-400 text-sm">Transaction ID</p>
-                                        </div>
-                                        <p className="text-white font-mono text-sm bg-white/10 px-3 py-2 rounded-lg inline-block">
-                                            {transactionId}
-                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -208,8 +351,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                     </div>
 
                     {/* RIGHT SIDE - Success Message */}
-                    <div className={`transition-all duration-1000 delay-300 transform ${successAnimated ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'
-                        }`}>
+                    <div className={`transition-all duration-1000 delay-300 transform ${successAnimated ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
                         <div className="relative h-full flex flex-col justify-center">
                             {/* Glow effect */}
                             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 via-cyan-500/20 to-purple-500/20 rounded-3xl blur-xl animate-pulse"></div>
@@ -274,8 +416,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                             <span>Receipt</span>
                                         </button>
 
-                                        <button
-                                            onClick={handleShare}
+                                        <button onClick={handleShare}
                                             className="bg-white/10 hover:bg-white/20 backdrop-blur-xl text-white font-semibold py-4 px-6 rounded-xl border border-white/20 hover:border-white/40 transition-all duration-300 flex items-center justify-center gap-3 group"
                                         >
                                             <Share2 className="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" />
@@ -283,7 +424,6 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
                                         </button>
                                     </div>
                                 </div>
-
                                 {/* Email Confirmation */}
                                 <div className="mt-8 p-6 bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl border border-blue-400/20 backdrop-blur-xl">
                                     <div className="flex items-center gap-4">
@@ -315,52 +455,43 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({
             </div>
 
             <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(180deg); }
-        }
-        
-        @keyframes confetti {
-          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-        
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        
-        @keyframes spin-slow-reverse {
-          from { transform: rotate(360deg); }
-          to { transform: rotate(0deg); }
-        }
-        
-        @keyframes shimmer {
-          0% { background-position: -200% 0; }
-          100% { background-position: 200% 0; }
-        }
-        
-        .animate-float {
-          animation: float 6s infinite ease-in-out;
-        }
-        
-        .animate-confetti {
-          animation: confetti 3s linear infinite;
-        }
-        
-        .animate-spin-slow {
-          animation: spin-slow 8s linear infinite;
-        }
-        
-        .animate-spin-slow-reverse {
-          animation: spin-slow-reverse 6s linear infinite;
-        }
-        
-        .animate-shimmer {
-          background-size: 200% auto;
-          animation: shimmer 3s linear infinite;
-        }
-      `}</style>
+                @keyframes float {
+                    0%, 100% { transform: translateY(0px) rotate(0deg); }
+                    50% { transform: translateY(-20px) rotate(180deg); }
+                }
+                
+                @keyframes spin-slow {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                
+                @keyframes spin-slow-reverse {
+                    from { transform: rotate(360deg); }
+                    to { transform: rotate(0deg); }
+                }
+                
+                @keyframes shimmer {
+                    0% { background-position: -200% 0; }
+                    100% { background-position: 200% 0; }
+                }
+                
+                .animate-float {
+                    animation: float 6s infinite ease-in-out;
+                }
+                
+                .animate-spin-slow {
+                    animation: spin-slow 8s linear infinite;
+                }
+                
+                .animate-spin-slow-reverse {
+                    animation: spin-slow-reverse 6s linear infinite;
+                }
+                
+                .animate-shimmer {
+                    background-size: 200% auto;
+                    animation: shimmer 3s linear infinite;
+                }
+            `}</style>
         </div>
     );
 };
