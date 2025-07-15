@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, BookOpen, Search, Grid, List, Award, TrendingUp, PlayCircle } from 'lucide-react';
 import { ICourseContent, ICourseProgress, IPurchasedCourse } from '@/types/courseTypes';
-import { mockPurchasedCourses } from '@/lib/mockData';
+import { getPurchasedCourses } from '@/app/service/user/userApi';
 
 
 const PurchasedCoursesPage = () => {
@@ -23,14 +23,11 @@ const PurchasedCoursesPage = () => {
         const fetchPurchasedCourses = async () => {
             try {
                 setLoading(true);
-                // Replace with actual API call
-                // const response = await fetch(`/api/users/${userId}/purchased-courses`);
-                // const data = await response.json();
-
-                // Simulate loading delay
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                setPurchasedCourses(mockPurchasedCourses);
-                setFilteredCourses(mockPurchasedCourses);
+                const response = await getPurchasedCourses();
+                if (response.status) {
+                    setPurchasedCourses(response.data);
+                    setFilteredCourses(response.data);
+                }
             } catch (error) {
                 console.log("Failed Fetching Purchased course", error)
                 setError('Failed to load purchased courses');
@@ -38,19 +35,16 @@ const PurchasedCoursesPage = () => {
                 setLoading(false);
             }
         };
-
         fetchPurchasedCourses();
     }, []);
 
     useEffect(() => {
         let filtered = [...purchasedCourses];
-
         // Filter by search term
         if (searchTerm) {
             filtered = filtered.filter(item =>
                 item.course.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.course.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                item.course.category.toLowerCase().includes(searchTerm.toLowerCase())
+                item.course.description.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
 
@@ -122,7 +116,6 @@ const PurchasedCoursesPage = () => {
         const completedCourses = purchasedCourses.filter(c => c.progress.totalCompletedPercent === 100).length;
         const inProgressCourses = purchasedCourses.filter(c => c.progress.totalCompletedPercent > 0 && c.progress.totalCompletedPercent < 100).length;
         const totalHours = purchasedCourses.reduce((total, c) => total + getTotalDuration(c.course.content), 0);
-
         return { totalCourses, completedCourses, inProgressCourses, totalHours };
     };
 
@@ -220,19 +213,13 @@ const PurchasedCoursesPage = () => {
                         <div className="flex items-center space-x-4">
                             <div className="relative">
                                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white" />
-                                <input
-                                    type="text"
-                                    placeholder="Search courses..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                <input type="text" placeholder="Search courses..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
                                     className="pl-10 pr-4 py-2 text-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value as "all" | "completed" | "in-progress" | "not-started")}
+                            <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value as "all" | "completed" | "in-progress" | "not-started")}
                                 className="px-4 py-2 text-white border  border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                                 <option value="all" className='text-black'>All Courses</option>
@@ -272,7 +259,7 @@ const PurchasedCoursesPage = () => {
                                         <div className="relative">
                                             <Image src={course.imageUrl} alt={course.title} width={300} height={160} className="object-cover w-full" />
                                             <div className="absolute top-3 left-3">
-                                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${status.bg} ${status.color}`}>
+                                                <span className={`px-2 py-1 rounded-lg text-xs font-medium ${status.bg} ${status.color}`}>
                                                     {status.text}
                                                 </span>
                                             </div>
@@ -334,8 +321,7 @@ const PurchasedCoursesPage = () => {
                                                     <span>Purchased: {new Date(item.purchaseDate).toLocaleDateString()}</span>
                                                 )}
                                             </div>
-                                            <button
-                                                onClick={() => continueCourse(course._id)}
+                                            <button onClick={() => continueCourse(course._id)}
                                                 className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                             >
                                                 <PlayCircle className="h-4 w-4" />

@@ -122,3 +122,30 @@ export const getPurchase = async () => {
         handleAxiosError(error)
     }
 };
+
+export const getPurchasedCourses = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/purchased-courses`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const getProgress = async (courseId: string) => {
+    try {
+        const response = await axiosInstance.get(`/user/course/${courseId}/progress`,);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const updateCourseProgress = async (courseId: string, contentId: string, watchedDuration: number, isCompleted: boolean) => {
+    try {
+        const response = await axiosInstance.post(`/user/course/${courseId}/progress`, { contentId, watchedDuration, isCompleted, });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
