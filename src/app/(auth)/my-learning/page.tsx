@@ -130,7 +130,7 @@ const PurchasedCoursesPage = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#151231] flex items-center justify-center mx-5 rounded-lg">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
                     <p className="mt-4 text-gray-600">Loading your courses...</p>
@@ -141,7 +141,7 @@ const PurchasedCoursesPage = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-[#151231] flex items-center justify-center mx-5 rounded-lg">
                 <div className="text-center">
                     <p className="text-red-600 text-lg">{error}</p>
                     <button onClick={() => window.location.reload()} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
@@ -155,17 +155,16 @@ const PurchasedCoursesPage = () => {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="bg-white shadow-sm mx-8 rounded-lg">
+            <div className="bg-[#151231] shadow-sm mx-8 rounded-lg">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">My Learning</h1>
-                            <p className="mt-2 text-gray-600">Track your progress and continue learning</p>
+                            <h1 className="text-3xl font-bold text-white">My Learning</h1>
+                            <p className="mt-2 text-gray-400">Track your progress and continue learning</p>
                         </div>
                         <div className="flex items-center space-x-4">
-                            <button
-                                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                            <button onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                className="p-2 bg-gray-50 border border-gray-300 rounded-lg hover:bg-gray-300"
                             >
                                 {viewMode === 'grid' ? <List className="h-5 w-5" /> : <Grid className="h-5 w-5" />}
                             </button>
@@ -177,56 +176,56 @@ const PurchasedCoursesPage = () => {
             {/* Stats Cards */}
             <div className=" mx-auto px-4 sm:px-6 lg:px-8 py-6">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="bg-[#151231] p-6 rounded-lg shadow-sm">
                         <div className="flex items-center">
                             <BookOpen className="h-8 w-8 text-blue-600" />
                             <div className="ml-4">
-                                <p className="text-sm text-gray-600">Total Courses</p>
-                                <p className="text-2xl font-bold text-gray-900">{stats.totalCourses}</p>
+                                <p className="text-sm text-gray-100">Total Courses</p>
+                                <p className="text-2xl font-bold text-gray-400">{stats.totalCourses}</p>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="bg-[#151231] p-6 rounded-lg shadow-sm">
                         <div className="flex items-center">
                             <Award className="h-8 w-8 text-green-600" />
                             <div className="ml-4">
-                                <p className="text-sm text-gray-600">Completed</p>
-                                <p className="text-2xl font-bold text-gray-900">{stats.completedCourses}</p>
+                                <p className="text-sm text-gray-100">Completed</p>
+                                <p className="text-2xl font-bold text-gray-400">{stats.completedCourses}</p>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="bg-[#151231] p-6 rounded-lg shadow-sm">
                         <div className="flex items-center">
                             <TrendingUp className="h-8 w-8 text-blue-600" />
                             <div className="ml-4">
-                                <p className="text-sm text-gray-600">In Progress</p>
-                                <p className="text-2xl font-bold text-gray-900">{stats.inProgressCourses}</p>
+                                <p className="text-sm text-gray-100">In Progress</p>
+                                <p className="text-2xl font-bold text-gray-400">{stats.inProgressCourses}</p>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                    <div className="bg-[#151231] p-6 rounded-lg shadow-sm">
                         <div className="flex items-center">
                             <Clock className="h-8 w-8 text-purple-600" />
                             <div className="ml-4">
-                                <p className="text-sm text-gray-600">Total Hours</p>
-                                <p className="text-2xl font-bold text-gray-900">{Math.floor(stats.totalHours / 60)}</p>
+                                <p className="text-sm text-gray-100">Total Hours</p>
+                                <p className="text-2xl font-bold text-gray-400">{Math.floor(stats.totalHours / 60)}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Filters and Search */}
-                <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
+                <div className="bg-[#151231] p-6 rounded-lg shadow-sm mb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                         <div className="flex items-center space-x-4">
                             <div className="relative">
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white" />
                                 <input
                                     type="text"
                                     placeholder="Search courses..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    className="pl-10 pr-4 py-2 text-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 />
                             </div>
                         </div>
@@ -234,20 +233,20 @@ const PurchasedCoursesPage = () => {
                             <select
                                 value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value as "all" | "completed" | "in-progress" | "not-started")}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="px-4 py-2 text-white border  border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="all">All Courses</option>
-                                <option value="completed">Completed</option>
-                                <option value="in-progress">In Progress</option>
-                                <option value="not-started">Not Started</option>
+                                <option value="all" className='text-black'>All Courses</option>
+                                <option value="completed" className='text-black'>Completed</option>
+                                <option value="in-progress" className='text-black'>In Progress</option>
+                                <option value="not-started" className='text-black'>Not Started</option>
                             </select>
                             <select value={sortBy} onChange={(e) => setSortBy(e.target.value as "recent" | "progress" | "alphabetical" | "purchase-date")}
-                                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="px-4 py-2 text-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
-                                <option value="recent">Recently Watched</option>
-                                <option value="progress">Progress</option>
-                                <option value="alphabetical">Alphabetical</option>
-                                <option value="purchase-date">Purchase Date</option>
+                                <option value="recent" className='text-black'>Recently Watched</option>
+                                <option value="progress" className='text-black'>Progress</option>
+                                <option value="alphabetical" className='text-black'>Alphabetical</option>
+                                <option value="purchase-date" className='text-black'>Purchase Date</option>
                             </select>
                         </div>
                     </div>

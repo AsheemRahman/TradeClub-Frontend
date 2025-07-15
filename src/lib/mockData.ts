@@ -187,33 +187,4 @@ export const mockWalletData = {
             },
             purchaseDate: '2024-01-05T10:30:00Z'
         },
-        {
-            course: {
-                _id: '4',
-                title: 'UI/UX Design Fundamentals',
-                description: 'Learn design principles, user research, and prototyping with modern tools.',
-                price: 79.99,
-                imageUrl: 'https://tradeclub03.s3.eu-north-1.amazonaws.com/Course/1750060009627-ymgw0qt592f.jpg',
-                category: "AsheemRahman",
-                content: Array.from({ length: 15 }, (_, i) => ({
-                    _id: `design-content-${i + 1}`,
-                    title: `Design Lesson ${i + 1}`,
-                    videoUrl: `design-video-${i + 1}`,
-                    duration: 25 + Math.floor(Math.random() * 10)
-                })),
-                isPublished: true,
-                createdAt: '2024-01-01T10:30:00Z',
-                updatedAt: '2024-01-08T14:20:00Z'
-            },
-            progress: {
-                _id: 'progress-4',
-                user: "userId",
-                course: '4',
-                progress: [],
-                totalCompletedPercent: 0,
-                createdAt: '2024-01-01T10:30:00Z',
-                updatedAt: '2024-01-01T10:30:00Z'
-            },
-            purchaseDate: '2024-01-01T10:30:00Z'
-        }
     ];
