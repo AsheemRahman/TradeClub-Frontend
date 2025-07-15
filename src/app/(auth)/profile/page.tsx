@@ -14,9 +14,10 @@ import NotificationSettings from '@/components/user/profile/NotificationSettings
 import ExpertConsultationCard from '@/components/user/profile/ExpertConsultationCard';
 import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsultationsList';
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
+import PurchaseHistory from '@/components/user/PurchaseHistory';
 
 import { getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
-import { purchaseHistory, subscription } from '@/lib/mockData'
+import { subscription } from '@/lib/mockData'
 import { UpdateProfilePayload } from '@/types/types';
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
@@ -227,7 +228,7 @@ const UserProfile = () => {
                 });
                 const data = await res.json();
                 if (data.success && data.url) {
-                    setEditForm(prev => ({  ...prev,  profilePicture: data.url,}));
+                    setEditForm(prev => ({ ...prev, profilePicture: data.url, }));
                     toast.success('File uploaded successfully!');
                 } else {
                     throw new Error(data.error || 'Upload failed');
@@ -260,7 +261,6 @@ const UserProfile = () => {
                                     <Edit3 className="w-4 h-4" />
                                 </button>
                             )}
-                            {/* <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-purple-500/10 to-blue-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div> */}
                         </div>
 
                         <div className="flex-1">
@@ -362,36 +362,37 @@ const UserProfile = () => {
                         )}
 
                         {activeTab === 'purchases' && (
-                            <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl p-8 w-full">
-                                <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
-                                        <CreditCard className="w-5 h-5 text-white" />
-                                    </div>
-                                    Purchase History
-                                </h3>
-                                <div className="space-y-4 w-full">
-                                    {purchaseHistory && purchaseHistory.map((purchase) => (
-                                        <div key={purchase.id} className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/50 hover:bg-slate-700/50 transition-all duration-200 w-full">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <h4 className="font-semibold text-white text-lg">{purchase.productName}</h4>
-                                                    <p className="text-slate-400 capitalize mb-1">{purchase.type.replace('-', ' ')}</p>
-                                                    <p className="text-slate-500 text-sm">{purchase.createdAt}</p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="font-bold text-white text-xl mb-4">${purchase.amount}</p>
-                                                    <span className={`text-sm px-3 py-1 rounded-lg font-medium ${purchase.status === 'completed'
-                                                        ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                                                        : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                                                        }`}>
-                                                        {purchase.status}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                            <PurchaseHistory />
+                            // <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl p-8 w-full">
+                            //     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
+                            //         <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
+                            //             <CreditCard className="w-5 h-5 text-white" />
+                            //         </div>
+                            //         Purchase History
+                            //     </h3>
+                            //     <div className="space-y-4 w-full">
+                            //         {purchaseHistory && purchaseHistory.map((purchase) => (
+                            //             <div key={purchase.id} className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/50 hover:bg-slate-700/50 transition-all duration-200 w-full">
+                            //                 <div className="flex justify-between items-start">
+                            //                     <div>
+                            //                         <h4 className="font-semibold text-white text-lg">{purchase.productName}</h4>
+                            //                         <p className="text-slate-400 capitalize mb-1">{purchase.type.replace('-', ' ')}</p>
+                            //                         <p className="text-slate-500 text-sm">{purchase.createdAt}</p>
+                            //                     </div>
+                            //                     <div className="text-right">
+                            //                         <p className="font-bold text-white text-xl mb-4">${purchase.amount}</p>
+                            //                         <span className={`text-sm px-3 py-1 rounded-lg font-medium ${purchase.status === 'completed'
+                            //                             ? 'bg-green-500/20 text-green-300 border border-green-500/30'
+                            //                             : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
+                            //                             }`}>
+                            //                             {purchase.status}
+                            //                         </span>
+                            //                     </div>
+                            //                 </div>
+                            //             </div>
+                            //         ))}
+                            //     </div>
+                            // </div>
                         )}
 
                         {activeTab === 'consultations' && (

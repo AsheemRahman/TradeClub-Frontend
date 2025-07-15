@@ -59,7 +59,6 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
         const timer1 = setTimeout(() => setIsVisible(true), 100);
         const timer2 = setTimeout(() => setDetailsAnimated(true), 300);
         const timer3 = setTimeout(() => setSuccessAnimated(true), 600);
-
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
@@ -83,9 +82,9 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
 Payment Receipt
 ===============
 
-Transaction ID: ${order._id}
-Course: ${order.courseTitle}
-Amount: ${formatCurrency(order.coursePrice, order.currency)}
+Transaction ID: ${order.id}
+Course: ${order.title}
+Amount: ${formatCurrency(order.amount, order.currency)}
 Payment Status: ${order.paymentStatus.toUpperCase()}
 Date: ${formatDate(order.createdAt)}
 Customer: ${customerName}
@@ -98,7 +97,7 @@ Thank you for your purchase!
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `receipt-${order._id}.txt`;
+        a.download = `receipt-${order.id}.txt`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -108,7 +107,7 @@ Thank you for your purchase!
     const handleShare = () => {
         const shareData = {
             title: 'Payment Successful!',
-            text: `Successfully purchased ${order?.courseTitle || 'course'}`,
+            text: `Successfully purchased ${order?.title || 'course'}`,
             url: window.location.href
         };
 
@@ -123,7 +122,7 @@ Thank you for your purchase!
     };
 
     const copyToClipboard = () => {
-        const shareText = `🎉 Just completed my purchase of "${order?.courseTitle}" - excited to start learning!`;
+        const shareText = `🎉 Just completed my purchase of "${order?.title}" - excited to start learning!`;
         navigator.clipboard.writeText(shareText).then(() => {
             toast.success('Share text copied to clipboard!');
         }).catch(() => {
@@ -162,7 +161,7 @@ Thank you for your purchase!
 
     const truncateId = (id: string) => {
         if (!id) return 'N/A';
-        return id.length > 12 ? `${id.substring(0, 12)}...` : id;
+        return id.length > 8 ? `${id.substring(0, 6)}...` : id;
     };
 
     const getStatusColor = (status: string) => {
@@ -260,7 +259,7 @@ Thank you for your purchase!
                                             <div>
                                                 <p className="text-gray-300 text-sm mb-1">Total Amount</p>
                                                 <p className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent">
-                                                    {order ? formatCurrency(order.coursePrice, order.currency) : 'N/A'}
+                                                    {order ? formatCurrency(order.amount, order.currency) : 'N/A'}
                                                 </p>
                                             </div>
                                             <div className="w-16 h-16 bg-gradient-to-br from-emerald-400 to-cyan-500 rounded-full flex items-center justify-center">
@@ -277,7 +276,7 @@ Thank you for your purchase!
                                             </div>
                                             <div className="flex-1">
                                                 <p className="text-gray-300 text-sm mb-1">Course</p>
-                                                <p className="text-white font-semibold text-lg mb-2">{order?.courseTitle || 'N/A'}</p>
+                                                <p className="text-white font-semibold text-lg mb-2">{order?.amount || 'N/A'}</p>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
                                                     <span className="text-emerald-300 text-sm">Lifetime Access</span>
@@ -331,7 +330,7 @@ Thank you for your purchase!
                                                 <p className="text-gray-400 text-sm">Transaction ID</p>
                                             </div>
                                             <p className="text-white font-mono text-sm bg-white/10 px-3 py-2 rounded-lg break-all">
-                                                {order?._id ? truncateId(order._id) : 'N/A'}
+                                                {order?.id ? truncateId(order.id) : 'N/A'}
                                             </p>
                                         </div>
 

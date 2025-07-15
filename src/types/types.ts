@@ -55,11 +55,12 @@ export interface ICoupon {
 }
 
 export interface IOrder {
-    _id?:string
+    id?:string
     userId: string;
-    courseId: string;
-    courseTitle: string;
-    coursePrice: number;
+    type: 'Course' | 'SubscriptionPlan';
+    itemId: string;
+    title: string;
+    amount: number;
     currency: string;
     stripeSessionId: string;
     paymentIntentId: string;

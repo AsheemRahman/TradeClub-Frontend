@@ -107,8 +107,17 @@ export const createOrder = async (sessionId: string, courseId: string) => {
 
 export const handlePurchase = async (course: ICourse) => {
     try {
-        const res = await axiosInstance.post(`/user/create-checkout-session`, { course, });
+        const res = await axiosInstance.post(`/user/create-checkout-session`, { course });
         window.location.href = res.data.url;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const getPurchase = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/purchase-history`);
+        return response.data;
     } catch (error) {
         handleAxiosError(error)
     }
