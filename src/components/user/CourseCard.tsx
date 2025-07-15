@@ -4,14 +4,14 @@ import { Clock, Star, Users } from "lucide-react";
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { handlePurchase } from "@/app/service/shared/sharedApi";
 
 type Props = {
     course: ICourse;
     categories: ICategory[];
-    onPurchase: () => void;
 };
 
-export const CourseCard = ({ course, categories, onPurchase }: Props) => {
+export const CourseCard = ({ course, categories }: Props) => {
     const { user } = useAuthStore();
     const router = useRouter()
 
@@ -27,7 +27,7 @@ export const CourseCard = ({ course, categories, onPurchase }: Props) => {
 
     const handleBuy = () => {
         if (user) {
-            onPurchase()
+            handlePurchase(course)
         } else {
             router.push('/login')
             toast.error("Login to buy course")

@@ -110,6 +110,6 @@ export const handlePurchase = async (course: ICourse) => {
         const res = await axiosInstance.post(`/create-checkout-session`, { course, });
         window.location.href = res.data.url;
     } catch (error) {
-        console.error('Stripe Payment Error', error);
+        handleAxiosError(error)
     }
 };

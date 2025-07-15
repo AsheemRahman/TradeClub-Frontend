@@ -6,7 +6,6 @@ import { CourseListItem } from '@/components/user/CourseListItem';
 import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
 import { ICategory, ICourse } from '@/types/courseTypes';
 import { categoryData, courseData } from '@/app/service/user/userApi';
-import { handlePurchase } from '@/app/service/shared/sharedApi';
 
 
 const CoursesPage = () => {
@@ -205,8 +204,8 @@ const CoursesPage = () => {
                     }>
                         {paginatedCourses.map(course => (
                             viewMode === 'grid'
-                                ? <CourseCard key={course._id} course={course} categories={categories} onPurchase={() => handlePurchase(course)} />
-                                : <CourseListItem key={course._id} course={course} categories={categories} onPurchase={() => handlePurchase(course)} />
+                                ? <CourseCard key={course._id} course={course} categories={categories}/>
+                                : <CourseListItem key={course._id} course={course} categories={categories} />
                         ))}
                     </div>
                 )}

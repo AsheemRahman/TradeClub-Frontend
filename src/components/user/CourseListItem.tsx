@@ -4,15 +4,15 @@ import { ICategory, ICourse, ICourseContent } from "@/types/courseTypes";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import { handlePurchase } from "@/app/service/shared/sharedApi";
 
 
 type Props = {
     course: ICourse;
     categories: ICategory[];
-    onPurchase: () => void;
 };
 
-export const CourseListItem = ({ course, categories, onPurchase }: Props) => {
+export const CourseListItem = ({ course, categories }: Props) => {
     const { user } = useAuthStore();
     const router = useRouter()
 
@@ -28,7 +28,7 @@ export const CourseListItem = ({ course, categories, onPurchase }: Props) => {
 
     const handleBuy = () => {
         if (user) {
-            onPurchase()
+            handlePurchase(course)
         } else {
             router.push('/login')
             toast.error("Login to buy course")
