@@ -140,3 +140,30 @@ export const couponStatus = async (id: string) => {
         handleAxiosError(error);
     }
 };
+
+export const getOrders = async () => {
+    try {
+        const response = await adminAxiosInstance.get(`/admin/orders`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const getUser = async (userId: string) => {
+    try {
+        const response = await adminAxiosInstance.get(`/admin/user/${userId}`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const getItem = async (itemId: string, itemType: 'Course' | 'SubscriptionPlan') => {
+    try {
+        const response = await adminAxiosInstance.get(`/admin/${itemType}/${itemId}`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
