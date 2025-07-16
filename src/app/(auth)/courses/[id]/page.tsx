@@ -127,11 +127,11 @@ const CourseDetailsPage = () => {
                                 </div>
                                 <div className="flex items-center text-gray-300">
                                     <Calendar className="w-4 h-4 mr-2 text-purple-400" />
-                                    {course.createdAt && (<>Updated {new Date(course.createdAt).toLocaleDateString()}</>)}
+                                    {course.updatedAt && (<>Updated {new Date(course.updatedAt).toLocaleDateString()}</>)}
                                 </div>
                                 <div className="flex items-center text-gray-300">
                                     <Users className="w-4 h-4 mr-2 text-purple-400" />
-                                    {course.purchasedUsers || 0} Customer
+                                    {course.purchasedUsers?.length || 0} Customer
                                 </div>
                             </div>
 

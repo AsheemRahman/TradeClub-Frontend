@@ -70,7 +70,7 @@ export const CourseListItem = ({ course, categories }: Props) => {
                             </div>
                             <div className="flex items-center">
                                 <Users className="w-4 h-4 mr-1" />
-                                {course.purchasedUsers} Customers
+                                {course.purchasedUsers?.length} Customers
                             </div>
                         </div>
                         <div className="flex gap-2 mt-auto text-sm">

@@ -68,7 +68,7 @@ export const CourseCard = ({ course, categories }: Props) => {
                     </div>
                     <div className="flex items-center">
                         <Users className="w-4 h-4 mr-1" />
-                        {course.purchasedUsers || 0} users
+                        {course.purchasedUsers?.length || 0} users
                     </div>
                 </div>
                 <div className="flex gap-2 mt-auto">

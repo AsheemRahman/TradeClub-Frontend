@@ -64,6 +64,7 @@ const AdminCourseDetail = () => {
             imageUrl: course.imageUrl,
             category: course.category,
             content: course.content.map(item => ({
+                _id:item._id,
                 title: item.title,
                 videoUrl: item.videoUrl,
                 duration: item.duration
@@ -460,7 +461,7 @@ const AdminCourseDetail = () => {
                                 <h3 className="font-medium text-gray-300">Enrollments</h3>
                                 <Users className="text-blue-500" size={20} />
                             </div>
-                            <p className="text-2xl font-bold text-white">{course.purchasedUsers || 0}</p>
+                            <p className="text-2xl font-bold text-white">{course.purchasedUsers?.length || 0}</p>
                             <p className="text-sm text-blue-500 mt-1">+5 this week</p>
                         </div>
 

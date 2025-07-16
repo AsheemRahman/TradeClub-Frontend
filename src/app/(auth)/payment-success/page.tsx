@@ -276,7 +276,7 @@ Thank you for your purchase!
                                             </div>
                                             <div className="flex-1">
                                                 <p className="text-gray-300 text-sm mb-1">Course</p>
-                                                <p className="text-white font-semibold text-lg mb-2">{order?.amount || 'N/A'}</p>
+                                                <p className="text-white font-semibold text-lg mb-2">{order?.title || 'N/A'}</p>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
                                                     <span className="text-emerald-300 text-sm">Lifetime Access</span>

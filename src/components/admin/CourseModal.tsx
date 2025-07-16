@@ -176,7 +176,7 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <label>Course Content</label>
-                            <button type="button" onClick={() => append({ title: '', duration: 0, videoUrl: '' })} className="text-blue-600 flex items-center gap-1"><Plus size={16} /> Add</button>
+                            <button type="button" onClick={() => append({_id : '', title: '', duration: 0, videoUrl: '' })} className="text-blue-600 flex items-center gap-1"><Plus size={16} /> Add</button>
                         </div>
 
                         {fields.map((field, index) => (

@@ -20,7 +20,7 @@ export interface ICourse {
     price: number;
     imageUrl: string;
     category: string;
-    purchasedUsers?: number;
+    purchasedUsers?: [];
     content: ICourseContent[];
     isPublished: boolean;
     createdAt?: string;

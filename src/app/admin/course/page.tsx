@@ -214,7 +214,7 @@ const AdminCoursesPage = () => {
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <Users size={16} />
-                                                <span>{course.purchasedUsers || 0}</span>
+                                                <span>{course.purchasedUsers?.length || 0}</span>
                                             </div>
                                             <div className="flex items-center gap-1">
                                                 <BookOpen size={16} />
