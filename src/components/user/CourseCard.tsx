@@ -43,7 +43,7 @@ export const CourseCard = ({ course, categories }: Props) => {
             <div className="relative w-full h-48 flex-shrink-0">
                 <Image src={course.imageUrl} alt={course.title} fill className="object-cover" />
                 <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-sm">
-                    ${course.price}
+                     ₹{course.price}
                 </div>
             </div>
 

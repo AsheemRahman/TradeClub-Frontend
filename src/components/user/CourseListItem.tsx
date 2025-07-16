@@ -54,7 +54,7 @@ export const CourseListItem = ({ course, categories }: Props) => {
                             <h3 className="text-xl text-white font-semibold mt-2">{course.title}</h3>
                         </div>
                         <div className="text-right">
-                            <div className="text-2xl font-bold text-blue-600 mb-3">${course.price}</div>
+                            <div className="text-2xl font-bold text-blue-600 mb-3"> ₹{course.price}</div>
                             <div className="flex items-center ">
                                 <Star className="w-4 h-4 text-yellow-400 fill-current" />
                                 {/* <span className="ml-1 text-sm text-gray-600">{course.rating || 0}</span> */}
