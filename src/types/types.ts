@@ -63,7 +63,7 @@ export interface IOrder {
     amount: number;
     currency: string;
     stripeSessionId: string;
-    paymentIntentId: string;
+    paymentIntentId?: string;
     paymentStatus: 'paid' | 'unpaid' | 'pending' | 'failed';
     createdAt: Date;
     updatedAt: Date;
