@@ -115,9 +115,8 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
             return;
         }
         try {
-            const response = editingCourse
-                ? await editCourse(editingCourse._id, data)
-                : await addCourse(data);
+            const cleanedData: ICourseFormData = { ...data, content: data.content.map(({ _id, ...rest }) => (_id ? { _id, ...rest } : rest)), };
+            const response = editingCourse ? await editCourse(editingCourse._id, cleanedData) : await addCourse(cleanedData);
             if (response.status) {
                 toast.success(editingCourse ? 'Course updated' : 'Course created');
                 await fetchData();
@@ -176,7 +175,7 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
                     <div>
                         <div className="flex justify-between items-center mb-2">
                             <label>Course Content</label>
-                            <button type="button" onClick={() => append({_id : '', title: '', duration: 0, videoUrl: '' })} className="text-blue-600 flex items-center gap-1"><Plus size={16} /> Add</button>
+                            <button type="button" onClick={() => append({ title: '', duration: 0, videoUrl: '' })} className="text-blue-600 flex items-center gap-1"><Plus size={16} /> Add</button>
                         </div>
 
                         {fields.map((field, index) => (

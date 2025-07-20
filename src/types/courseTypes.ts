@@ -1,5 +1,5 @@
 export interface ICourseContent {
-    _id: string,
+    _id?: string,
     title: string;
     videoUrl: string;
     duration: number;
