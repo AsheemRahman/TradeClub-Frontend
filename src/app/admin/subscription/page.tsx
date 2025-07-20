@@ -243,7 +243,7 @@ const SubscriptionManagement: React.FC = () => {
                                         <div>
                                             <h3 className="text-xl font-bold text-slate-800 mb-1">{plan.name}</h3>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-3xl font-bold text-slate-800">${plan.price}</span>
+                                                <span className="text-3xl font-bold text-slate-800">₹ {plan.price}</span>
                                                 <span className="text-slate-500">/{plan.duration} days</span>
                                             </div>
                                         </div>

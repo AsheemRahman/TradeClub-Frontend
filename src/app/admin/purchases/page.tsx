@@ -84,7 +84,7 @@ const AdminOrdersPage: React.FC = () => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
             currency: currency || 'INR',
-        }).format(amount / 100);
+        }).format(amount);
     };
 
     const formatDate = (date: Date): string => {
@@ -173,29 +173,29 @@ const AdminOrdersPage: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center rounded-lg">
+            <div className="min-h-screen bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center rounded-lg">
                 <div className="text-center">
-                    <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-                    <p className="text-gray-600">Loading orders...</p>
+                    <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-white" />
+                    <p className="text-white">Loading orders...</p>
                 </div>
             </div>
         );
-    }
+    };
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center rounded-lg">
+            <div className="min-h-screen bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center rounded-lg">
                 <div className="text-center">
                     <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
                         {error}
                     </div>
-                    <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700" >
+                    <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-700" >
                         Retry
                     </button>
                 </div>
             </div>
         );
-    }
+    };
 
     return (
         <div className="min-h-screen">
