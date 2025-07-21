@@ -1,19 +1,12 @@
 "use client"
 
 import { useParams } from 'next/navigation';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Volume2, VolumeX, Maximize, Settings, FastForward, Rewind, List, X, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
-import { ICourse, ICourseContent, ICourseProgress } from '@/types/courseTypes';
+import { ICourse, ICourseContent, ICourseProgress, IVideoProgress } from '@/types/courseTypes';
 import { getCourseById, getProgress, updateCourseProgress } from '@/app/service/user/userApi';
 
-
-interface ProgressItem {
-    contentId: string;
-    watchedDuration: number;
-    isCompleted: boolean;
-    lastWatchedAt: string;
-}
 
 const EnhancedCoursePlayer = () => {
     const { courseId } = useParams() as { courseId: string };
@@ -29,19 +22,20 @@ const EnhancedCoursePlayer = () => {
     const [duration, setDuration] = useState(0);
     const [volume, setVolume] = useState(1);
     const [isMuted, setIsMuted] = useState(false);
-    const [isFullscreen, setIsFullscreen] = useState(false);
     const [showSidebar, setShowSidebar] = useState(true);
     const [playbackSpeed, setPlaybackSpeed] = useState(1);
     const [showSpeedMenu, setShowSpeedMenu] = useState(false);
     const [notes, setNotes] = useState('');
     const [showNotes, setShowNotes] = useState(false);
     const [savingProgress, setSavingProgress] = useState(false);
+    const [videoLoaded, setVideoLoaded] = useState(false);
 
     const progressRef = useRef<HTMLDivElement | null>(null);
     const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const fullscreenRef = useRef<HTMLDivElement>(null);
 
-
+    // Load course data
     useEffect(() => {
         const loadCourseData = async () => {
             try {
@@ -55,12 +49,11 @@ const EnhancedCoursePlayer = () => {
                     setCourseProgress(progressData.progress);
                     // Find the last watched video if progress exists
                     if (progressData.progress && progressData.progress.length > 0) {
-                        const lastWatched = progressData.progress.sort((a: ProgressItem, b: ProgressItem) => new Date(b.lastWatchedAt).getTime() - new Date(a.lastWatchedAt).getTime())[0];
-                        if (courseData && lastWatched) {
-                            const videoIndex = courseData.content.findIndex((content: ICourseContent) => content._id === lastWatched.contentId);
+                        const lastWatched = progressData.progress.filter((p: IVideoProgress) => p.lastWatchedAt).sort((a: IVideoProgress, b: IVideoProgress) => new Date(b.lastWatchedAt!).getTime() - new Date(a.lastWatchedAt!).getTime())[0];
+                        if (courseData.course && lastWatched) {
+                            const videoIndex = courseData.course.content.findIndex((content: ICourseContent) => content._id === lastWatched.contentId);
                             if (videoIndex !== -1) {
                                 setCurrentVideoIndex(videoIndex);
-                                setCurrentTime(lastWatched.watchedDuration);
                             }
                         }
                     }
@@ -77,34 +70,78 @@ const EnhancedCoursePlayer = () => {
         }
     }, [courseId]);
 
+    // Video event handlers
+    const handleVideoLoadedMetadata = useCallback(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        setDuration(video.duration);
+        setVideoLoaded(true);
+        // Set initial time from progress if available
+        if (courseProgress && course) {
+            const currentVideo = course.content[currentVideoIndex];
+            if (!currentVideo || !currentVideo._id) return;
+            const progress = getVideoProgress(currentVideo._id);
+            if (progress && progress.watchedDuration > 0) {
+                video.currentTime = progress.watchedDuration;
+                setCurrentTime(progress.watchedDuration);
+            }
+        }
+    }, [courseProgress, course, currentVideoIndex]);
+
+    const handleVideoTimeUpdate = useCallback(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        setCurrentTime(video.currentTime);
+    }, []);
+
+    const handleVideoEnded = useCallback(() => {
+        setIsPlaying(false);
+        handleVideoComplete();
+    }, []);
+
+    const handleVideoPlay = useCallback(() => {
+        setIsPlaying(true);
+    }, []);
+
+    const handleVideoPause = useCallback(() => {
+        setIsPlaying(false);
+    }, []);
+
+    // Set up video event listeners
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+        video.addEventListener('loadedmetadata', handleVideoLoadedMetadata);
+        video.addEventListener('timeupdate', handleVideoTimeUpdate);
+        video.addEventListener('ended', handleVideoEnded);
+        video.addEventListener('play', handleVideoPlay);
+        video.addEventListener('pause', handleVideoPause);
+        return () => {
+            video.removeEventListener('loadedmetadata', handleVideoLoadedMetadata);
+            video.removeEventListener('timeupdate', handleVideoTimeUpdate);
+            video.removeEventListener('ended', handleVideoEnded);
+            video.removeEventListener('play', handleVideoPlay);
+            video.removeEventListener('pause', handleVideoPause);
+        };
+    }, [handleVideoLoadedMetadata, handleVideoTimeUpdate, handleVideoEnded, handleVideoPlay, handleVideoPause]);
+
+    // Reset video when changing videos
     useEffect(() => {
         if (course && course.content[currentVideoIndex]) {
-            setDuration(course.content[currentVideoIndex].duration * 60);
+            setVideoLoaded(false);
+            setCurrentTime(0);
+            setIsPlaying(false);
+            const video = videoRef.current;
+            if (video) {
+                video.currentTime = 0;
+                video.load();
+            }
         }
     }, [currentVideoIndex, course]);
 
-    // Video playback timer
-    useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (isPlaying && duration && course) {
-            interval = setInterval(() => {
-                setCurrentTime(prev => {
-                    const newTime = prev + 1;
-                    if (newTime >= duration) {
-                        setIsPlaying(false);
-                        handleVideoComplete();
-                        return duration;
-                    }
-                    return newTime;
-                });
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isPlaying, duration, course]);
-
     // Debounced progress update
     useEffect(() => {
-        if (course && currentTime > 0) {
+        if (course && currentTime > 0 && videoLoaded) {
             // Clear existing timeout
             if (progressUpdateTimeoutRef.current) {
                 clearTimeout(progressUpdateTimeoutRef.current);
@@ -119,84 +156,111 @@ const EnhancedCoursePlayer = () => {
                 clearTimeout(progressUpdateTimeoutRef.current);
             }
         };
-    }, [currentTime, course]);
+    }, [currentTime, course, videoLoaded]);
 
-    const handleVideoComplete = () => {
+    const handleVideoComplete = useCallback(() => {
         markVideoComplete();
         if (course && currentVideoIndex < course.content.length - 1) {
             setTimeout(() => {
                 goToNextVideo();
             }, 2000);
         }
-    };
+    }, [course, currentVideoIndex]);
 
-    const togglePlayPause = () => {
+    const togglePlayPause = useCallback(() => {
         const video = videoRef.current;
         if (!video) return;
         if (isPlaying) {
             video.pause();
         } else {
-            video.play();
+            video.play().catch(console.error);
         }
-        setIsPlaying(!isPlaying);
-    };
+    }, [isPlaying]);
 
-    const goToNextVideo = () => {
+    const goToNextVideo = useCallback(() => {
         if (course && currentVideoIndex < course.content.length - 1) {
             updateVideoProgress(currentTime);
             setCurrentVideoIndex(currentVideoIndex + 1);
-            setIsPlaying(false);
-            setCurrentTime(0);
         }
-    };
+    }, [course, currentVideoIndex, currentTime]);
 
-    const goToPreviousVideo = () => {
+    const goToPreviousVideo = useCallback(() => {
         if (currentVideoIndex > 0) {
             updateVideoProgress(currentTime);
             setCurrentVideoIndex(currentVideoIndex - 1);
-            setIsPlaying(false);
-            setCurrentTime(0);
         }
-    };
+    }, [currentVideoIndex, currentTime]);
 
-    const selectVideo = (index: number) => {
+    const selectVideo = useCallback((index: number) => {
         if (index !== currentVideoIndex) {
             updateVideoProgress(currentTime);
             setCurrentVideoIndex(index);
-            setIsPlaying(false);
-            setCurrentTime(0);
         }
-        if (videoRef.current) {
-            videoRef.current.currentTime = 0;
-        }
-    };
+    }, [currentVideoIndex, currentTime]);
 
-    const updateVideoProgress = async (watchedTime: number) => {
-        if (!course) return;
+    const updateVideoProgress = useCallback(async (watchedTime: number, forceComplete: boolean = false) => {
+        if (!course || !videoLoaded) return;
         try {
             setSavingProgress(true);
             const currentVideo = course.content[currentVideoIndex];
-            const isCompleted = watchedTime >= duration * 0.9;
+            if (!currentVideo || !currentVideo._id) return;
+
+            // Fix: Use the actual video duration from the video element, not the course content duration
+            const videoDurationInSeconds = duration; // This is already in seconds from video element
+
+            // Determine if completed - either forced or watched 90% of actual video duration
+            const isCompleted = forceComplete || (videoDurationInSeconds > 0 && watchedTime >= videoDurationInSeconds * 0.9);
+
+            // If forcing complete, use the full duration as watched time
+            const finalWatchedTime = forceComplete ? videoDurationInSeconds : watchedTime;
+
             // Update progress via API
-            const updatedProgress = await updateCourseProgress(courseId, currentVideo._id, watchedTime, isCompleted);
+            const updatedProgress = await updateCourseProgress(courseId, currentVideo._id, finalWatchedTime, isCompleted);
             if (updatedProgress?.status) {
                 setCourseProgress(updatedProgress.progress);
             } else {
-                // Fallback: initialize or update local state
-                const newProgress: ICourseProgress = { _id: '', user: '', course: courseId, progress: [], totalCompletedPercent: 0, lastWatchedAt: '' };
-                const existingProgressIndex = newProgress.progress.findIndex(
-                    (p) => p.contentId === currentVideo._id
-                );
-                const videoProgress = { contentId: currentVideo._id, watchedDuration: watchedTime, isCompleted, lastWatchedAt: new Date().toISOString(), };
-                if (existingProgressIndex >= 0) {
-                    newProgress.progress[existingProgressIndex] = videoProgress;
-                } else {
-                    newProgress.progress.push(videoProgress);
-                }
-                const completedCount = newProgress.progress.filter((p) => p.isCompleted).length;
-                newProgress.totalCompletedPercent = (completedCount / course.content.length) * 100;
-                newProgress.lastWatchedAt = new Date().toISOString();
-                setCourseProgress(newProgress);
+                setCourseProgress((prevProgress) => {
+                    const safeContentId = currentVideo._id!;
+                    if (!prevProgress) {
+                        return {
+                            _id: '',
+                            user: '',
+                            course: courseId,
+                            progress: [
+                                {
+                                    contentId: safeContentId,
+                                    watchedDuration: finalWatchedTime,
+                                    isCompleted,
+                                    lastWatchedAt: new Date().toISOString(),
+                                },
+                            ],
+                            totalCompletedPercent: isCompleted
+                                ? (1 / course.content.length) * 100
+                                : 0,
+                            lastWatchedAt: new Date().toISOString(),
+                        };
+                    }
+                    const newProgress = { ...prevProgress };
+                    const existingIndex = newProgress.progress.findIndex(
+                        (p) => p.contentId === safeContentId
+                    );
+                    const videoProgress = {
+                        contentId: safeContentId,
+                        watchedDuration: finalWatchedTime,
+                        isCompleted,
+                        lastWatchedAt: new Date().toISOString(),
+                    };
+                    if (existingIndex >= 0) {
+                        newProgress.progress[existingIndex] = videoProgress;
+                    } else {
+                        newProgress.progress.push(videoProgress);
+                    }
+                    const completedCount = newProgress.progress.filter((p) => p.isCompleted).length;
+                    newProgress.totalCompletedPercent =
+                        (completedCount / course.content.length) * 100;
+                    newProgress.lastWatchedAt = new Date().toISOString();
+                    return newProgress;
+                });
             }
         } catch (error) {
             console.error('Failed to update progress:', error);
@@ -204,83 +268,107 @@ const EnhancedCoursePlayer = () => {
         } finally {
             setSavingProgress(false);
         }
-    };
+    }, [course, currentVideoIndex, courseId, duration, videoLoaded]);
 
+    // Fixed: Mark video as complete using force complete flag
+    const markVideoComplete = useCallback(async () => {
+        if (!course || !videoLoaded) return;
+        const currentVideo = course.content[currentVideoIndex];
+        if (!currentVideo || !currentVideo._id) return;
 
-    const markVideoComplete = async () => {
-        await updateVideoProgress(duration);
-    };
+        // Force complete the video regardless of current time
+        await updateVideoProgress(duration || currentTime, true);
+    }, [course, currentVideoIndex, duration, currentTime, updateVideoProgress, videoLoaded]);
 
-    const getVideoProgress = (contentId: string) => {
+    const getVideoProgress = useCallback((contentId: string) => {
         return courseProgress?.progress.find((p) => p.contentId === contentId) || null;
-    };
+    }, [courseProgress]);
 
-    const isVideoCompleted = (contentId: string) => {
+    const isVideoCompleted = useCallback((contentId: string) => {
         const progress = getVideoProgress(contentId);
         return progress?.isCompleted || false;
-    };
+    }, [getVideoProgress]);
 
-    const getCompletedVideosCount = () => {
+    const getCompletedVideosCount = useCallback(() => {
         return courseProgress?.progress.filter((p) => p.isCompleted).length || 0;
-    };
+    }, [courseProgress]);
 
-    const formatTime = (seconds: number) => {
+    const formatTime = useCallback((seconds: number) => {
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    };
+    }, []);
 
-    const formatDuration = (minutes: number) => {
+    const formatDuration = useCallback((minutes: number) => {
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
         return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    };
+    }, []);
 
-    const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!progressRef.current || !videoRef.current) return;
+    const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (!progressRef.current || !videoRef.current || !duration) return;
         const rect = progressRef.current.getBoundingClientRect();
         const percent = (e.clientX - rect.left) / rect.width;
-        const newTime = percent * duration;
+        const newTime = Math.max(0, Math.min(duration, percent * duration));
         videoRef.current.currentTime = newTime;
         setCurrentTime(newTime);
-    };
+    }, [duration]);
 
-    const skip = (seconds: number) => {
+    const skip = useCallback((seconds: number) => {
         const video = videoRef.current;
-        if (!video) return;
+        if (!video || !duration) return;
         const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
         video.currentTime = newTime;
         setCurrentTime(newTime);
-    };
+    }, [duration]);
 
-    const toggleMute = () => {
+    const toggleMute = useCallback(() => {
         const video = videoRef.current;
         if (!video) return;
-
         video.muted = !video.muted;
         setIsMuted(!isMuted);
-    };
+    }, [isMuted]);
 
-    const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const video = videoRef.current;
         if (!video) return;
         const newVolume = Number(e.target.value);
         video.volume = newVolume;
         setVolume(newVolume);
         setIsMuted(newVolume === 0);
-    };
+    }, []);
 
-    const toggleFullscreen = () => {
-        setIsFullscreen(!isFullscreen);
-    };
+    const toggleFullscreen = useCallback(async () => {
+        if (!fullscreenRef.current) return;
+        try {
+            if (!document.fullscreenElement) {
+                await fullscreenRef.current.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+        } catch (error) {
+            console.error('Fullscreen error:', error);
+        }
+    }, []);
 
-    const changePlaybackSpeed = (speed: number) => {
+    const changePlaybackSpeed = useCallback((speed: number) => {
         const video = videoRef.current;
         if (!video) return;
         video.playbackRate = speed;
         setPlaybackSpeed(speed);
         setShowSpeedMenu(false);
-    };
+    }, []);
+
+    // Close speed menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (showSpeedMenu) {
+                setShowSpeedMenu(false);
+            }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showSpeedMenu]);
 
     // Loading state
     if (loading) {
@@ -337,7 +425,7 @@ const EnhancedCoursePlayer = () => {
                                 />
                             </div>
                             <span className="text-sm text-gray-300">
-                                {courseProgress?.totalCompletedPercent || 0}%
+                                {Math.round(courseProgress?.totalCompletedPercent || 0)}%
                             </span>
                             {savingProgress && (
                                 <div className="flex items-center space-x-2 text-sm text-blue-400">
@@ -356,7 +444,7 @@ const EnhancedCoursePlayer = () => {
                     <div className={`${showSidebar ? 'lg:col-span-2' : 'col-span-1'}`}>
                         <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-white/10">
                             {/* Video Player */}
-                            <div className="relative aspect-video bg-black group">
+                            <div ref={fullscreenRef} className="relative aspect-video bg-black group">
                                 <video ref={videoRef} src={currentVideo.videoUrl} className="w-full h-full object-cover" onEnded={handleVideoComplete} muted={isMuted}
                                     autoPlay={isPlaying} controls={false}
                                 />
@@ -422,11 +510,11 @@ const EnhancedCoursePlayer = () => {
 
                                         {/* Playback Speed */}
                                         <div className="relative">
-                                            <button onClick={() => setShowSpeedMenu(!showSpeedMenu)} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
+                                            <button onClick={(e) => { e.stopPropagation(); setShowSpeedMenu(!showSpeedMenu); }} className="p-2 hover:bg-gray-800 rounded-lg transition-colors">
                                                 <Settings className="h-5 w-5" />
                                             </button>
                                             {showSpeedMenu && (
-                                                <div className="absolute bottom-full right-0 mb-2 bg-gray-800 rounded-lg shadow-lg p-2 min-w-24">
+                                                <div className="absolute bottom-full right-0 mb-2 bg-gray-800 rounded-lg shadow-lg p-2 min-w-24 z-10">
                                                     {[0.5, 0.75, 1, 1.25, 1.5, 2].map((speed) => (
                                                         <button key={speed} onClick={() => changePlaybackSpeed(speed)}
                                                             className={`block w-full text-left px-3 py-1 rounded hover:bg-gray-700 transition-colors ${playbackSpeed === speed ? 'bg-blue-600' : ''}`}
@@ -454,14 +542,19 @@ const EnhancedCoursePlayer = () => {
                             <div className="p-4 bg-gray-800 border-t border-gray-700">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
-                                        <button onClick={markVideoComplete} className={`px-6 py-3 rounded-lg flex items-center space-x-2 transition-all
-                                            ${isVideoCompleted(currentVideo._id) ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                                        >
-                                            <CheckCircle className="h-5 w-5" />
-                                            <span>
-                                                {isVideoCompleted(currentVideo._id) ? 'Completed' : 'Mark Complete'}
-                                            </span>
-                                        </button>
+                                        {currentVideo._id ? (
+                                            <button
+                                                onClick={markVideoComplete}
+                                                disabled={savingProgress}
+                                                className={`px-6 py-3 rounded-lg flex items-center space-x-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed
+                                                ${isVideoCompleted(currentVideo._id) ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                                            >
+                                                <CheckCircle className="h-5 w-5" />
+                                                <span>
+                                                    {savingProgress ? 'Saving...' : (isVideoCompleted(currentVideo._id) ? 'Completed' : 'Mark Complete')}
+                                                </span>
+                                            </button>
+                                        ) : null}
                                         <button onClick={() => setShowNotes(!showNotes)} className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors">
                                             Notes
                                         </button>
@@ -512,51 +605,53 @@ const EnhancedCoursePlayer = () => {
                                     </p>
                                 </div>
                                 <div className="max-h-96 overflow-y-auto">
-                                    {course.content.map((content, index) => (
-                                        <div key={index} onClick={() => selectVideo(index)}
-                                            className={`p-4 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-all ${index === currentVideoIndex ? 'bg-blue-600/20 border-blue-500/30' : ''}`}
-                                        >
-                                            <div className="flex items-start space-x-3">
-                                                <div className="flex-shrink-0 mt-1">
-                                                    {isVideoCompleted(content._id) ? (
-                                                        <CheckCircle className="h-5 w-5 text-green-400" />
-                                                    ) : (
-                                                        <div className={`w-5 h-5 rounded-full border-2 ${index === currentVideoIndex ? 'border-blue-400 bg-blue-400' : 'border-gray-500'}`} />
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className={`text-sm font-medium ${index === currentVideoIndex ? 'text-blue-300' : 'text-white'}`}>
-                                                        {content.title}
-                                                    </h4>
-                                                    <div className="flex items-center justify-between mt-1">
-                                                        <p className="text-xs text-gray-400">
-                                                            {formatDuration(content.duration)}
-                                                        </p>
-                                                        {(() => {
-                                                            const progress = getVideoProgress(content._id);
-                                                            if (progress && progress.watchedDuration > 0) {
-                                                                const progressPercent = Math.min(
-                                                                    (progress.watchedDuration / (content.duration * 60)) * 100,
-                                                                    100
-                                                                );
-                                                                return (
-                                                                    <div className="flex items-center space-x-2">
-                                                                        <div className="w-16 bg-gray-700 rounded-full h-1">
-                                                                            <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-1 rounded-full" style={{ width: `${progressPercent}%` }} />
-                                                                        </div>
-                                                                        <span className="text-xs text-gray-400">
-                                                                            {Math.round(progressPercent)}%
-                                                                        </span>
+                                    {course.content.map((content, index) => {
+                                        const isActive = index === currentVideoIndex;
+                                        const videoId = content._id;
+
+                                        const progress = videoId ? getVideoProgress(videoId) : null;
+                                        const progressPercent = progress && content.duration
+                                            ? Math.min((progress.watchedDuration / (content.duration * 60)) * 100, 100)
+                                            : 0;
+
+                                        return (
+                                            <div
+                                                key={index}
+                                                onClick={() => selectVideo(index)}
+                                                className={`p-4 border-b border-white/10 cursor-pointer hover:bg-white/5 transition-all ${isActive ? 'bg-blue-600/20 border-blue-500/30' : ''}`}
+                                            >
+                                                <div className="flex items-start space-x-3">
+                                                    <div className="flex-shrink-0 mt-1">
+                                                        {videoId && isVideoCompleted(videoId) ? (
+                                                            <CheckCircle className="h-5 w-5 text-green-400" />
+                                                        ) : (
+                                                            <div className={`w-5 h-5 rounded-full border-2 ${isActive ? 'border-blue-400 bg-blue-400' : 'border-gray-500'}`} />
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className={`text-sm font-medium ${isActive ? 'text-blue-300' : 'text-white'}`}>
+                                                            {content.title}
+                                                        </h4>
+                                                        <div className="flex items-center justify-between mt-1">
+                                                            <p className="text-xs text-gray-400">
+                                                                {formatDuration(content.duration)}
+                                                            </p>
+                                                            {progress && (
+                                                                <div className="flex items-center space-x-2">
+                                                                    <div className="w-16 bg-gray-700 rounded-full h-1">
+                                                                        <div className="bg-gradient-to-r from-blue-400 to-purple-400 h-1 rounded-full" style={{ width: `${progressPercent}%` }} />
                                                                     </div>
-                                                                );
-                                                            }
-                                                            return null;
-                                                        })()}
+                                                                    <span className="text-xs text-gray-400">
+                                                                        {Math.round(progressPercent)}%
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
