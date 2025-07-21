@@ -42,8 +42,8 @@ export default function Navbar() {
                         <Link href={user ? '/home' : '/'} className="font-['Allura'] text-xl hover:text-gray-300">Home</Link>
                         <Link href="/courses" className="text-xl hover:text-gray-300">Course</Link>
                         <Link href="/my-learning" className="text-xl hover:text-gray-300">My-learning</Link>
+                        <Link href="/consultation" className="font-['Allura'] text-xl hover:text-gray-300">Consultation</Link>
                         <Link href="/contact" className="font-['Allura'] text-xl hover:text-gray-300">Contact</Link>
-                        <Link href="/resources" className="font-['Allura'] text-xl hover:text-gray-300">Resources</Link>
                     </div>
 
                     {/* CTA Buttons */}
