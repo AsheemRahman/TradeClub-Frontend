@@ -23,16 +23,17 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
 
     const searchParams = useSearchParams();
     const sessionId = searchParams.get("session_id");
-    const courseId = searchParams.get("courseId");
+    const purchaseId = searchParams.get("courseId") || searchParams.get("planId");
+    const isCourse = !!searchParams.get("courseId");
     const router = useRouter();
 
     useEffect(() => {
-        if (sessionId && courseId) {
+        if (sessionId && purchaseId) {
             const create = async () => {
                 try {
                     setLoading(true);
                     setError(null);
-                    const response = await createOrder(sessionId, courseId);
+                    const response = await createOrder(sessionId);
                     if (response?.status) {
                         toast.success("Order placed successfully");
                         setOrder(response.order);
@@ -53,7 +54,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
             setLoading(false);
             setError("Missing session ID or course ID");
         }
-    }, [sessionId, courseId]);
+    }, [sessionId, purchaseId, isCourse]);
 
     useEffect(() => {
         const timer1 = setTimeout(() => setIsVisible(true), 100);
@@ -67,10 +68,10 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
     }, []);
 
     const handleContinue = () => {
-        if (courseId) {
-            router.push(`/my-learning/${courseId}`);
+        if (isCourse && purchaseId) {
+            router.push(`/my-learning/${purchaseId}`);
         } else {
-            router.push('/my-learning');
+            router.push('/subscriptions');
         }
     };
 
@@ -147,14 +148,12 @@ Thank you for your purchase!
 
     const formatCurrency = (amount: number, currency: string = 'USD') => {
         if (isNaN(amount)) return 'N/A';
-
         const currencySymbols: { [key: string]: string } = {
             'USD': '$',
             'INR': '₹',
             'EUR': '€',
             'GBP': '£'
         };
-
         const symbol = currencySymbols[currency] || currency;
         return `${symbol}${amount.toFixed(2)}`;
     };

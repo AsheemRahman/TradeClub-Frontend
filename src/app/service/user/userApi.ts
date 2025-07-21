@@ -96,9 +96,9 @@ export const checkEnrolled = async (id: string) => {
     }
 };
 
-export const createOrder = async (sessionId: string, courseId: string) => {
+export const createOrder = async (sessionId: string) => {
     try {
-        const response = await axiosInstance.post(`/user/create-order`, { sessionId, courseId });
+        const response = await axiosInstance.post(`/user/create-order`, { sessionId });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
