@@ -5,6 +5,8 @@ import { Award, Shield, Star, Users } from "lucide-react";
 
 import { SubscriptionData } from "@/app/service/user/userApi";
 import { ISubscriptionPlan } from "@/types/subscriptionTypes";
+import { toast } from "react-toastify";
+import { SubscriptionPurchase } from "@/app/service/user/orderApi";
 
 
 export const SubscriptionPlans = () => {
@@ -16,7 +18,7 @@ export const SubscriptionPlans = () => {
         const fetchPlans = async () => {
             try {
                 const response = await SubscriptionData();
-                if(response.status){
+                if (response.status) {
                     const activePlans = response.planData?.filter((plan: ISubscriptionPlan) => plan.isActive);
                     setPlans(activePlans || []);
                 }
@@ -28,6 +30,15 @@ export const SubscriptionPlans = () => {
         };
         fetchPlans();
     }, []);
+
+    const handlePurchase = async (planId: string) => {
+        try {
+            await SubscriptionPurchase(planId)
+        } catch (error) {
+            console.error('Purchase error:', error);
+            toast.error('Purchase failed. Please try again.');
+        }
+    };
 
     if (loading) {
         return <div className="text-center text-white py-10">Loading subscription plans...</div>;
@@ -98,12 +109,12 @@ export const SubscriptionPlans = () => {
 
                             <div className="mb-6">
                                 <span className="text-5xl font-bold text-gray-900">
-                                    ${billingCycle === 'monthly' ? plan.price : Math.floor(plan.price / 12)}
+                                    ₹{billingCycle === 'monthly' ? plan.price : Math.floor(plan.price / 12)}
                                 </span>
                                 <span className="text-gray-500">/{billingCycle === 'monthly' ? 'month' : 'month'}</span>
                                 {billingCycle === 'yearly' && (
                                     <div className="text-sm text-green-600 font-medium mt-1">
-                                        Billed ${plan.price} annually
+                                        Billed ₹{plan.price} annually
                                     </div>
                                 )}
                             </div>
@@ -122,10 +133,10 @@ export const SubscriptionPlans = () => {
                             ))}
                         </ul>
 
-                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 
+                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300
                             ${plan.popular ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-xl hover:shadow-purple-500/25'
                                 : 'bg-gray-900 text-white hover:bg-gray-800'
-                            }`}>
+                            }`} onClick={() => handlePurchase(plan._id)} >
                             Get Started
                         </button>
                     </div>
