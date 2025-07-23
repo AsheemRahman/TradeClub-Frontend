@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, CreditCard, Check, Star } from 'lucide-react';
+import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, Check, Star } from 'lucide-react';
 import { DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
 
@@ -40,7 +40,6 @@ const BookingPage = () => {
                 setLoading(false);
             }
         };
-
         fetchExpertData();
     }, [expertId]);
 
@@ -75,15 +74,11 @@ const BookingPage = () => {
     // Generate time slots from availability data
     const generateTimeSlotsFromAvailability = (date: string, availabilitySlots: IExpertAvailability[]): TimeSlot[] => {
         const dayAvailability = availabilitySlots.filter(slot => slot.date === date);
-
         if (dayAvailability.length === 0) return [];
-
         const slots: TimeSlot[] = [];
-
         dayAvailability.forEach((availability) => {
             const startTime = new Date(`${date}T${availability.startTime}`);
             const endTime = new Date(`${date}T${availability.endTime}`);
-
             // Generate hourly slots between start and end time
             const current = new Date(startTime);
             while (current < endTime) {
@@ -92,19 +87,15 @@ const BookingPage = () => {
                     minute: '2-digit',
                     hour12: true
                 });
-
                 slots.push({
                     id: `${availability._id}-${current.getHours()}`,
                     time: timeString,
                     available: !availability.isBooked,
-                    price: expert?.hourlyRate || 150,
                     availabilityId: availability._id
                 });
-
                 current.setHours(current.getHours() + 1);
             }
         });
-
         return slots;
     };
 
@@ -156,13 +147,13 @@ const BookingPage = () => {
         }
     };
 
-    const handleContinueToPayment = () => {
-        if (bookingDetails.name && bookingDetails.email) {
-            setBookingStep('payment');
-        }
-    };
+    // const handleSlotBooking = () => {
+    //     if (bookingDetails.name && bookingDetails.email) {
+    //         setBookingStep('payment');
+    //     }
+    // };
 
-    const handleConfirmBooking = async () => {
+    const handleSlotBooking = async () => {
         if (!selectedDate || !selectedSlot || !expert) return;
 
         try {
@@ -172,17 +163,14 @@ const BookingPage = () => {
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,
-                price: selectedSlot.price,
                 clientDetails: bookingDetails
             };
 
             const response = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(bookingData), });
-            if (!response.ok) {
+            if (!response.status) {
                 throw new Error('Failed to create booking');
             }
-            // const booking = await response.json();
             alert('Booking confirmed! You will receive a confirmation email shortly.');
-
         } catch (error) {
             console.error('Error confirming booking:', error);
             alert('Failed to confirm booking. Please try again.');
@@ -202,10 +190,7 @@ const BookingPage = () => {
             <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex items-center justify-center mx-5 rounded-lg">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">Expert not found</h1>
-                    <button
-                        onClick={() => router.back()}
-                        className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
-                    >
+                    <button onClick={() => router.back()} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors" >
                         Go Back
                     </button>
                 </div>
@@ -214,18 +199,15 @@ const BookingPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="min-h-screen  mx-5 rounded-lg">
             <div className="container mx-auto px-4 py-8">
                 {/* Header */}
                 <div className="mb-8">
-                    <button
-                        onClick={() => router.back()}
-                        className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4"
-                    >
+                    <button onClick={() => router.back()} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4">
                         <ChevronLeft className="w-5 h-5" />
                         Back to Experts
                     </button>
-                    <h1 className="text-3xl font-bold text-gray-900">Book a Session</h1>
+                    <h1 className="text-3xl font-bold text-white">Book a Session</h1>
                     <p className="text-gray-600 mt-2">Schedule your consultation with {expert.fullName}</p>
                 </div>
 
@@ -280,18 +262,12 @@ const BookingPage = () => {
                             </div>
 
                             <div className="border-t pt-4">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="text-gray-600">Hourly Rate</span>
-                                    <span className="text-2xl font-bold text-green-600">${expert.hourlyRate}</span>
-                                </div>
-
                                 {selectedDate && selectedSlot && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-xl">
                                         <h4 className="font-semibold text-gray-900 mb-2">Selected Session</h4>
                                         <div className="text-sm text-gray-600 space-y-1">
                                             <div>Date: {new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
                                             <div>Time: {selectedSlot.time}</div>
-                                            <div className="font-semibold text-green-600">Total: ${selectedSlot.price}</div>
                                         </div>
                                     </div>
                                 )}
@@ -309,20 +285,11 @@ const BookingPage = () => {
                                         {bookingStep === 'details' || bookingStep === 'payment' ? <Check className="w-5 h-5" /> : '1'}
                                     </div>
                                     <span className={`font-medium ${bookingStep === 'schedule' ? 'text-blue-600' : 'text-gray-600'}`}>Schedule</span>
-
-                                    <div className="w-8 h-px bg-gray-300"></div>
-
+                                <div className="w-25 h-px bg-gray-300"></div>
                                     <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep === 'details' ? 'bg-blue-600 text-white' : bookingStep === 'payment' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                         {bookingStep === 'payment' ? <Check className="w-5 h-5" /> : '2'}
                                     </div>
                                     <span className={`font-medium ${bookingStep === 'details' ? 'text-blue-600' : 'text-gray-600'}`}>Details</span>
-
-                                    <div className="w-8 h-px bg-gray-300"></div>
-
-                                    <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep === 'payment' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                                        3
-                                    </div>
-                                    <span className={`font-medium ${bookingStep === 'payment' ? 'text-blue-600' : 'text-gray-600'}`}>Payment</span>
                                 </div>
                             </div>
 
@@ -332,16 +299,12 @@ const BookingPage = () => {
                                     <div className="flex items-center justify-between mb-6">
                                         <h2 className="text-2xl font-bold text-gray-900">Select Date & Time</h2>
                                         <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => setCurrentWeek(Math.max(0, currentWeek - 1))}
-                                                disabled={currentWeek === 0}
+                                            <button onClick={() => setCurrentWeek(Math.max(0, currentWeek - 1))} disabled={currentWeek === 0}
                                                 className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 <ChevronLeft className="w-5 h-5" />
                                             </button>
-                                            <button
-                                                onClick={() => setCurrentWeek(currentWeek + 1)}
-                                                className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
+                                            <button onClick={() => setCurrentWeek(currentWeek + 1)} className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50"
                                             >
                                                 <ChevronRight className="w-5 h-5" />
                                             </button>
@@ -384,9 +347,7 @@ const BookingPage = () => {
                                     </div>
 
                                     <div className="flex justify-end">
-                                        <button
-                                            onClick={handleContinueToDetails}
-                                            disabled={!selectedDate || !selectedSlot}
+                                        <button onClick={handleContinueToDetails}  disabled={!selectedDate || !selectedSlot}
                                             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Continue to Details
@@ -399,17 +360,13 @@ const BookingPage = () => {
                             {bookingStep === 'details' && (
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Details</h2>
-
                                     <div className="grid md:grid-cols-2 gap-6 mb-8">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 <User className="w-4 h-4 inline mr-2" />
                                                 Full Name *
                                             </label>
-                                            <input
-                                                type="text"
-                                                value={bookingDetails.name}
-                                                onChange={(e) => setBookingDetails({ ...bookingDetails, name: e.target.value })}
+                                            <input type="text" value={bookingDetails.name} onChange={(e) => setBookingDetails({ ...bookingDetails, name: e.target.value })}
                                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="Enter your full name"
                                             />
@@ -420,10 +377,7 @@ const BookingPage = () => {
                                                 <Mail className="w-4 h-4 inline mr-2" />
                                                 Email Address *
                                             </label>
-                                            <input
-                                                type="email"
-                                                value={bookingDetails.email}
-                                                onChange={(e) => setBookingDetails({ ...bookingDetails, email: e.target.value })}
+                                            <input type="email" value={bookingDetails.email} onChange={(e) => setBookingDetails({ ...bookingDetails, email: e.target.value })}
                                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="Enter your email"
                                             />
@@ -434,10 +388,7 @@ const BookingPage = () => {
                                                 <Phone className="w-4 h-4 inline mr-2" />
                                                 Phone Number
                                             </label>
-                                            <input
-                                                type="tel"
-                                                value={bookingDetails.phone}
-                                                onChange={(e) => setBookingDetails({ ...bookingDetails, phone: e.target.value })}
+                                            <input type="tel" value={bookingDetails.phone} onChange={(e) => setBookingDetails({ ...bookingDetails, phone: e.target.value })}
                                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="Enter your phone number"
                                             />
@@ -447,10 +398,7 @@ const BookingPage = () => {
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Message (Optional)
                                             </label>
-                                            <textarea
-                                                value={bookingDetails.message}
-                                                onChange={(e) => setBookingDetails({ ...bookingDetails, message: e.target.value })}
-                                                rows={4}
+                                            <textarea value={bookingDetails.message} onChange={(e) => setBookingDetails({ ...bookingDetails, message: e.target.value })} rows={4}
                                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="Tell the expert what you'd like to discuss..."
                                             />
@@ -458,102 +406,15 @@ const BookingPage = () => {
                                     </div>
 
                                     <div className="flex justify-between">
-                                        <button
-                                            onClick={() => setBookingStep('schedule')}
+                                        <button onClick={() => setBookingStep('schedule')}
                                             className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                                         >
                                             Back
                                         </button>
-                                        <button
-                                            onClick={handleContinueToPayment}
-                                            disabled={!bookingDetails.name || !bookingDetails.email}
+                                        <button onClick={handleSlotBooking} disabled={!bookingDetails.name || !bookingDetails.email}
                                             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
-                                            Continue to Payment
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Payment */}
-                            {bookingStep === 'payment' && (
-                                <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Payment Information</h2>
-
-                                    <div className="bg-blue-50 rounded-xl p-6 mb-8">
-                                        <h3 className="font-semibold text-gray-900 mb-4">Booking Summary</h3>
-                                        <div className="space-y-2 text-sm">
-                                            <div className="flex justify-between">
-                                                <span>Expert:</span>
-                                                <span className="font-medium">{expert.fullName}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span>Date:</span>
-                                                <span className="font-medium">{selectedDate && new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span>Time:</span>
-                                                <span className="font-medium">{selectedSlot?.time}</span>
-                                            </div>
-                                            <div className="border-t pt-2 mt-2">
-                                                <div className="flex justify-between font-bold text-lg">
-                                                    <span>Total:</span>
-                                                    <span className="text-green-600">${selectedSlot?.price}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-6 mb-8">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                <CreditCard className="w-4 h-4 inline mr-2" />
-                                                Card Number
-                                            </label>
-                                            <input
-                                                type="text"
-                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="1234 5678 9012 3456"
-                                            />
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    Expiry Date
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="MM/YY"
-                                                />
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    CVV
-                                                </label>
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                    placeholder="123"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <button
-                                            onClick={() => setBookingStep('details')}
-                                            className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-                                        >
-                                            Back
-                                        </button>
-                                        <button
-                                            onClick={handleConfirmBooking}
-                                            className="bg-gradient-to-r from-green-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-green-700 hover:to-blue-700 transition-all shadow-lg"
-                                        >
-                                            Confirm Booking
+                                            Book the Appointment
                                         </button>
                                     </div>
                                 </div>

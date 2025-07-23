@@ -19,9 +19,9 @@ const TradingExpertBookingPage: React.FC = () => {
     const getExperts = async () => {
         try {
             const response = await getAllExpert();
-            if (response.status && response.experts?.length) {
-                setExperts(response.experts);
-                setFilteredExperts(response.experts);
+            if (response.status && response.data.experts?.length) {
+                setExperts(response.data.experts);
+                setFilteredExperts(response.data.experts);
             } else {
                 setExperts([]);
                 setFilteredExperts([]);
@@ -35,92 +35,6 @@ const TradingExpertBookingPage: React.FC = () => {
     useEffect(() => {
         getExperts();
     }, []);
-
-
-    // // Mock data based on your schema
-    // const mockExperts: IExpert[] = [
-    //     {
-    //         id: '1',
-    //         fullName: 'Sarah Chen',
-    //         isVerified: 'Approved',
-    //         isActive: true,
-    //         profilePicture: '/example',
-    //         state: 'California',
-    //         country: 'USA',
-    //         experience_level: 'Expert',
-    //         year_of_experience: 8,
-    //         markets_Traded: 'Forex',
-    //         trading_style: 'Swing Trading',
-    //         createdAt: new Date(),
-    //         updatedAt: new Date(),
-    //         rating: 4.9,
-    //         reviews: 127,
-    //         hourlyRate: 150,
-    //         bio: 'Forex trading expert specializing in swing trading strategies with consistent profit track record. Helped 200+ traders improve their performance.',
-    //     },
-    //     {
-    //         id: '2',
-    //         fullName: 'Marcus Rodriguez',
-    //         isVerified: 'Approved',
-    //         isActive: true,
-    //         profilePicture: '/example',
-    //         state: 'New York',
-    //         country: 'USA',
-    //         experience_level: 'Expert',
-    //         year_of_experience: 12,
-    //         markets_Traded: 'Crypto',
-    //         trading_style: 'Day Trading',
-    //         createdAt: new Date(),
-    //         updatedAt: new Date(),
-    //         rating: 4.8,
-    //         reviews: 89,
-    //         hourlyRate: 180,
-    //         bio: 'Cryptocurrency day trading specialist with deep market analysis skills and risk management expertise. Former hedge fund manager.',
-    //     },
-    //     {
-    //         id: '3',
-    //         fullName: 'Emily Johnson',
-    //         isVerified: 'Approved',
-    //         isActive: true,
-    //         profilePicture: '/example',
-    //         state: 'Texas',
-    //         country: 'USA',
-    //         experience_level: 'Intermediate',
-    //         year_of_experience: 5,
-    //         markets_Traded: 'Stock',
-    //         trading_style: 'Position Trading',
-    //         createdAt: new Date(),
-    //         updatedAt: new Date(),
-    //         rating: 4.7,
-    //         reviews: 156,
-    //         hourlyRate: 120,
-    //         bio: 'Stock market position trader focusing on fundamental analysis and long-term investment strategies. CFA certified.',
-    //     },
-    //     {
-    //         id: '4',
-    //         fullName: 'David Kim',
-    //         isVerified: 'Approved',
-    //         isActive: true,
-    //         profilePicture: '/example',
-    //         state: 'Illinois',
-    //         country: 'USA',
-    //         experience_level: 'Expert',
-    //         year_of_experience: 15,
-    //         markets_Traded: 'Commodities',
-    //         trading_style: 'Scalping',
-    //         createdAt: new Date(),
-    //         updatedAt: new Date(),
-    //         rating: 4.9,
-    //         reviews: 92,
-    //         hourlyRate: 200,
-    //         bio: 'Commodities scalping expert with advanced technical analysis skills and high-frequency trading experience. Award-winning trader.',
-    //     }
-    // ];
-
-    // useEffect(() => {
-    //     setExperts(mockExperts);
-    //     setFilteredExperts(mockExperts);
-    // }, []);
 
     const marketOptions = [
         { value: 'all', label: 'All Markets' },
@@ -167,11 +81,11 @@ const TradingExpertBookingPage: React.FC = () => {
     }, [searchTerm, filterMarket, filterStyle, filterExperience, experts]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 mx-5 rounded-lg">
+        <div className="min-h-screen  mx-5 rounded-lg">
             {/* Hero Section */}
             <div className="relative z-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-10"></div>
-                <div className="container mx-auto px-4 py-8">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-10 rounded-lg"></div>
+                <div className="container mx-auto px-4 py-5">
                     <div className="text-center mb-4">
                         <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
                             Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Trading Expert</span>
@@ -265,7 +179,7 @@ const TradingExpertBookingPage: React.FC = () => {
             </div>
 
             {/* Experts Grid */}
-            <div className="container mx-auto px-4 py-12">
+            <div className="container mx-auto px-4 py-8">
                 <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
                     {filteredExperts.map((expert) => (
                         <ExpertCard key={expert.id} expert={expert} />
@@ -278,10 +192,10 @@ const TradingExpertBookingPage: React.FC = () => {
                             <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
                                 <User className="w-12 h-12 text-gray-400" />
                             </div>
-                            <h3 className="text-2xl font-bold text-gray-900 mb-3">No trading experts found</h3>
+                            <h3 className="text-2xl font-bold text-white mb-3">No trading experts found</h3>
                             <p className="text-gray-600 mb-6">Try adjusting your search or filter criteria to find the perfect trading expert for you.</p>
                             <button onClick={() => { setSearchTerm(''); setFilterMarket('all'); setFilterStyle('all'); setFilterExperience('all'); }}
-                                className="bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
                             >
                                 Clear All Filters
                             </button>
@@ -291,8 +205,8 @@ const TradingExpertBookingPage: React.FC = () => {
             </div>
 
             {/* Footer Stats */}
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-16">
-                <div className="container mx-auto px-4">
+            <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white py-8 rounded-lg">
+                <div className="container mx-auto px-5">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
                         <div>
                             <div className="text-4xl font-bold mb-2">500+</div>

@@ -1,4 +1,3 @@
-// Types
 export interface IExpert {
     id: string;
     fullName: string;
@@ -12,7 +11,6 @@ export interface IExpert {
     bio: string;
     state: string;
     country: string;
-    hourlyRate: number;
     rating?: number;
     reviews?: number;
     createdAt?:Date,
@@ -32,7 +30,6 @@ export interface TimeSlot {
     id: string;
     time: string;
     available: boolean;
-    price: number;
     availabilityId?: string;
 }
 
