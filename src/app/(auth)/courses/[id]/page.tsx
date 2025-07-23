@@ -7,7 +7,8 @@ import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, Award, CheckCircle,
 import { ICourse, ICategory } from '@/types/courseTypes';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
-import { categoryData, checkEnrolled, getCourseById, handlePurchase } from '@/app/service/user/userApi';
+import { handlePurchase } from '@/app/service/user/orderApi';
+import { categoryData, checkEnrolled, getCourseById } from '@/app/service/user/courseApi';
 
 const CourseDetailsPage = () => {
     const params = useParams() as { id?: string };

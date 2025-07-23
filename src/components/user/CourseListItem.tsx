@@ -4,7 +4,7 @@ import { ICategory, ICourse, ICourseContent } from "@/types/courseTypes";
 import { useAuthStore } from "@/store/authStore";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { handlePurchase } from "@/app/service/user/userApi";
+import { handlePurchase } from "@/app/service/user/orderApi";
 
 
 type Props = {

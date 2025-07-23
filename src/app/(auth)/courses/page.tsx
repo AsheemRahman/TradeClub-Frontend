@@ -5,7 +5,7 @@ import { CourseCard } from '@/components/user/CourseCard';
 import { CourseListItem } from '@/components/user/CourseListItem';
 import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
 import { ICategory, ICourse } from '@/types/courseTypes';
-import { categoryData, courseData } from '@/app/service/user/userApi';
+import { categoryData, courseData } from '@/app/service/user/courseApi';
 
 
 const CoursesPage = () => {

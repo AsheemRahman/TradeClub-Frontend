@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { CreditCard } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getPurchase } from '@/app/service/user/userApi';
 import { IOrder } from '@/types/types';
+import { getPurchase } from '@/app/service/user/orderApi';
 
 
 const PurchaseHistory = () => {

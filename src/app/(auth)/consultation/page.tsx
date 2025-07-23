@@ -1,136 +1,126 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import {  User, Search, CheckCircle, } from 'lucide-react';
+import { User, Search, CheckCircle, } from 'lucide-react';
 import { ExpertCard } from '@/components/user/ExpertCard';
+import { IExpert } from '@/types/bookingTypes';
+import { getAllExpert } from '@/app/service/user/userApi';
+import { toast } from 'react-toastify';
 
-interface Expert {
-    _id: string;
-    fullName: string;
-    email: string;
-    phoneNumber?: string;
-    isVerified: "Approved" | "Pending" | "Declined";
-    isActive: boolean;
-    profilePicture?: string;
-    DOB?: Date;
-    state?: string;
-    country?: string;
-    experience_level: 'Beginner' | 'Intermediate' | 'Expert';
-    year_of_experience: number;
-    markets_Traded: 'Stock' | 'Forex' | 'Crypto' | 'Commodities';
-    trading_style: 'Scalping' | 'Day Trading' | 'Swing Trading' | 'Position Trading';
-    proof_of_experience?: string;
-    Introduction_video?: string;
-    Government_Id?: string;
-    selfie_Id?: string;
-    createdAt: Date;
-    updatedAt: Date;
-    rating?: number;
-    reviews?: number;
-    hourlyRate?: number;
-    bio?: string;
-    isOnline?: boolean;
-}
 
 const TradingExpertBookingPage: React.FC = () => {
-    const [experts, setExperts] = useState<Expert[]>([]);
-    const [filteredExperts, setFilteredExperts] = useState<Expert[]>([]);
+    const [experts, setExperts] = useState<IExpert[]>([]);
+    const [filteredExperts, setFilteredExperts] = useState<IExpert[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [filterMarket, setFilterMarket] = useState('all');
     const [filterStyle, setFilterStyle] = useState('all');
     const [filterExperience, setFilterExperience] = useState('all');
 
-    // Mock data based on your schema
-    const mockExperts: Expert[] = [
-        {
-            _id: '1',
-            fullName: 'Sarah Chen',
-            email: 'sarah.chen@trading.com',
-            phoneNumber: '+1-555-0123',
-            isVerified: 'Approved',
-            isActive: true,
-            profilePicture: '/example',
-            state: 'California',
-            country: 'USA',
-            experience_level: 'Expert',
-            year_of_experience: 8,
-            markets_Traded: 'Forex',
-            trading_style: 'Swing Trading',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            rating: 4.9,
-            reviews: 127,
-            hourlyRate: 150,
-            bio: 'Forex trading expert specializing in swing trading strategies with consistent profit track record. Helped 200+ traders improve their performance.',
-            isOnline: true
-        },
-        {
-            _id: '2',
-            fullName: 'Marcus Rodriguez',
-            email: 'marcus.r@trading.com',
-            phoneNumber: '+1-555-0124',
-            isVerified: 'Approved',
-            isActive: true,
-            profilePicture: '/example',
-            state: 'New York',
-            country: 'USA',
-            experience_level: 'Expert',
-            year_of_experience: 12,
-            markets_Traded: 'Crypto',
-            trading_style: 'Day Trading',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            rating: 4.8,
-            reviews: 89,
-            hourlyRate: 180,
-            bio: 'Cryptocurrency day trading specialist with deep market analysis skills and risk management expertise. Former hedge fund manager.',
-            isOnline: false
-        },
-        {
-            _id: '3',
-            fullName: 'Emily Johnson',
-            email: 'emily.j@trading.com',
-            phoneNumber: '+1-555-0125',
-            isVerified: 'Approved',
-            isActive: true,
-            profilePicture: '/example',
-            state: 'Texas',
-            country: 'USA',
-            experience_level: 'Intermediate',
-            year_of_experience: 5,
-            markets_Traded: 'Stock',
-            trading_style: 'Position Trading',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            rating: 4.7,
-            reviews: 156,
-            hourlyRate: 120,
-            bio: 'Stock market position trader focusing on fundamental analysis and long-term investment strategies. CFA certified.',
-            isOnline: true
-        },
-        {
-            _id: '4',
-            fullName: 'David Kim',
-            email: 'david.k@trading.com',
-            phoneNumber: '+1-555-0126',
-            isVerified: 'Approved',
-            isActive: true,
-            profilePicture: '/example',
-            state: 'Illinois',
-            country: 'USA',
-            experience_level: 'Expert',
-            year_of_experience: 15,
-            markets_Traded: 'Commodities',
-            trading_style: 'Scalping',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            rating: 4.9,
-            reviews: 92,
-            hourlyRate: 200,
-            bio: 'Commodities scalping expert with advanced technical analysis skills and high-frequency trading experience. Award-winning trader.',
-            isOnline: true
+    const getExperts = async () => {
+        try {
+            const response = await getAllExpert();
+            if (response.status && response.experts?.length) {
+                setExperts(response.experts);
+                setFilteredExperts(response.experts);
+            } else {
+                setExperts([]);
+                setFilteredExperts([]);
+            }
+        } catch (error) {
+            console.error("Error fetching userData", error);
+            toast.error("Failed to fetch user data");
         }
-    ];
+    };
+
+    useEffect(() => {
+        getExperts();
+    }, []);
+
+
+    // // Mock data based on your schema
+    // const mockExperts: IExpert[] = [
+    //     {
+    //         id: '1',
+    //         fullName: 'Sarah Chen',
+    //         isVerified: 'Approved',
+    //         isActive: true,
+    //         profilePicture: '/example',
+    //         state: 'California',
+    //         country: 'USA',
+    //         experience_level: 'Expert',
+    //         year_of_experience: 8,
+    //         markets_Traded: 'Forex',
+    //         trading_style: 'Swing Trading',
+    //         createdAt: new Date(),
+    //         updatedAt: new Date(),
+    //         rating: 4.9,
+    //         reviews: 127,
+    //         hourlyRate: 150,
+    //         bio: 'Forex trading expert specializing in swing trading strategies with consistent profit track record. Helped 200+ traders improve their performance.',
+    //     },
+    //     {
+    //         id: '2',
+    //         fullName: 'Marcus Rodriguez',
+    //         isVerified: 'Approved',
+    //         isActive: true,
+    //         profilePicture: '/example',
+    //         state: 'New York',
+    //         country: 'USA',
+    //         experience_level: 'Expert',
+    //         year_of_experience: 12,
+    //         markets_Traded: 'Crypto',
+    //         trading_style: 'Day Trading',
+    //         createdAt: new Date(),
+    //         updatedAt: new Date(),
+    //         rating: 4.8,
+    //         reviews: 89,
+    //         hourlyRate: 180,
+    //         bio: 'Cryptocurrency day trading specialist with deep market analysis skills and risk management expertise. Former hedge fund manager.',
+    //     },
+    //     {
+    //         id: '3',
+    //         fullName: 'Emily Johnson',
+    //         isVerified: 'Approved',
+    //         isActive: true,
+    //         profilePicture: '/example',
+    //         state: 'Texas',
+    //         country: 'USA',
+    //         experience_level: 'Intermediate',
+    //         year_of_experience: 5,
+    //         markets_Traded: 'Stock',
+    //         trading_style: 'Position Trading',
+    //         createdAt: new Date(),
+    //         updatedAt: new Date(),
+    //         rating: 4.7,
+    //         reviews: 156,
+    //         hourlyRate: 120,
+    //         bio: 'Stock market position trader focusing on fundamental analysis and long-term investment strategies. CFA certified.',
+    //     },
+    //     {
+    //         id: '4',
+    //         fullName: 'David Kim',
+    //         isVerified: 'Approved',
+    //         isActive: true,
+    //         profilePicture: '/example',
+    //         state: 'Illinois',
+    //         country: 'USA',
+    //         experience_level: 'Expert',
+    //         year_of_experience: 15,
+    //         markets_Traded: 'Commodities',
+    //         trading_style: 'Scalping',
+    //         createdAt: new Date(),
+    //         updatedAt: new Date(),
+    //         rating: 4.9,
+    //         reviews: 92,
+    //         hourlyRate: 200,
+    //         bio: 'Commodities scalping expert with advanced technical analysis skills and high-frequency trading experience. Award-winning trader.',
+    //     }
+    // ];
+
+    // useEffect(() => {
+    //     setExperts(mockExperts);
+    //     setFilteredExperts(mockExperts);
+    // }, []);
 
     const marketOptions = [
         { value: 'all', label: 'All Markets' },
@@ -154,11 +144,6 @@ const TradingExpertBookingPage: React.FC = () => {
         { value: 'Intermediate', label: 'Intermediate' },
         { value: 'Expert', label: 'Expert' }
     ];
-
-    useEffect(() => {
-        setExperts(mockExperts);
-        setFilteredExperts(mockExperts);
-    }, []);
 
     useEffect(() => {
         let filtered = experts.filter(expert => expert.isVerified === 'Approved' && expert.isActive);
@@ -283,7 +268,7 @@ const TradingExpertBookingPage: React.FC = () => {
             <div className="container mx-auto px-4 py-12">
                 <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
                     {filteredExperts.map((expert) => (
-                        <ExpertCard key={expert._id} expert={expert} />
+                        <ExpertCard key={expert.id} expert={expert} />
                     ))}
                 </div>
 

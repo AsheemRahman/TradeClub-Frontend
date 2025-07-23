@@ -1,7 +1,7 @@
 import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
-
+import { ICourse } from "@/types/courseTypes";
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -13,7 +13,6 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-
 export const SubscriptionPurchase = async (planId: string) => {
     try {
         const res = await axiosInstance.post(`/user/subscription-checkout`, { planId });
@@ -23,3 +22,38 @@ export const SubscriptionPurchase = async (planId: string) => {
     }
 };
 
+export const handlePurchase = async (course: ICourse) => {
+    try {
+        const res = await axiosInstance.post(`/user/create-checkout-session`, { course });
+        window.location.href = res.data.url;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const getPurchase = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/purchase-history`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const getPurchasedCourses = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/purchased-courses`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error)
+    }
+};
+
+export const createOrder = async (sessionId: string) => {
+    try {
+        const response = await axiosInstance.post(`/user/create-order`, { sessionId });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};

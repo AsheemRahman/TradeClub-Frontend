@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Volume2, VolumeX, Maximize, Settings, FastForward, Rewind, List, X, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
 import { ICourse, ICourseContent, ICourseProgress, IVideoProgress } from '@/types/courseTypes';
-import { getCourseById, getProgress, updateCourseProgress } from '@/app/service/user/userApi';
+import { getCourseById, getProgress,updateCourseProgress } from '@/app/service/user/courseApi';
 
 
 const EnhancedCoursePlayer = () => {

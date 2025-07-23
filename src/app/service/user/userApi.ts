@@ -2,7 +2,6 @@ import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
 import { UpdateProfilePayload } from "@/types/types";
-import { ICourse } from "@/types/courseTypes";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -51,24 +50,6 @@ export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     }
 };
 
-export const courseData = async () => {
-    try {
-        const response = await axiosInstance.get(`/user/courses`,);
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error);
-    }
-};
-
-export const categoryData = async () => {
-    try {
-        const response = await axiosInstance.get(`/user/category`,);
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error);
-    }
-};
-
 export const SubscriptionData = async () => {
     try {
         const response = await axiosInstance.get(`/user/fetch-plans`,);
@@ -78,72 +59,27 @@ export const SubscriptionData = async () => {
     }
 };
 
-export const getCourseById = async (id: string) => {
+export const getAllExpert = async () => {
     try {
-        const response = await axiosInstance.get(`/user/course/${id}`,);
+        const response = await axiosInstance.get(`/user/experts`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
     }
 };
 
-export const checkEnrolled = async (id: string) => {
+export const getExpertById = async (expertId: string) => {
     try {
-        const response = await axiosInstance.get(`/user/check-enrolled/${id}`,);
+        const response = await axiosInstance.get(`/user/expert/${expertId}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
     }
 };
 
-export const createOrder = async (sessionId: string) => {
+export const getExpertAvailability = async (expertId: string, startDate: Date, endDate: Date) => {
     try {
-        const response = await axiosInstance.post(`/user/create-order`, { sessionId });
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error);
-    }
-};
-
-export const handlePurchase = async (course: ICourse) => {
-    try {
-        const res = await axiosInstance.post(`/user/create-checkout-session`, { course });
-        window.location.href = res.data.url;
-    } catch (error) {
-        handleAxiosError(error)
-    }
-};
-
-export const getPurchase = async () => {
-    try {
-        const response = await axiosInstance.get(`/user/purchase-history`);
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error)
-    }
-};
-
-export const getPurchasedCourses = async () => {
-    try {
-        const response = await axiosInstance.get(`/user/purchased-courses`);
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error)
-    }
-};
-
-export const getProgress = async (courseId: string) => {
-    try {
-        const response = await axiosInstance.get(`/user/course/${courseId}/progress`,);
-        return response.data;
-    } catch (error) {
-        handleAxiosError(error);
-    }
-};
-
-export const updateCourseProgress = async (courseId: string, contentId: string, watchedDuration: number, isCompleted: boolean) => {
-    try {
-        const response = await axiosInstance.post(`/user/course/${courseId}/progress`, { contentId, watchedDuration, isCompleted, });
+        const response = await axiosInstance.get(`/user/expert/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

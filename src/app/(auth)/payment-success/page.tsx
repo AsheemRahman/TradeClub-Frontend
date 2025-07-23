@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import { CheckCircle, Download, Share2, ArrowRight, Sparkles, CreditCard, Mail, Calendar, Clock, Package, User } from 'lucide-react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { createOrder } from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
 import { IOrder } from '@/types/types';
+import { createOrder } from '@/app/service/user/orderApi';
 
 
 interface PaymentSuccessProps {

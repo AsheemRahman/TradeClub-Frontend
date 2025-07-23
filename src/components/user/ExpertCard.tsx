@@ -1,37 +1,12 @@
-import { Award, BarChart3, Calendar, Clock, DollarSign, MapPin, MessageCircle, Shield, Star, TrendingUp } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { Award, BarChart3, Calendar, Clock, DollarSign, MapPin, MessageCircle, Shield, TrendingUp } from "lucide-react";
+import { IExpert } from "@/types/bookingTypes";
 
 
-interface Expert {
-    _id: string;
-    fullName: string;
-    email: string;
-    phoneNumber?: string;
-    isVerified: "Approved" | "Pending" | "Declined";
-    isActive: boolean;
-    profilePicture?: string;
-    DOB?: Date;
-    state?: string;
-    country?: string;
-    experience_level: 'Beginner' | 'Intermediate' | 'Expert';
-    year_of_experience: number;
-    markets_Traded: 'Stock' | 'Forex' | 'Crypto' | 'Commodities';
-    trading_style: 'Scalping' | 'Day Trading' | 'Swing Trading' | 'Position Trading';
-    proof_of_experience?: string;
-    Introduction_video?: string;
-    Government_Id?: string;
-    selfie_Id?: string;
-    createdAt: Date;
-    updatedAt: Date;
-    rating?: number;
-    reviews?: number;
-    hourlyRate?: number;
-    bio?: string;
-    isOnline?: boolean;
-}
+export const ExpertCard = ({ expert }: { expert: IExpert }) => {
+    const router = useRouter()
 
-export const ExpertCard = ({ expert }: { expert: Expert }) => {
-    
     const getMarketIcon = (market: string) => {
         switch (market) {
             case 'Stock': return <TrendingUp className="w-4 h-4" />;
@@ -51,12 +26,15 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
         }
     };
 
-    const handleBookSlot = (expertId: string) => {
-        console.log("Book slot", expertId)
+    const handleBookSlot = (expertId?: string) => {
+        console.log("test in booking", expertId)
+        if (!expertId) return;
+        router.push(`/consultation/${expertId}`)
     }
 
-    const handleChat = (expertId: string) => {
-        console.log("chat clicked", expertId)
+    const handleChat = (expertId?: string) => {
+        if (!expertId) return;
+        router.push(`/message/${expertId}`)
     }
 
     return (
@@ -70,9 +48,6 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
                             expert.fullName.split(' ').map(n => n[0]).join('')
                         )}
                     </div>
-                    <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-3 border-white shadow-lg ${expert.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}>
-                        <div className={`w-full h-full rounded-full ${expert.isOnline ? 'animate-pulse bg-green-400' : ''}`}></div>
-                    </div>
                     {expert.isVerified === 'Approved' && (
                         <div className="absolute -top-2 -left-2 bg-blue-600 rounded-full p-1">
                             <Shield className="w-4 h-4 text-white" />
@@ -83,24 +58,19 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
                     <div className="flex items-start justify-between mb-3">
                         <div>
                             <h3 className="text-2xl font-bold text-gray-900 mb-1">{expert.fullName}</h3>
-                            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getExperienceBadgeColor(expert.experience_level)}`}>
+                            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getExperienceBadgeColor(expert.experience_level || "unavaible")}`}>
                                 <Award className="w-3 h-3" />
                                 {expert.experience_level} Trader
                             </div>
                         </div>
-                        <div className="text-right">
-                            <div className="text-2xl font-bold text-green-600 mb-1">
-                                ${expert.hourlyRate}/hr
-                            </div>
-                            <div className="text-sm text-gray-500">
-                                {expert.year_of_experience}+ years exp
-                            </div>
+                        <div className="text-right text-md text-green-600">
+                            {expert.year_of_experience}+ years exp
                         </div>
                     </div>
 
                     <div className="flex items-center gap-3 mb-4">
                         <div className="flex items-center gap-2 bg-gradient-to-r from-blue-50 to-purple-50 px-3 py-1.5 rounded-xl">
-                            {getMarketIcon(expert.markets_Traded)}
+                            {getMarketIcon(expert.markets_Traded || 'unavaible')}
                             <span className="text-sm font-medium text-blue-700">{expert.markets_Traded}</span>
                         </div>
                         <div className="flex items-center gap-2 bg-gray-50 px-3 py-1.5 rounded-xl">
@@ -109,7 +79,7 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 mb-4">
+                    {/* <div className="flex items-center gap-4 mb-4">
                         <div className="flex items-center gap-1">
                             <div className="flex">
                                 {[...Array(5)].map((_, i) => (
@@ -119,7 +89,7 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
                             <span className="font-bold text-gray-900">{expert.rating}</span>
                             <span className="text-gray-500 text-sm">({expert.reviews} reviews)</span>
                         </div>
-                    </div>
+                    </div> */}
 
                     <p className="text-gray-600 text-sm mb-6 line-clamp-2 leading-relaxed">{expert.bio}</p>
 
@@ -128,23 +98,16 @@ export const ExpertCard = ({ expert }: { expert: Expert }) => {
                             <MapPin className="w-4 h-4" />
                             <span>{expert.state}, {expert.country}</span>
                         </div>
-                        <div className="flex items-center gap-1">
-                            <div className={`w-2 h-2 rounded-full ${expert.isOnline ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                            <span className="text-sm text-gray-600">
-                                {expert.isOnline ? 'Online now' : 'Offline'}
-                            </span>
-                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <button
-                            onClick={() => { handleBookSlot(expert._id) }}
+                        <button onClick={() => { handleBookSlot(expert.id) }}
                             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg"
                         >
                             <Calendar className="w-4 h-4" />
                             Book Session
                         </button>
-                        <button onClick={() => { handleChat(expert._id) }}
+                        <button onClick={() => { handleChat(expert.id) }}
                             className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
                         >
                             <MessageCircle className="w-4 h-4" />

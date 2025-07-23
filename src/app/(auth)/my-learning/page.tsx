@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, BookOpen, Search, Grid, List, Award, TrendingUp, PlayCircle } from 'lucide-react';
 import { ICourseContent, ICourseProgress, IPurchasedCourse } from '@/types/courseTypes';
-import { getPurchasedCourses } from '@/app/service/user/userApi';
+import { getPurchasedCourses } from '@/app/service/user/orderApi';
 
 
 const PurchasedCoursesPage = () => {
