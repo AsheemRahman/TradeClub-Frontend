@@ -14,7 +14,7 @@ import NotificationSettings from '@/components/user/profile/NotificationSettings
 import ExpertConsultationCard from '@/components/user/profile/ExpertConsultationCard';
 import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsultationsList';
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
-import PurchaseHistory from '@/components/user/PurchaseHistory';
+import PurchaseHistory from '@/components/user/profile/PurchaseHistory';
 
 import { getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
 import { subscription } from '@/lib/mockData'
