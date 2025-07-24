@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, Check, Star } from 'lucide-react';
+import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, Check, Star, Calendar } from 'lucide-react';
 import { DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
 
@@ -147,12 +147,6 @@ const BookingPage = () => {
         }
     };
 
-    // const handleSlotBooking = () => {
-    //     if (bookingDetails.name && bookingDetails.email) {
-    //         setBookingStep('payment');
-    //     }
-    // };
-
     const handleSlotBooking = async () => {
         if (!selectedDate || !selectedSlot || !expert) return;
 
@@ -200,15 +194,29 @@ const BookingPage = () => {
 
     return (
         <div className="min-h-screen  mx-5 rounded-lg">
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-5">
                 {/* Header */}
-                <div className="mb-8">
-                    <button onClick={() => router.back()} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4">
-                        <ChevronLeft className="w-5 h-5" />
-                        Back to Experts
-                    </button>
-                    <h1 className="text-3xl font-bold text-white">Book a Session</h1>
-                    <p className="text-gray-600 mt-2">Schedule your consultation with {expert.fullName}</p>
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium mb-4">
+                    <ChevronLeft className="w-5 h-5" />
+                    Back to Experts
+                </button>
+                <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between my-3">
+                            <div className="flex items-center gap-4">
+                                <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden">
+                                    <Calendar className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-3xl font-bold text-white">Book a Session</h1>
+                                    <p className="text-white/80 mt-1 text-md">Schedule your consultation with {expert.fullName}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
                 </div>
 
                 <div className="grid lg:grid-cols-3 gap-8">
@@ -285,7 +293,7 @@ const BookingPage = () => {
                                         {bookingStep === 'details' || bookingStep === 'payment' ? <Check className="w-5 h-5" /> : '1'}
                                     </div>
                                     <span className={`font-medium ${bookingStep === 'schedule' ? 'text-blue-600' : 'text-gray-600'}`}>Schedule</span>
-                                <div className="w-25 h-px bg-gray-300"></div>
+                                    <div className="w-25 h-px bg-gray-300"></div>
                                     <div className={`flex items-center justify-center w-10 h-10 rounded-full ${bookingStep === 'details' ? 'bg-blue-600 text-white' : bookingStep === 'payment' ? 'bg-green-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                         {bookingStep === 'payment' ? <Check className="w-5 h-5" /> : '2'}
                                     </div>
@@ -347,7 +355,7 @@ const BookingPage = () => {
                                     </div>
 
                                     <div className="flex justify-end">
-                                        <button onClick={handleContinueToDetails}  disabled={!selectedDate || !selectedSlot}
+                                        <button onClick={handleContinueToDetails} disabled={!selectedDate || !selectedSlot}
                                             className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                             Continue to Details
