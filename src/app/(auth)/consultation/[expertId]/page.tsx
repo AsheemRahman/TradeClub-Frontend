@@ -58,7 +58,7 @@ const BookingPage = () => {
             const startDate = new Date(today);
             startDate.setDate(today.getDate() + (currentWeek * 7));
             const endDate = new Date(startDate);
-            endDate.setDate(startDate.getDate() + 6);
+            endDate.setDate(startDate.getDate() + 7);
             // const response = await fetch(`/api/experts/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
             const response = await getExpertAvailability(expertId, startDate, endDate);
             if (!response.status) throw new Error('Failed to fetch availability');

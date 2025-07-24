@@ -2,14 +2,16 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { AvailabilitySlot, CalendarDay } from '@/types/sessionTypes';
+import { toast } from 'react-toastify';
 
 import { CalendarGrid } from '@/components/expert/CalendarGrid';
 import { TimeSlotManager } from '@/components/expert/TimeSlotManager';
-import { addSlot, deleteSlot, editSlot, slotAvailability } from '@/app/service/expert/sessionApi';
 import HeaderCard from '@/components/expert/HeaderCard';
 import { Calendar } from 'lucide-react';
-import { toast } from 'react-toastify';
+
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+import { addSlot, deleteSlot, editSlot, slotAvailability } from '@/app/service/expert/sessionApi';
+
 
 const ExpertScheduleManager = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
@@ -18,7 +20,6 @@ const ExpertScheduleManager = () => {
     const [calendarDays, setCalendarDays] = useState<CalendarDay[]>([]);
     const [viewHalf, setViewHalf] = useState<'first' | 'second'>('first');
     const [selectedDateSlots, setSelectedDateSlots] = useState<AvailabilitySlot[]>([]);
-
 
     const fetchSlots = useCallback(async () => {
         try {
@@ -39,21 +40,45 @@ const ExpertScheduleManager = () => {
     const generateCalendarDays = useCallback(() => {
         const year = currentDate.getFullYear();
         const month = currentDate.getMonth();
-        const lastDay = new Date(year, month + 1, 0);
-        const start = viewHalf === 'first' ? 1 : 17;
-        const end = viewHalf === 'first' ? 16 : lastDay.getDate();
-        const days: CalendarDay[] = [];
-        for (let i = start; i <= end; i++) {
-            const date = new Date(year, month, i);
-            const dateStr = getDateString(date);
-            const slots = availableSlots.filter(slot => slot.date === dateStr);
-            days.push({
-                date,
-                dayName: dayNames[date.getDay()],
-                dayNumber: i,
-                availableSlots: slots.length,
-                slots,
-            });
+        const lastDay = new Date(year, month + 1, 0).getDate();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const buildDays = (start: number, end: number) => {
+            const days: CalendarDay[] = [];
+            for (let i = start; i <= end; i++) {
+                const date = new Date(year, month, i);
+                date.setHours(0, 0, 0, 0);
+                if (
+                    year === today.getFullYear() &&
+                    month === today.getMonth() &&
+                    date < today
+                ) continue;
+                const dateStr = getDateString(date);
+                const slots = availableSlots.filter(slot => slot.date === dateStr);
+                days.push({
+                    date,
+                    dayName: dayNames[date.getDay()],
+                    dayNumber: i,
+                    availableSlots: slots.length,
+                    slots,
+                });
+            }
+            return days;
+        };
+        let start = viewHalf === 'first' ? 1 : 17;
+        let end = viewHalf === 'first' ? 16 : lastDay;
+        let days = buildDays(start, end);
+        // first half has nothing and it's current month, show second half instead
+        if (
+            viewHalf === 'first' &&
+            year === today.getFullYear() &&
+            month === today.getMonth() &&
+            days.length === 0
+        ) {
+            start = 17;
+            end = lastDay;
+            days = buildDays(start, end);
+            setViewHalf('second');
         }
         setCalendarDays(days);
     }, [currentDate, viewHalf, availableSlots]);

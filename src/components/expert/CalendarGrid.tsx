@@ -20,7 +20,17 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ currentDate, calenda
         'July', 'August', 'September', 'October', 'November', 'December'
     ];
 
-    const years = [2025, 2026];
+    const today = new Date();
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth(); // 0-indexed
+    const futureMonths: string[] = [];
+
+    for (let year = currentYear; year <= currentYear + 1; year++) {
+        const startMonth = year === currentYear ? currentMonth : 0;
+        for (let month = startMonth; month < 12; month++) {
+            futureMonths.push(`${monthNames[month]} ${year}`);
+        }
+    }
 
     const getSlotColor = (slotCount: number) => {
         if (slotCount === 0) return 'bg-red-500';
@@ -43,12 +53,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ currentDate, calenda
                             onMonthChange(newDate);
                         }}
                     >
-                        {years.map((year) => monthNames.map((month) => (
-                            <option key={`${month}-${year}`} className='bg-white text-black'>
-                                {`${month} ${year}`}
+                        {futureMonths.map((monthYear) => (
+                            <option key={monthYear} className="bg-white text-black">
+                                {monthYear}
                             </option>
-                        ))
-                        )}
+                        ))}
                     </select>
                 </div>
 

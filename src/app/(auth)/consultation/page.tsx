@@ -87,13 +87,13 @@ const TradingExpertBookingPage: React.FC = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-10 rounded-lg"></div>
                 <div className="container mx-auto px-4 py-5">
                     <div className="text-center mb-4">
-                        <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+                        <h1 className="text-5xl font-bold text-white mb-3 leading-tight">
                             Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Trading Expert</span>
                         </h1>
-                        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                        <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
                             Connect with verified trading professionals for personalized guidance, advanced strategies, and accelerated growth in your trading journey
                         </p>
-                        <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-600">
+                        <div className="flex items-center justify-center gap-8 mt-8 text-sm text-gray-400">
                             <div className="flex items-center gap-2">
                                 <CheckCircle className="w-5 h-5 text-green-500" />
                                 <span>Verified Experts</span>
@@ -110,7 +110,7 @@ const TradingExpertBookingPage: React.FC = () => {
                     </div>
 
                     {/* Enhanced Filter Section */}
-                    <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+                    <div className="bg-white rounded-3xl shadow-xl p-5 border border-gray-100">
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                             <div className="relative">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 ">Search Experts</label>
