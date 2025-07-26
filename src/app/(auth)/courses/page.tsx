@@ -147,13 +147,13 @@ const CoursesPage = () => {
                         {/* Price Range */}
                         <div>
                             <label className="block text-sm font-medium text-gray-300 mb-2">
-                                Price Range: ${priceRange[0]} - ${priceRange[1]}
+                                Price Range: ₹{priceRange[0]} - ₹{priceRange[1]}
                             </label>
                             <div className="flex space-x-2">
                                 <input type="range" min="0" max="10000" value={priceRange[0]} className="flex-1"
                                     onChange={(e) => setPriceRange([parseInt(e.target.value), priceRange[1]])}
                                 />
-                                <input type="range" min="0" max="5000" value={priceRange[1]} className="flex-1"
+                                <input type="range" min="0" max="10000" value={priceRange[1]} className="flex-1"
                                     onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                                 />
                             </div>
@@ -198,13 +198,10 @@ const CoursesPage = () => {
                         <p className="text-gray-400 mt-2">Try adjusting your filters or search terms.</p>
                     </div>
                 ) : (
-                    <div className={viewMode === 'grid'
-                        ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
-                        : "space-y-4 mb-8"
-                    }>
+                    <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8" : "space-y-4 mb-8"}>
                         {paginatedCourses.map(course => (
                             viewMode === 'grid'
-                                ? <CourseCard key={course._id} course={course} categories={categories}/>
+                                ? <CourseCard key={course._id} course={course} categories={categories} />
                                 : <CourseListItem key={course._id} course={course} categories={categories} />
                         ))}
                     </div>
