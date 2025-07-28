@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Search, CheckCircle, } from 'lucide-react';
 import { ExpertCard } from '@/components/user/ExpertCard';
 import { IExpert } from '@/types/bookingTypes';
-import { getAllExpert } from '@/app/service/user/userApi';
+import { checkSubscription, getAllExpert } from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
 
 
@@ -15,6 +15,7 @@ const TradingExpertBookingPage: React.FC = () => {
     const [filterMarket, setFilterMarket] = useState('all');
     const [filterStyle, setFilterStyle] = useState('all');
     const [filterExperience, setFilterExperience] = useState('all');
+    const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
 
     const getExperts = async () => {
         try {
@@ -33,6 +34,23 @@ const TradingExpertBookingPage: React.FC = () => {
     };
 
     useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const response = await checkSubscription();
+                if (response.status && response.subscription) {
+                    const { endDate, paymentStatus } = response.subscription;
+                    const isExpired = new Date() > new Date(endDate);
+                    const isPaid = paymentStatus === 'paid';
+                    setIsSubscribed(!isExpired && isPaid);
+                } else {
+                    setIsSubscribed(false);
+                }
+            } catch (error) {
+                console.error('Error fetching user subscription:', error);
+                setIsSubscribed(false);
+            }
+        };
+        fetchUser();
         getExperts();
     }, []);
 
@@ -79,6 +97,28 @@ const TradingExpertBookingPage: React.FC = () => {
         }
         setFilteredExperts(filtered);
     }, [searchTerm, filterMarket, filterStyle, filterExperience, experts]);
+
+    if (isSubscribed === null) {
+        return (
+            <div className="flex items-center justify-center h-screen text-white">
+                Loading...
+            </div>
+        );
+    }
+
+    if (!isSubscribed) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen text-center px-4">
+                <h2 className="text-3xl font-bold text-white mb-4">Subscription Required</h2>
+                <p className="text-gray-300 mb-6">
+                    This feature is available only to users with an active subscription.
+                </p>
+                <button onClick={() => { window.location.href = '/pricing'; }} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    View Subscription Plans
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen  mx-5 rounded-lg">

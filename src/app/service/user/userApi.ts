@@ -85,3 +85,12 @@ export const getExpertAvailability = async (expertId: string, startDate: Date, e
         handleAxiosError(error);
     }
 };
+
+export const checkSubscription = async () => {
+    try {
+        const response = await axiosInstance.get(`/user/check-subscription`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
