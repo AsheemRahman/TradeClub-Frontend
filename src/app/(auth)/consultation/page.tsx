@@ -27,8 +27,8 @@ const TradingExpertBookingPage: React.FC = () => {
                 setFilteredExperts([]);
             }
         } catch (error) {
-            console.error("Error fetching userData", error);
-            toast.error("Failed to fetch user data");
+            console.error("Error fetching expertData", error);
+            toast.error("Failed to fetch expert data");
         }
     };
 
