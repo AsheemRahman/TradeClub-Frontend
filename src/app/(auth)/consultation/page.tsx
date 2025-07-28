@@ -6,6 +6,7 @@ import { ExpertCard } from '@/components/user/ExpertCard';
 import { IExpert } from '@/types/bookingTypes';
 import { checkSubscription, getAllExpert } from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 
 const TradingExpertBookingPage: React.FC = () => {
@@ -16,6 +17,7 @@ const TradingExpertBookingPage: React.FC = () => {
     const [filterStyle, setFilterStyle] = useState('all');
     const [filterExperience, setFilterExperience] = useState('all');
     const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
+    const router = useRouter()
 
     const getExperts = async () => {
         try {
@@ -113,7 +115,7 @@ const TradingExpertBookingPage: React.FC = () => {
                 <p className="text-gray-300 mb-6">
                     This feature is available only to users with an active subscription.
                 </p>
-                <button onClick={() => { window.location.href = '/pricing'; }} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                <button onClick={() => { router.back() }} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
                     View Subscription Plans
                 </button>
             </div>
@@ -222,7 +224,7 @@ const TradingExpertBookingPage: React.FC = () => {
             <div className="container mx-auto px-4 py-8">
                 <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
                     {filteredExperts.map((expert) => (
-                        <ExpertCard key={expert.id} expert={expert} />
+                        <ExpertCard key={expert._id} expert={expert} />
                     ))}
                 </div>
 

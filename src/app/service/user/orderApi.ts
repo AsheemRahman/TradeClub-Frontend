@@ -2,6 +2,7 @@ import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
 import { ICourse } from "@/types/courseTypes";
+import { BookingData } from "@/types/bookingTypes";
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -52,6 +53,15 @@ export const getPurchasedCourses = async () => {
 export const createOrder = async (sessionId: string) => {
     try {
         const response = await axiosInstance.post(`/user/create-order`, { sessionId });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const slotBooking = async (slotBooking: BookingData) => {
+    try {
+        const response = await axiosInstance.post(`/user/slot-booking`, slotBooking);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

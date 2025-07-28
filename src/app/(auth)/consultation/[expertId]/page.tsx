@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, Check, Star, Calendar } from 'lucide-react';
 import { DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
+import { toast } from 'react-toastify';
+import { slotBooking } from '@/app/service/user/orderApi';
 
 
 const BookingPage = () => {
@@ -13,7 +15,6 @@ const BookingPage = () => {
     const router = useRouter();
     const expertId = params.expertId as string;
 
-    // State management
     const [expert, setExpert] = useState<IExpert | null>(null);
     const [availability, setAvailability] = useState<IExpertAvailability[]>([]);
     const [loading, setLoading] = useState(true);
@@ -24,33 +25,7 @@ const BookingPage = () => {
     const [bookingStep, setBookingStep] = useState<'schedule' | 'details' | 'payment'>('schedule');
     const [bookingDetails, setBookingDetails] = useState({ name: '', email: '', phone: '', message: '' });
 
-    // Fetch expert and availability data
-    useEffect(() => {
-        const fetchExpertData = async () => {
-            try {
-                setLoading(true);
-                const expertResponse = await getExpertById(expertId);
-                if (!expertResponse.status) throw new Error('Expert not found');
-                setExpert(expertResponse.expert);
-                // Fetch availability for the current and next few weeks
-                await fetchAvailability();
-            } catch (error) {
-                console.error('Error fetching expert data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchExpertData();
-    }, [expertId]);
-
-    // Fetch availability when week changes
-    useEffect(() => {
-        if (expert) {
-            fetchAvailability();
-        }
-    }, [currentWeek, expert]);
-
-    const fetchAvailability = async () => {
+    const fetchAvailability = useCallback(async () => {
         try {
             setLoadingAvailability(true);
             // Calculate date range for current week
@@ -59,7 +34,6 @@ const BookingPage = () => {
             startDate.setDate(today.getDate() + (currentWeek * 7));
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + 7);
-            // const response = await fetch(`/api/experts/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
             const response = await getExpertAvailability(expertId, startDate, endDate);
             if (!response.status) throw new Error('Failed to fetch availability');
             setAvailability(response.availability);
@@ -69,7 +43,32 @@ const BookingPage = () => {
         } finally {
             setLoadingAvailability(false);
         }
-    };
+    }, [currentWeek, expertId]);
+
+    // Fetch expert and availability data
+    useEffect(() => {
+        const fetchExpertData = async () => {
+            try {
+                setLoading(true);
+                const expertResponse = await getExpertById(expertId);
+                if (!expertResponse.status) throw new Error('Expert not found');
+                setExpert(expertResponse.expert);
+                await fetchAvailability();
+            } catch (error) {
+                console.error('Error fetching expert data:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchExpertData();
+    }, [expertId, fetchAvailability]);
+
+    // Fetch availability when week changes
+    useEffect(() => {
+        if (expert) {
+            fetchAvailability();
+        }
+    }, [currentWeek, expert, fetchAvailability]);
 
     // Generate time slots from availability data
     const generateTimeSlotsFromAvailability = (date: string, availabilitySlots: IExpertAvailability[]): TimeSlot[] => {
@@ -82,11 +81,7 @@ const BookingPage = () => {
             // Generate hourly slots between start and end time
             const current = new Date(startTime);
             while (current < endTime) {
-                const timeString = current.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: true
-                });
+                const timeString = current.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
                 slots.push({
                     id: `${availability._id}-${current.getHours()}`,
                     time: timeString,
@@ -104,28 +99,21 @@ const BookingPage = () => {
         const today = new Date();
         const startDate = new Date(today);
         startDate.setDate(today.getDate() + (weekOffset * 7));
-
         const schedule: DaySchedule[] = [];
-
         for (let i = 0; i < 7; i++) {
             const date = new Date(startDate);
             date.setDate(startDate.getDate() + i);
             const dateString = date.toISOString().split('T')[0];
-
             const timeSlots = generateTimeSlotsFromAvailability(dateString, availability);
-
             schedule.push({
                 date: dateString,
                 dayName: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
                 slots: timeSlots
             });
         }
-
         return schedule;
     };
-
     const weekSchedule = generateWeekSchedule(currentWeek);
-
     const getMarketIcon = (market: string) => {
         switch (market) {
             case 'Stock': return <TrendingUp className="w-4 h-4" />;
@@ -149,25 +137,26 @@ const BookingPage = () => {
 
     const handleSlotBooking = async () => {
         if (!selectedDate || !selectedSlot || !expert) return;
-
+        if (!selectedSlot.availabilityId) {
+            toast.error("Slot availability ID is missing.");
+            return;
+        }
         try {
-            // Create booking
             const bookingData = {
-                expertId: expert.id,
+                expertId: expert._id,
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,
                 clientDetails: bookingDetails
             };
-
-            const response = await fetch('/api/bookings', { method: 'POST', headers: { 'Content-Type': 'application/json', }, body: JSON.stringify(bookingData), });
+            const response = await slotBooking(bookingData)
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }
-            alert('Booking confirmed! You will receive a confirmation email shortly.');
+            toast.success('Booking confirmed! You will receive a confirmation email shortly.');
         } catch (error) {
             console.error('Error confirming booking:', error);
-            alert('Failed to confirm booking. Please try again.');
+            toast.error('Failed to confirm booking. Please try again.');
         }
     };
 
@@ -404,7 +393,7 @@ const BookingPage = () => {
 
                                         <div className="md:col-span-2">
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Message (Optional)
+                                                Message ( Please specify the reason )
                                             </label>
                                             <textarea value={bookingDetails.message} onChange={(e) => setBookingDetails({ ...bookingDetails, message: e.target.value })} rows={4}
                                                 className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"

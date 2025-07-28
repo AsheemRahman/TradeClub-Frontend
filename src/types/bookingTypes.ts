@@ -1,5 +1,5 @@
 export interface IExpert {
-    id: string;
+    _id: string;
     fullName: string;
     profilePicture?: string;
     isActive: boolean,
@@ -13,8 +13,8 @@ export interface IExpert {
     country: string;
     rating?: number;
     reviews?: number;
-    createdAt?:Date,
-    updatedAt?:Date,
+    createdAt?: Date,
+    updatedAt?: Date,
 }
 
 export interface IExpertAvailability {
@@ -37,4 +37,17 @@ export interface DaySchedule {
     date: string;
     dayName: string;
     slots: TimeSlot[];
+}
+
+export interface BookingData {
+    expertId: string;
+    date: string;
+    timeSlot: string;
+    availabilityId: string;
+    clientDetails: {
+        name: string;
+        email: string;
+        phone?: string;
+        message: string;
+    };
 }
