@@ -1,49 +1,69 @@
-"use client"
+"use client";
 
-import React, { useState } from 'react';
-import { AlertCircle, RefreshCw, ArrowLeft, CreditCard, Mail, Phone } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { AlertCircle, RefreshCw, ArrowLeft, CreditCard, Mail, Phone } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { toast } from "react-toastify";
+import { createFailedOrder } from "@/app/service/user/orderApi";
+import { IOrder } from "@/types/types";
 
-interface PaymentFailedPageProps {
-    orderId?: string;
-    itemTitle?: string;
-    amount?: number;
-    currency?: string;
-    retryUrl?: string;
-    supportEmail?: string;
-    supportPhone?: string;
-}
 
-const PaymentFailedPage: React.FC<PaymentFailedPageProps> = ({
-    orderId = "ORD-2024-001",
-    itemTitle = "Advanced React Course",
-    amount = 4999,
-    currency = "INR",
-    retryUrl = "/checkout",
-    supportEmail = "support@example.com",
-    supportPhone = "+91 80 1234 5678"
-}) => {
+const PaymentFailedPage = () => {
+    const [order, setOrder] = useState<IOrder | null>(null);
     const [isRetrying, setIsRetrying] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const searchParams = useSearchParams();
+
+    const sessionId = searchParams.get("session_id");
+    const purchaseId = searchParams.get("courseId") || searchParams.get("planId");
+    const isCourse = !!searchParams.get("courseId");
+
+    useEffect(() => {
+        if (sessionId && purchaseId) {
+            const logFailedOrder = async () => {
+                try {
+                    setLoading(true);
+                    setError(null);
+                    const response = await createFailedOrder(sessionId);
+                    if (response?.status) {
+                        setOrder(response.order);
+                        toast.info("Payment failed. No charges were made.");
+                    } else {
+                        setError(response?.message || "Failed to log the order. Please contact support.");
+                        toast.error(response?.message || "Failed to log the order.");
+                    }
+                } catch (err) {
+                    console.error("Error logging failed order:", err);
+                    toast.error("Failed to log the order. Please contact support.");
+                    setError("An error occurred while logging the failed order.");
+                } finally {
+                    setLoading(false);
+                }
+            };
+            logFailedOrder();
+        }
+    }, [sessionId, purchaseId]);
 
     const handleRetry = () => {
         setIsRetrying(true);
         setTimeout(() => {
             setIsRetrying(false);
-            window.location.href = retryUrl;
+            router.push("/profile");
         }, 1000);
     };
 
     const formatCurrency = (amount: number, currency: string) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: currency,
-            minimumFractionDigits: 0
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency,
+            minimumFractionDigits: 0,
         }).format(amount);
     };
 
     const handleGoBack = () => {
-        router.push('/courses')
+        router.push(isCourse ? "/courses" : "/subscriptions");
     };
 
     return (
@@ -58,12 +78,8 @@ const PaymentFailedPage: React.FC<PaymentFailedPageProps> = ({
                                 <AlertCircle className="w-8 h-8 text-white" />
                             </div>
                         </div>
-                        <h1 className="text-2xl font-bold text-white text-center">
-                            Payment Failed
-                        </h1>
-                        <p className="text-red-100 text-center mt-2">
-                            Don&apos;t worry, no charges were made
-                        </p>
+                        <h1 className="text-2xl font-bold text-white text-center">Payment Failed</h1>
+                        <p className="text-red-100 text-center mt-2">Don&apos;t worry, no charges were made</p>
                     </div>
 
                     {/* Content */}
@@ -74,29 +90,33 @@ const PaymentFailedPage: React.FC<PaymentFailedPageProps> = ({
                             <div className="space-y-2 text-sm text-gray-600">
                                 <div className="flex justify-between">
                                     <span>Order ID:</span>
-                                    <span className="font-mono">{orderId}</span>
+                                    <span className="font-mono">{order?.id}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Item:</span>
-                                    <span className="font-medium">{itemTitle}</span>
+                                    <span className="font-medium">{order?.title}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span>Amount:</span>
-                                    <span className="font-semibold">{formatCurrency(amount, currency)}</span>
+                                    <span className="font-semibold">
+                                        {formatCurrency(order?.amount ?? 0, order?.currency ?? "INR")}
+                                    </span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Error Message */}
                         <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                            <p className="text-red-800 text-sm">Your payment could not be processed. Please try again or contact support.</p>
+                            <p className="text-red-800 text-sm">
+                                {error || "Your payment could not be processed. Please try again or contact support."}
+                            </p>
                         </div>
 
                         {/* Action Buttons */}
                         <div className="space-y-3">
                             <button
                                 onClick={handleRetry}
-                                disabled={isRetrying}
+                                disabled={isRetrying || loading}
                                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
                             >
                                 {isRetrying ? (
@@ -128,13 +148,19 @@ const PaymentFailedPage: React.FC<PaymentFailedPageProps> = ({
                     <div className="px-8 py-6">
                         <h3 className="font-semibold text-gray-900 mb-4 text-center">Need Help?</h3>
                         <div className="space-y-3">
-                            <a href={`mailto:${supportEmail}`} className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 transition-colors">
+                            <a
+                                href={`mailto:tradeclub03@gmail.com`}
+                                className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 transition-colors"
+                            >
                                 <Mail className="w-5 h-5" />
-                                <span className="text-sm">{supportEmail}</span>
+                                <span className="text-sm">tradeclub03@gmail.com</span>
                             </a>
-                            <a href={`tel:${supportPhone}`} className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 transition-colors">
+                            <a
+                                href={`tel:+918012345678`}
+                                className="flex items-center space-x-3 text-gray-600 hover:text-blue-600 transition-colors"
+                            >
                                 <Phone className="w-5 h-5" />
-                                <span className="text-sm">{supportPhone}</span>
+                                <span className="text-sm">+91 80 1234 5678</span>
                             </a>
                         </div>
                     </div>

@@ -71,7 +71,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
         if (isCourse && purchaseId) {
             router.push(`/my-learning/${purchaseId}`);
         } else {
-            router.push('/subscriptions');
+            router.push('/consultation');
         }
     };
 
@@ -278,7 +278,10 @@ Thank you for your purchase!
                                                 <p className="text-white font-semibold text-lg mb-2">{order?.title || 'N/A'}</p>
                                                 <div className="flex items-center gap-2">
                                                     <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
-                                                    <span className="text-emerald-300 text-sm">Lifetime Access</span>
+                                                    {order?.type == 'Course' ?
+                                                        <span className="text-emerald-300 text-sm">Lifetime Access</span> :
+                                                        <span className="text-emerald-300 text-sm">One Month Access</span>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>

@@ -59,6 +59,15 @@ export const createOrder = async (sessionId: string) => {
     }
 };
 
+export const createFailedOrder = async (sessionId: string) => {
+    try {
+        const response = await axiosInstance.post(`/user/order-failed`, { sessionId });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 export const slotBooking = async (slotBooking: BookingData) => {
     try {
         const response = await axiosInstance.post(`/user/slot-booking`, slotBooking);
