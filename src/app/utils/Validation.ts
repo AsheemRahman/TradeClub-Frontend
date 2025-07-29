@@ -70,3 +70,33 @@ export const courseValidation = {
         required: 'Video URL is required',
     },
 };
+
+export const sloBookingValidation = {
+    name: {
+        required: "Name is required",
+        minLength: {
+            value: 5,
+            message: "Name must be at least 5 characters",
+        },
+    },
+    email: {
+        required: "Email is required",
+        pattern: {
+            value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+            message: "Enter a valid email address",
+        },
+    },
+    phone: {
+        validate: (value?: string) => {
+            if (!value) return true;
+            if (!/^[0-9]+$/.test(value)) return "Phone number must contain only digits";
+            if (value.length < 10) return "Phone number must be at least 10 digits";
+            if (value.length > 15) return "Phone number must be at most 15 digits";
+            return true;
+        }
+    },
+    message: {
+        required: 'message is required',
+        minLength: { value: 10, message: 'message must be at least 10 characters' },
+    },
+}

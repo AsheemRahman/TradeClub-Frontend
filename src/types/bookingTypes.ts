@@ -39,15 +39,17 @@ export interface DaySchedule {
     slots: TimeSlot[];
 }
 
+export interface BookingDetails {
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+}
+
 export interface BookingData {
     expertId: string;
     date: string;
     timeSlot: string;
     availabilityId: string;
-    clientDetails: {
-        name: string;
-        email: string;
-        phone?: string;
-        message: string;
-    };
+    clientDetails: BookingDetails;
 }

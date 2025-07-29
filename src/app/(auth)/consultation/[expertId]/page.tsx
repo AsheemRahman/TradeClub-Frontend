@@ -3,11 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, User, Phone, Mail, Check, Star, Calendar } from 'lucide-react';
-import { DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
+import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User } from 'lucide-react';
+import { BookingDetails, DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
 import { slotBooking } from '@/app/service/user/orderApi';
+import { useForm } from 'react-hook-form';
+import { sloBookingValidation } from '@/app/utils/Validation';
 
 
 const BookingPage = () => {
@@ -23,7 +25,7 @@ const BookingPage = () => {
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
     const [currentWeek, setCurrentWeek] = useState(0);
     const [bookingStep, setBookingStep] = useState<'schedule' | 'details' | 'payment'>('schedule');
-    const [bookingDetails, setBookingDetails] = useState({ name: '', email: '', phone: '', message: '' });
+    const { register, handleSubmit, formState: { errors } } = useForm<BookingDetails>();
 
     const fetchAvailability = useCallback(async () => {
         try {
@@ -135,7 +137,7 @@ const BookingPage = () => {
         }
     };
 
-    const handleSlotBooking = async () => {
+    const handleSlotBooking = async (data: BookingDetails) => {
         if (!selectedDate || !selectedSlot || !expert) return;
         if (!selectedSlot.availabilityId) {
             toast.error("Slot availability ID is missing.");
@@ -147,9 +149,9 @@ const BookingPage = () => {
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,
-                clientDetails: bookingDetails
+                clientDetails: data, // get form data from react-hook-form
             };
-            const response = await slotBooking(bookingData)
+            const response = await slotBooking(bookingData);
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }
@@ -323,10 +325,7 @@ const BookingPage = () => {
                                                         </div>
                                                     ) : (
                                                         day.slots.map((slot) => (
-                                                            <button
-                                                                key={slot.id}
-                                                                onClick={() => slot.available && handleSlotSelect(day.date, slot)}
-                                                                disabled={!slot.available}
+                                                            <button key={slot.id} onClick={() => slot.available && handleSlotSelect(day.date, slot)} disabled={!slot.available}
                                                                 className={`w-full p-3 rounded-lg text-sm font-medium transition-all ${selectedDate === day.date && selectedSlot?.id === slot.id
                                                                     ? 'bg-blue-600 text-white shadow-lg'
                                                                     : slot.available
@@ -357,63 +356,70 @@ const BookingPage = () => {
                             {bookingStep === 'details' && (
                                 <div>
                                     <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Details</h2>
-                                    <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                <User className="w-4 h-4 inline mr-2" />
-                                                Full Name *
-                                            </label>
-                                            <input type="text" value={bookingDetails.name} onChange={(e) => setBookingDetails({ ...bookingDetails, name: e.target.value })}
-                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Enter your full name"
-                                            />
+
+                                    <form onSubmit={handleSubmit((data) => handleSlotBooking(data))}>
+                                        <div className="grid md:grid-cols-2 gap-6 mb-8">
+                                            {/* Full Name */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    <User className="w-4 h-4 inline mr-2" /> Full Name *
+                                                </label>
+                                                <input  type="text" {...register("name", sloBookingValidation.name)} placeholder="Enter your full name"
+                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                {errors.name && (<p className="text-red-500 text-sm mt-1">{errors.name.message}</p>)}
+                                            </div>
+
+                                            {/* Email */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    <Mail className="w-4 h-4 inline mr-2" /> Email Address *
+                                                </label>
+                                                <input type="email" {...register("email", sloBookingValidation.email)} placeholder="Enter your email"
+                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
+                                            </div>
+
+                                            {/* Phone */}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    <Phone className="w-4 h-4 inline mr-2" /> Phone Number
+                                                </label>
+                                                <input type="tel" {...register("phone", sloBookingValidation.phone)} placeholder="Enter your phone number"
+                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                {errors.phone && ( <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>)}
+                                            </div>
+
+                                            {/* Message */}
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                    Message (Please specify the reason)
+                                                </label>
+                                                <textarea {...register("message", sloBookingValidation.message)} rows={4} placeholder="Tell the expert what you'd like to discuss..."
+                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                />
+                                                {errors.message && ( <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>)}
+                                            </div>
                                         </div>
 
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                <Mail className="w-4 h-4 inline mr-2" />
-                                                Email Address *
-                                            </label>
-                                            <input type="email" value={bookingDetails.email} onChange={(e) => setBookingDetails({ ...bookingDetails, email: e.target.value })}
-                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Enter your email"
-                                            />
+                                        <div className="flex justify-between">
+                                            <button
+                                                type="button"
+                                                onClick={() => setBookingStep("schedule")}
+                                                className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
+                                            >
+                                                Back
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                Book the Appointment
+                                            </button>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                <Phone className="w-4 h-4 inline mr-2" />
-                                                Phone Number
-                                            </label>
-                                            <input type="tel" value={bookingDetails.phone} onChange={(e) => setBookingDetails({ ...bookingDetails, phone: e.target.value })}
-                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Enter your phone number"
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-2">
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Message ( Please specify the reason )
-                                            </label>
-                                            <textarea value={bookingDetails.message} onChange={(e) => setBookingDetails({ ...bookingDetails, message: e.target.value })} rows={4}
-                                                className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                placeholder="Tell the expert what you'd like to discuss..."
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="flex justify-between">
-                                        <button onClick={() => setBookingStep('schedule')}
-                                            className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
-                                        >
-                                            Back
-                                        </button>
-                                        <button onClick={handleSlotBooking} disabled={!bookingDetails.name || !bookingDetails.email}
-                                            className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Book the Appointment
-                                        </button>
-                                    </div>
+                                    </form>
                                 </div>
                             )}
                         </div>
