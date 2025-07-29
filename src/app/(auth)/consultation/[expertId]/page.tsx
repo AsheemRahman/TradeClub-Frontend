@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { slotBooking } from '@/app/service/user/orderApi';
 import { useForm } from 'react-hook-form';
 import { sloBookingValidation } from '@/app/utils/Validation';
+import { showBookingConfirmation } from '@/app/utils/showBooking';
 
 
 const BookingPage = () => {
@@ -149,13 +150,25 @@ const BookingPage = () => {
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,
-                clientDetails: data, // get form data from react-hook-form
+                clientDetails: data,
             };
             const response = await slotBooking(bookingData);
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }
-            toast.success('Booking confirmed! You will receive a confirmation email shortly.');
+            // toast.success('Booking confirmed! You will receive a confirmation email shortly.');
+            // ✅ Show success Swal
+            showBookingConfirmation({
+                expertName: expert.fullName,
+                selectedDate,
+                selectedTime: selectedSlot.time,
+                onConfirmed: () => {
+                    setSelectedDate('');
+                    setSelectedSlot(null);
+                    setBookingStep('schedule');
+                    fetchAvailability();
+                },
+            });
         } catch (error) {
             console.error('Error confirming booking:', error);
             toast.error('Failed to confirm booking. Please try again.');
@@ -364,7 +377,7 @@ const BookingPage = () => {
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     <User className="w-4 h-4 inline mr-2" /> Full Name *
                                                 </label>
-                                                <input  type="text" {...register("name", sloBookingValidation.name)} placeholder="Enter your full name"
+                                                <input type="text" {...register("name", sloBookingValidation.name)} placeholder="Enter your full name"
                                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
                                                 {errors.name && (<p className="text-red-500 text-sm mt-1">{errors.name.message}</p>)}
@@ -378,7 +391,7 @@ const BookingPage = () => {
                                                 <input type="email" {...register("email", sloBookingValidation.email)} placeholder="Enter your email"
                                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
-                                                {errors.email && ( <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
+                                                {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
                                             </div>
 
                                             {/* Phone */}
@@ -389,7 +402,7 @@ const BookingPage = () => {
                                                 <input type="tel" {...register("phone", sloBookingValidation.phone)} placeholder="Enter your phone number"
                                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
-                                                {errors.phone && ( <p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>)}
+                                                {errors.phone && (<p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>)}
                                             </div>
 
                                             {/* Message */}
@@ -400,7 +413,7 @@ const BookingPage = () => {
                                                 <textarea {...register("message", sloBookingValidation.message)} rows={4} placeholder="Tell the expert what you'd like to discuss..."
                                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
-                                                {errors.message && ( <p className="text-red-500 text-sm mt-1">{errors.message.message}</p>)}
+                                                {errors.message && (<p className="text-red-500 text-sm mt-1">{errors.message.message}</p>)}
                                             </div>
                                         </div>
 
