@@ -256,8 +256,8 @@ const PurchasedCoursesPage = () => {
                             return (
                                 <div key={course._id} className={`bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow ${viewMode === 'list' ? 'flex' : ''}`}>
                                     <div className={viewMode === 'list' ? 'w-64 flex-shrink-0' : ''}>
-                                        <div className="relative">
-                                            <Image src={course.imageUrl} alt={course.title} width={300} height={160} className="object-cover w-full" />
+                                        <div className="relative h-60 w-full">
+                                            <Image src={course.imageUrl} alt={course.title} fill className="object-cover rounded-t-lg" />
                                             <div className="absolute top-3 left-3">
                                                 <span className={`px-2 py-1 rounded-lg text-xs font-medium ${status.bg} ${status.color}`}>
                                                     {status.text}
