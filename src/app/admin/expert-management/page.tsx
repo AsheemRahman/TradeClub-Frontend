@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { UserType } from '@/types/types';
 
 import { toast } from 'react-toastify';
@@ -13,57 +13,45 @@ import { getExpertDetails, expertStatus } from '@/app/service/admin/adminApi';
 const UserManagement = () => {
     const [expertData, setExpertData] = useState<UserType[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState<UserType[]>([]);
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [page, setPage] = useState(1);
+    const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
+    const limit = 7;
 
-    const getExperts = async () => {
+    // Debounce
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+            setPage(1);
+        }, 500);
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchQuery]);
+
+    const fetchExperts = useCallback(async () => {
         try {
-            const response = await getExpertDetails();
-            if (response.status && response.data?.experts?.length) {
-                setExpertData(response.data.experts);
-                setFilteredData(response.data.experts);
-            } else {
-                setExpertData([]);
-                setFilteredData([]);
+            const response = await getExpertDetails({
+                search: debouncedSearch,
+                page,
+                limit,
+            });
+            if (response?.status) {
+                setExpertData(response.experts);
+                setPagination(response.pagination);
             }
-        } catch (error) {
-            console.error("Error fetching userData", error);
-            toast.error("Failed to fetch user data");
+        } catch {
+            toast.error("Failed to fetch expert data");
         }
-    };
+    }, [debouncedSearch, page, limit]);
 
     useEffect(() => {
-        getExperts();
-    }, []);
-
-    useEffect(() => {
-        const filtered = expertData.filter((expert) =>
-            expert.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            expert.email?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-        setFilteredData(filtered);
-    }, [searchQuery, expertData]);
+        fetchExperts();
+    }, [fetchExperts]);
 
     const changeStatus = async (id: string, status: boolean) => {
-        try {
-            if (!id) {
-                toast.error("Unable to change the status. Please try again");
-                return;
-            }
-            const response = await expertStatus(id, status);
-            if (response.success) {
-                toast.success("Expert status changed");
-                setExpertData((prev) =>
-                    prev.map((expert) =>
-                        expert.id === id ? { ...expert, isActive: status } : expert
-                    )
-                );
-            } else {
-                toast.error("Failed to change Expert status");
-            }
-        } catch (error) {
-            console.error("Status change error:", error);
-            toast.error("Something went wrong");
-        }
+        const response = await expertStatus(id, status);
+        if (response.status) fetchExperts();
     };
 
     return (
@@ -93,7 +81,29 @@ const UserManagement = () => {
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
 
-            <UserTable userData={filteredData} toggleStatus={changeStatus} role="expert" />
+            <UserTable userData={expertData} toggleStatus={changeStatus} role="expert" />
+
+            {/* Pagination */}
+            <div className="flex justify-center items-center gap-2 mt-6">
+                <button onClick={() => setPage(page - 1)} disabled={page === 1}
+                    className={`px-3 py-1 rounded-lg border transition ${page === 1 ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-100 border-gray-300"}`}
+                >
+                    Prev
+                </button>
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((pageNumber) => (
+                    <button key={pageNumber} onClick={() => setPage(pageNumber)}
+                        className={`px-3 py-1 rounded-lg border transition ${page === pageNumber ? "bg-blue-600 text-white border-blue-600" : "bg-white hover:bg-gray-100 border-gray-300"}`}
+                    >
+                        {pageNumber}
+                    </button>
+                ))}
+                <button onClick={() => setPage(page + 1)} disabled={page === pagination.totalPages}
+                    className={`px-3 py-1 rounded-lg border transition ${page === pagination.totalPages ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-white hover:bg-gray-100 border-gray-300"}`}
+                >
+                    Next
+                </button>
+            </div>
+
         </div>
     );
 };

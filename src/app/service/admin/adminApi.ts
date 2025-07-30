@@ -51,14 +51,14 @@ export const userStatus = async (id: string, status: boolean) => {
     }
 };
 
-export const getExpertDetails = async () => {
+export const getExpertDetails = async (params?: { search?: string; page?: number; limit?: number; }) => {
     try {
-        const response = await adminAxiosInstance.get(`/admin/get-experts`,)
-        return response.data
+        const response = await adminAxiosInstance.get(`admin/get-experts`, { params });
+        return response.data;
     } catch (error) {
-        handleAxiosError(error)
+        handleAxiosError(error);
     }
-}
+};
 
 export const expertStatus = async (id: string, status: boolean) => {
     try {
