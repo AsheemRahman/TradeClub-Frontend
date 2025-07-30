@@ -12,9 +12,9 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const courseData = async () => {
+export const courseData = async (params?: { search?: string; category?: string; minPrice?: number; maxPrice?: number; sort?: string; page?: number; limit?: number; }) => {
     try {
-        const response = await axiosInstance.get(`/user/courses`,);
+        const response = await axiosInstance.get(`/user/courses`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

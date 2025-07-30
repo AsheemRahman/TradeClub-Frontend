@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { CourseCard } from '@/components/user/CourseCard';
 import { CourseListItem } from '@/components/user/CourseListItem';
 import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
@@ -16,25 +16,49 @@ const CoursesPage = () => {
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState(''); // <-- for debounce
     const [selectedCategory, setSelectedCategory] = useState('');
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
     const [sortBy, setSortBy] = useState('newest');
     const [showFilters, setShowFilters] = useState(false);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalCourses, setTotalCourses] = useState(1);
 
     // Pagination
     const [currentPage, setCurrentPage] = useState(1);
     const coursesPerPage = 4;
 
+    //Debounce searchTerm
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setDebouncedSearch(searchTerm);
+            setCurrentPage(1);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [searchTerm]);
+
+    // Fetch data
     useEffect(() => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [coursesRes, categoriesRes] = await Promise.all([courseData(), categoryData()]);
-                if (!coursesRes.status || !categoriesRes.status) {
-                    throw new Error('Failed to fetch data');
-                }
+                const [coursesRes, categoriesRes] = await Promise.all([
+                    courseData({
+                        search: debouncedSearch,
+                        category: selectedCategory,
+                        minPrice: priceRange[0],
+                        maxPrice: priceRange[1],
+                        sort: sortBy,
+                        page: currentPage,
+                        limit: coursesPerPage
+                    }),
+                    categoryData(),
+                ]);
+                if (!coursesRes.status || !categoriesRes.status) throw new Error('Failed to fetch data');
                 setCourses(coursesRes.courses || []);
                 setCategories(categoriesRes.categories || []);
+                setTotalPages(coursesRes.totalPages || 1);
+                setTotalCourses(coursesRes.totalCourses || 0);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -42,41 +66,7 @@ const CoursesPage = () => {
             }
         };
         fetchData();
-    }, []);
-
-    // Filtered and sorted courses
-    const filteredCourses = useMemo(() => {
-        const filtered = courses.filter(course => {
-            const matchesSearch = course.title.toLowerCase().includes(searchTerm.toLowerCase()) || course.description.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesCategory = selectedCategory === '' || course.category === selectedCategory;
-            const matchesPrice = course.price >= priceRange[0] && course.price <= priceRange[1];
-            return matchesSearch && matchesCategory && matchesPrice;
-        });
-        // Sort courses
-        switch (sortBy) {
-            case 'price-low':
-                filtered.sort((a, b) => a.price - b.price);
-                break;
-            case 'price-high':
-                filtered.sort((a, b) => b.price - a.price);
-                break;
-            default:
-                filtered.sort((a, b) => {
-                    const dateA = new Date(a.createdAt ?? 0).getTime();
-                    const dateB = new Date(b.createdAt ?? 0).getTime();
-                    return dateB - dateA;
-                });
-                break;
-        }
-        return filtered;
-    }, [courses, searchTerm, selectedCategory, priceRange, sortBy]);
-
-    // Pagination
-    const totalPages = Math.ceil(filteredCourses.length / coursesPerPage);
-    const paginatedCourses = filteredCourses.slice(
-        (currentPage - 1) * coursesPerPage,
-        currentPage * coursesPerPage
-    );
+    }, [debouncedSearch, selectedCategory, priceRange, sortBy, currentPage]);
 
     if (loading) {
         return (
@@ -187,19 +177,19 @@ const CoursesPage = () => {
                 {/* Results Count */}
                 <div className="flex justify-between items-center mb-6">
                     <p className="text-gray-200">
-                        Showing {paginatedCourses.length} of {filteredCourses.length} courses
+                        Showing {courses.length} of {totalCourses} courses
                     </p>
                 </div>
 
                 {/* Course Grid/List */}
-                {filteredCourses.length === 0 ? (
+                {courses.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-gray-500 text-lg">No courses found matching your criteria.</p>
                         <p className="text-gray-400 mt-2">Try adjusting your filters or search terms.</p>
                     </div>
                 ) : (
                     <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8" : "space-y-4 mb-8"}>
-                        {paginatedCourses.map(course => (
+                        {courses.map(course => (
                             viewMode === 'grid'
                                 ? <CourseCard key={course._id} course={course} categories={categories} />
                                 : <CourseListItem key={course._id} course={course} categories={categories} />
