@@ -4,26 +4,61 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
-import { Calendar, Bell, Clock, MessageSquare, Settings, } from 'lucide-react';
+import {Calendar,Bell,Clock,MessageSquare,Settings,Users,DollarSign,BookOpen,Star,ChevronUp,ChevronDown} from 'lucide-react';
+import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,AreaChart,Area} from 'recharts';
+
 import { getExpertData } from '@/app/service/expert/expertApi';
 import { IExpert, IExpertVerification } from '@/types/expertTypes';
 import { Button } from '@/components/ui/Button';
 
+// New API interfaces for dashboard data
+interface IDashboardStats {
+    totalStudents: number;
+    totalSessions: number;
+    totalEarnings: number;
+    averageRating: number;
+    pendingMessages: number;
+    upcomingSessions: number;
+    completionRate: number;
+    monthlyGrowth: number;
+}
+
+interface ISessionData {
+    date: string;
+    sessions: number;
+    earnings: number;
+    students: number;
+}
+
+// API functions (you'll need to implement these)
+const getDashboardStats = async (): Promise<IDashboardStats> => {
+    // Replace with your actual API call
+    const response = await fetch('/api/expert/dashboard/stats');
+    if (!response.ok) throw new Error('Failed to fetch dashboard stats');
+    return response.json();
+};
+
+const getSessionAnalytics = async (period: '7d' | '30d' | '90d' = '30d'): Promise<ISessionData[]> => {
+    // Replace with your actual API call
+    const response = await fetch(`/api/expert/dashboard/analytics?period=${period}`);
+    if (!response.ok) throw new Error('Failed to fetch session analytics');
+    return response.json();
+};
 
 const ExpertDashboard = () => {
     const [expert, setExpert] = useState<IExpert | null>(null);
+    const [dashboardStats, setDashboardStats] = useState<IDashboardStats | null>(null);
+    const [sessionData, setSessionData] = useState<ISessionData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [analyticsPeriod, setAnalyticsPeriod] = useState<'7d' | '30d' | '90d'>('30d');
     const router = useRouter();
 
     // Function to check if expert should be redirected to verification
     const shouldRedirectToVerification = useCallback((expertData: IExpertVerification): boolean => {
         if (!expertData) return false;
-        // Check if essential verification fields are missing
         const requiredFields = ['experience_level', 'year_of_experience', 'markets_Traded', 'trading_style', 'DOB', 'state', 'country'];
-        // If any required field is missing, redirect to verification
         const hasIncompleteProfile = requiredFields.some(field => !expertData[field as keyof IExpertVerification]);
-        // Also redirect if verification status is not set (new user)
         const needsInitialVerification = !expertData.isVerified || expertData.isVerified === "";
         return hasIncompleteProfile || needsInitialVerification;
     }, []);
@@ -51,6 +86,19 @@ const ExpertDashboard = () => {
         }
     }, [router]);
 
+    const loadDashboardData = useCallback(async () => {
+        try {
+            const [stats, analytics] = await Promise.all([
+                getDashboardStats(),
+                getSessionAnalytics(analyticsPeriod),
+            ]);
+            setDashboardStats(stats);
+            setSessionData(analytics);
+        } catch (error) {
+            console.error('Error loading dashboard data:', error);
+        }
+    }, [analyticsPeriod]);
+
     useEffect(() => {
         getExpert();
     }, [getExpert]);
@@ -59,9 +107,17 @@ const ExpertDashboard = () => {
         if (!isLoading && expert) {
             if (shouldRedirectToVerification(expert)) {
                 router.push(`/expert/verification/?email=${expert.email}`);
+            } else {
+                loadDashboardData();
             }
         }
-    }, [expert, isLoading, shouldRedirectToVerification, router]);
+    }, [expert, isLoading, shouldRedirectToVerification, router, loadDashboardData]);
+
+    useEffect(() => {
+        if (expert && !shouldRedirectToVerification(expert)) {
+            loadDashboardData();
+        }
+    }, [analyticsPeriod, expert, shouldRedirectToVerification, loadDashboardData]);
 
     const handleVerificationClick = useCallback(() => {
         if (expert?.email) {
@@ -72,16 +128,23 @@ const ExpertDashboard = () => {
     const handleQuickAction = useCallback((action: string) => {
         switch (action) {
             case 'messages':
-                router.push("/expert/messages");
+                router.push("/expert/message");
                 break;
             case 'schedule':
-                router.push("/expert/schedule");
+                router.push("/expert/session");
                 break;
             case 'settings':
-                router.push("/expert/settings");
+                router.push("/expert/profile");
                 break;
         }
     }, [router]);
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    };
 
     if (isLoading) {
         return (
@@ -124,7 +187,7 @@ const ExpertDashboard = () => {
     return (
         <div className="min-h-screen">
             {/* Header */}
-            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-5 mb-4 mx-8 ">
+            <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-5  mx-8">
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="relative z-10">
                     <div className="flex items-center justify-between my-3">
@@ -144,7 +207,11 @@ const ExpertDashboard = () => {
                         <div className="flex space-x-3">
                             <button className="relative p-2 text-white hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
                                 <Bell className="w-5 h-5" />
-                                <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></span>
+                                {dashboardStats && dashboardStats.pendingMessages > 0 && (
+                                    <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
+                                        {dashboardStats.pendingMessages}
+                                    </span>
+                                )}
                             </button>
                             <Button onClick={() => router.push('/expert/profile')}>
                                 Profile
@@ -189,31 +256,192 @@ const ExpertDashboard = () => {
                     </div>
                 )}
 
+                {/* Stats Cards */}
+                {dashboardStats && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-400">Total Students</p>
+                                    <p className="text-2xl font-bold text-white">{dashboardStats.totalStudents}</p>
+                                    <div className="flex items-center mt-1">
+                                        {dashboardStats.monthlyGrowth > 0 ? (
+                                            <ChevronUp className="w-4 h-4 text-green-500" />
+                                        ) : (
+                                            <ChevronDown className="w-4 h-4 text-red-500" />
+                                        )}
+                                        <span className={`text-sm ${dashboardStats.monthlyGrowth > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                            {Math.abs(dashboardStats.monthlyGrowth)}%
+                                        </span>
+                                    </div>
+                                </div>
+                                <Users className="w-8 h-8 text-blue-500" />
+                            </div>
+                        </div>
+
+                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-400">Total Sessions</p>
+                                    <p className="text-2xl font-bold text-white">{dashboardStats.totalSessions}</p>
+                                    <p className="text-sm text-gray-400">
+                                        {dashboardStats.completionRate}% completion rate
+                                    </p>
+                                </div>
+                                <BookOpen className="w-8 h-8 text-green-500" />
+                            </div>
+                        </div>
+
+                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-400">Total Earnings</p>
+                                    <p className="text-2xl font-bold text-white">{formatCurrency(dashboardStats.totalEarnings)}</p>
+                                    <p className="text-sm text-gray-400">This month</p>
+                                </div>
+                                <DollarSign className="w-8 h-8 text-yellow-500" />
+                            </div>
+                        </div>
+
+                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-400">Average Rating</p>
+                                    <p className="text-2xl font-bold text-white">{dashboardStats.averageRating.toFixed(1)}</p>
+                                    <div className="flex items-center mt-1">
+                                        {[...Array(5)].map((_, i) => (
+                                            <Star
+                                                key={i}
+                                                className={`w-4 h-4 ${i < Math.floor(dashboardStats.averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                                <Star className="w-8 h-8 text-yellow-500" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Quick Actions */}
                 <div className="mb-8">
                     <h2 className="text-lg font-semibold text-gray-100 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         <button onClick={() => handleQuickAction('messages')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200  transition-all text-left group"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group"
                         >
                             <MessageSquare className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-300 mb-1">Student Messages</h3>
-                            <p className="text-sm text-gray-600">Reply to student inquiries and questions</p>
+                            <h3 className="font-semibold text-gray-300 mb-1">Customer Messages</h3>
+                            <p className="text-sm text-gray-600">Reply to customer inquiries and questions</p>
+                            {dashboardStats && dashboardStats.pendingMessages > 0 && (
+                                <div className="mt-2">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        {dashboardStats.pendingMessages} pending
+                                    </span>
+                                </div>
+                            )}
                         </button>
                         <button onClick={() => handleQuickAction('schedule')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200 transition-all text-left group"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group"
                         >
                             <Calendar className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
                             <h3 className="font-semibold text-gray-300 mb-1">Schedule Session</h3>
                             <p className="text-sm text-gray-600">Book a live teaching session with students</p>
+                            {dashboardStats && dashboardStats.upcomingSessions > 0 && (
+                                <div className="mt-2">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {dashboardStats.upcomingSessions} upcoming
+                                    </span>
+                                </div>
+                            )}
                         </button>
                         <button onClick={() => handleQuickAction('settings')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-200 transition-all text-left group md:col-span-2 xl:col-span-1"
+                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group md:col-span-2 xl:col-span-1"
                         >
                             <Settings className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-300 mb-1">Account Settings</h3>
+                            <h3 className="font-semibold text-gray-300 mb-1">Account Profile</h3>
                             <p className="text-sm text-gray-600">Manage your profile and preferences</p>
                         </button>
+                    </div>
+                </div>
+
+                {/* Charts Section */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                    {/* Session Analytics */}
+                    <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-white">Session Analytics</h3>
+                            <div className="flex space-x-2">
+                                {(['7d', '30d', '90d'] as const).map((period) => (
+                                    <button
+                                        key={period}
+                                        onClick={() => setAnalyticsPeriod(period)}
+                                        className={`px-3 py-1 rounded-lg text-sm transition-colors ${analyticsPeriod === period
+                                                ? 'bg-blue-500 text-white'
+                                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                                            }`}
+                                    >
+                                        {period}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={sessionData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                    <XAxis dataKey="date" stroke="#9CA3AF" />
+                                    <YAxis stroke="#9CA3AF" />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: '#1F2937',
+                                            border: '1px solid #374151',
+                                            borderRadius: '8px',
+                                            color: '#F9FAFB'
+                                        }}
+                                    />
+                                    <Area
+                                        type="monotone"
+                                        dataKey="sessions"
+                                        stroke="#3B82F6"
+                                        fill="#3B82F6"
+                                        fillOpacity={0.2}
+                                        name="Sessions"
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+
+                    {/* Earnings Chart */}
+                    <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                        <h3 className="text-lg font-semibold text-white mb-6">Earnings Overview</h3>
+                        <div className="h-80">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={sessionData}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                                    <XAxis dataKey="date" stroke="#9CA3AF" />
+                                    <YAxis stroke="#9CA3AF" />
+                                    <Tooltip
+                                        contentStyle={{
+                                            backgroundColor: '#1F2937',
+                                            border: '1px solid #374151',
+                                            borderRadius: '8px',
+                                            color: '#F9FAFB'
+                                        }}
+                                        formatter={(value) => [formatCurrency(Number(value)), 'Earnings']}
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="earnings"
+                                        stroke="#10B981"
+                                        strokeWidth={3}
+                                        dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
+                                        name="Earnings"
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
             </div>
