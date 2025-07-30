@@ -1,28 +1,63 @@
 "use client"
 
-import { BarChart3, Users, DollarSign, BookOpen, TrendingUp, Calendar, Bell, Settings } from "lucide-react";
+import { useEffect, useState } from 'react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useState } from 'react';
+import { BarChart3, Users, BookOpen, TrendingUp, Calendar, Bell, Settings, IndianRupee } from "lucide-react";
 
-const revenueData = [
-    { month: 'Jan', revenue: 8400, customers: 240 },
-    { month: 'Feb', revenue: 9200, customers: 280 },
-    { month: 'Mar', revenue: 11100, customers: 320 },
-    { month: 'Apr', revenue: 10800, customers: 310 },
-    { month: 'May', revenue: 12500, customers: 380 },
-    { month: 'Jun', revenue: 12345, customers: 420 }
-];
+import { getCourse } from "@/app/service/admin/courseApi";
+import { getRevenue } from "@/app/service/admin/adminApi";
+import { ICourse } from "@/types/courseTypes";
 
-const courseData = [
-    { name: 'Web Development', students: 340, color: '#8b5cf6' },
-    { name: 'Data Science', students: 280, color: '#06b6d4' },
-    { name: 'Mobile Apps', students: 220, color: '#10b981' },
-    { name: 'UI/UX Design', students: 180, color: '#f59e0b' },
-    { name: 'DevOps', students: 120, color: '#ef4444' }
-];
+const COLORS = ['#8b5cf6', '#06b6d4', '#f97316', '#22c55e', '#eab308'];
+
+interface ICourseWithStats extends ICourse {
+    customers: number;
+    color: string;
+}
+
+interface IRevenue {
+    month: string;
+    revenue: number;
+    customers: number;
+}
+
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('overview');
+    const [revenueData, setRevenueData] = useState<IRevenue[]>([]);
+    const [courseData, setCourseData] = useState<ICourseWithStats[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                const [revenueRes, coursesRes] = await Promise.all([
+                    getRevenue(),
+                    getCourse()
+                ]);
+                const coursesWithStats = coursesRes.courses.map((course: ICourse, index: number) => ({
+                    ...course,
+                    customers: course.purchasedUsers?.length || 0,
+                    color: COLORS[index % COLORS.length],
+                }));
+                setRevenueData(revenueRes.revenue);
+                setCourseData(coursesWithStats);
+            } catch (error) {
+                console.error("Error fetching dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDashboardData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-6 text-center text-gray-500">Loading Dashboard...</div>;
+    }
+    // Calculate latest revenue and growth
+    const latestRevenue = revenueData.length > 0 ? revenueData[revenueData.length - 1].revenue : 0;
+    const previousRevenue = revenueData.length > 1 ? revenueData[revenueData.length - 2].revenue : 0;
+    const growthPercentage = previousRevenue > 0 ? (((latestRevenue - previousRevenue) / previousRevenue) * 100).toFixed(2) : "0";
 
     return (
         <div className="min-h-screen">
@@ -50,8 +85,6 @@ export default function Dashboard() {
                         </div>
                     </div>
                 </div>
-
-                {/* Decorative elements */}
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
@@ -78,7 +111,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Total Experts</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-1">87%</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">872</p>
                             <div className="flex items-center mt-2">
                                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                                 <span className="text-sm text-green-600">+8% last month</span>
@@ -94,14 +127,19 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Revenue</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-1">$12,345</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">
+                                ₹{latestRevenue.toLocaleString()}
+                            </p>
                             <div className="flex items-center mt-2">
-                                <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                                <span className="text-sm text-green-600">+8% last month</span>
+                                <TrendingUp className={`w-4 h-4 ${Number(growthPercentage) >= 0 ? "text-green-500" : "text-red-500"} mr-1`} />
+                                <span className={`text-sm ${Number(growthPercentage) >= 0 ? "text-green-600" : "text-red-600"}`}>
+                                    {Number(growthPercentage) >= 0 ? "+" : ""}
+                                    {growthPercentage}% last month
+                                </span>
                             </div>
                         </div>
                         <div className="p-3 bg-orange-100 rounded-lg">
-                            <DollarSign className="w-8 h-8 text-orange-600" />
+                            <IndianRupee className="w-8 h-8 text-orange-600" />
                         </div>
                     </div>
                 </div>
@@ -110,7 +148,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Active Courses</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-1">12</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">{courseData.length}</p>
                             <div className="flex items-center mt-2">
                                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                                 <span className="text-sm text-green-600">+2 new courses</span>
@@ -155,21 +193,8 @@ export default function Dashboard() {
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                 <XAxis dataKey="month" stroke="#6b7280" />
                                 <YAxis stroke="#6b7280" />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                    }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="revenue"
-                                    stroke="#8b5cf6"
-                                    fillOpacity={1}
-                                    fill="url(#colorRevenue)"
-                                />
+                                <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                                <Area type="monotone" dataKey="revenue" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorRevenue)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -179,26 +204,12 @@ export default function Dashboard() {
                         <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Distribution</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
-                                <Pie
-                                    data={courseData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={60}
-                                    outerRadius={120}
-                                    paddingAngle={5}
-                                    dataKey="students"
-                                >
+                                <Pie data={courseData} cx="50%" cy="50%" innerRadius={60} outerRadius={120} paddingAngle={5} dataKey="customers" nameKey="title">
                                     {courseData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}
                                 </Pie>
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px'
-                                    }}
-                                />
+                                <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
                                 <Legend />
                             </PieChart>
                         </ResponsiveContainer>
@@ -216,30 +227,10 @@ export default function Dashboard() {
                                 <XAxis dataKey="month" stroke="#6b7280" />
                                 <YAxis yAxisId="left" stroke="#6b7280" />
                                 <YAxis yAxisId="right" orientation="right" stroke="#6b7280" />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px'
-                                    }}
-                                />
+                                <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
                                 <Legend />
-                                <Line
-                                    yAxisId="left"
-                                    type="monotone"
-                                    dataKey="revenue"
-                                    stroke="#8b5cf6"
-                                    strokeWidth={3}
-                                    dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 6 }}
-                                />
-                                <Line
-                                    yAxisId="right"
-                                    type="monotone"
-                                    dataKey="customers"
-                                    stroke="#06b6d4"
-                                    strokeWidth={3}
-                                    dot={{ fill: '#06b6d4', strokeWidth: 2, r: 6 }}
-                                />
+                                <Line yAxisId="left" type="monotone" dataKey="revenue" stroke="#8b5cf6" strokeWidth={3} dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 6 }} />
+                                <Line yAxisId="right" type="monotone" dataKey="customers" stroke="#06b6d4" strokeWidth={3} dot={{ fill: '#06b6d4', strokeWidth: 2, r: 6 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -253,16 +244,10 @@ export default function Dashboard() {
                         <ResponsiveContainer width="100%" height={400}>
                             <BarChart data={courseData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                                <XAxis dataKey="name" stroke="#6b7280" />
+                                <XAxis dataKey="title" stroke="#6b7280" />
                                 <YAxis stroke="#6b7280" />
-                                <Tooltip
-                                    contentStyle={{
-                                        backgroundColor: 'white',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px'
-                                    }}
-                                />
-                                <Bar dataKey="students" radius={[4, 4, 0, 0]}>
+                                <Tooltip contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px' }} />
+                                <Bar dataKey="customers" radius={[4, 4, 0, 0]}>
                                     {courseData.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.color} />
                                     ))}

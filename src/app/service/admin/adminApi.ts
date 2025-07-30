@@ -167,3 +167,12 @@ export const getItem = async (itemId: string, itemType: 'Course' | 'Subscription
         handleAxiosError(error);
     }
 };
+
+export const getRevenue = async () => {
+    try {
+        const response = await adminAxiosInstance.get(`/admin/revenue`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
