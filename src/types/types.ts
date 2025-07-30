@@ -68,3 +68,11 @@ export interface IOrder {
     createdAt: Date;
     updatedAt: Date;
 }
+
+export interface GetUserParams {
+    search?: string;
+    status?: string;
+    sort?: string;
+    page?: number;
+    limit?: number;
+}

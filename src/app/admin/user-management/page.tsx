@@ -1,43 +1,46 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-
 import { toast } from 'react-toastify';
-import { UserType } from '@/types/types';
 import { Search, User } from 'lucide-react';
-
 import UserTable from '@/components/admin/TableComponent';
 import { getUserDetails, userStatus } from '@/app/service/admin/adminApi';
-
+import { UserType } from '@/types/types';
 
 const UserManagement = () => {
     const [userData, setUserData] = useState<UserType[]>([]);
-    const [searchQuery, setSearchQuery] = useState<string>('');
-
-    const getUsers = async () => {
-        try {
-            const response = await getUserDetails();
-            if (response.success && response.data?.users?.length) {
-                setUserData(response.data.users);
-            } else {
-                setUserData([]);
-            }
-        } catch (error) {
-            console.error("Error fetching userData", error);
-            toast.error("Failed to fetch user data");
-        }
-    };
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [sortField, setSortField] = useState('createdAt');
+    const [page, setPage] = useState(1);
+    const [limit] = useState(6);
+    const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
 
     useEffect(() => {
-        getUsers();
-    }, []);
+        const timeout = setTimeout(async () => {
+            try {
+                const response = await getUserDetails({
+                    search: searchQuery,
+                    status: statusFilter,
+                    sort: sortField,
+                    page,
+                    limit,
+                });
+                if (response.status && response) {
+                    setUserData(response.users || []);
+                    setPagination(response.pagination || { total: 0, totalPages: 0 });
+                } else {
+                    setUserData([]);
+                }
+            } catch {
+                toast.error("Failed to fetch user data");
+            }
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [searchQuery, statusFilter, sortField, page, limit]);
 
     const changeStatus = async (id: string, status: boolean) => {
         try {
-            if (!id) {
-                toast.error("Unable to change the status. Please try again");
-                return;
-            }
             const response = await userStatus(id, status);
             if (response.success) {
                 toast.success("User status changed");
@@ -45,20 +48,14 @@ const UserManagement = () => {
             } else {
                 toast.error("Failed to change user status");
             }
-        } catch (error) {
-            console.error("Status change error:", error);
+        } catch {
             toast.error("Something went wrong");
         }
     };
 
-    // Filtered data based on search
-    const filteredUsers = userData.filter(user =>
-        user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
     return (
         <div>
+            {/* Header */}
             <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
                 <div className="absolute inset-0 bg-black/20"></div>
                 <div className="relative z-10">
@@ -72,6 +69,8 @@ const UserManagement = () => {
                                 <p className="text-white/80 mt-1 text-md">Manage customer and verify</p>
                             </div>
                         </div>
+
+                        {/* Search Input */}
                         <div className="relative flex items-center gap-1 mr-5">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                             <input type="text" placeholder="Search by name or email" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
@@ -79,12 +78,43 @@ const UserManagement = () => {
                             />
                         </div>
                     </div>
+
+                    {/* Filters */}
+                    <div className="flex gap-3 mt-3">
+                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                            <option value="">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+
+                        <select value={sortField} onChange={(e) => setSortField(e.target.value)}>
+                            <option value="createdAt">Date</option>
+                            <option value="fullName">Name</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
                 </div>
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
 
-            <UserTable userData={filteredUsers} toggleStatus={changeStatus} role="user" />
+            {/* Table */}
+            <UserTable userData={userData} toggleStatus={changeStatus} role="user" />
+
+            {/* Pagination */}
+            <div className="flex items-center justify-center gap-3 mt-6">
+                <button disabled={page === 1} onClick={() => setPage(page - 1)} className={`px-4 py-2 rounded-lg text-sm font-medium transition 
+                    ${page === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                >
+                    Prev
+                </button>
+                <span className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium shadow-sm">
+                    Page <span className="font-semibold">{page}</span> of <span className="font-semibold">{pagination.totalPages || 1}</span>
+                </span>
+                <button disabled={page === pagination.totalPages} onClick={() => setPage(page + 1)} className={`px-4 py-2 rounded-lg text-sm font-medium transition 
+                    ${page === pagination.totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                >
+                    Next
+                </button>
+            </div>
         </div>
     );
 };

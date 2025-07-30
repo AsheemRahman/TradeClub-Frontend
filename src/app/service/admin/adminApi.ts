@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ICoupon, loginType } from "@/types/types";
+import { GetUserParams, ICoupon, loginType } from "@/types/types";
 import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
 
@@ -33,9 +33,9 @@ export const adminLogout = async () => {
     }
 }
 
-export const getUserDetails = async () => {
+export const getUserDetails = async (params?: GetUserParams) => {
     try {
-        const response = await adminAxiosInstance.get(`admin/get-users`,);
+        const response = await adminAxiosInstance.get(`admin/get-users`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error)
