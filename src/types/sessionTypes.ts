@@ -31,3 +31,11 @@ export interface ISessionData {
     sessions: number;
     students: number;
 }
+
+export interface ISessionFilters {
+    status?: string;
+    date?: string;
+    startDate?: string;
+    endDate?: string;
+    search?: string;
+}
