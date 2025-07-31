@@ -49,3 +49,21 @@ export const deleteSlot = async (id: string) => {
         handleAxiosError(error)
     }
 };
+
+export const getDashboardStats = async ()=> {
+    try {
+        const response = await axiosInstance.get(`/expert/dashboard/stats`,);
+        return response.data;
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+};
+
+export const getSessionAnalytics = async (period: '7d' | '30d' | '90d' = '30d')=> {
+    try {
+        const response = await axiosInstance.get(`/expert/dashboard/analytics?period=${period}`,);
+        return response.data;
+    } catch (error: unknown) {
+        handleAxiosError(error)
+    }
+};

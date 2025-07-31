@@ -4,46 +4,14 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
-import {Calendar,Bell,Clock,MessageSquare,Settings,Users,DollarSign,BookOpen,Star,ChevronUp,ChevronDown} from 'lucide-react';
-import {LineChart,Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,AreaChart,Area} from 'recharts';
+import { Calendar, Bell, Clock, MessageSquare, Settings, Users, BookOpen, ChevronUp, ChevronDown } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 import { getExpertData } from '@/app/service/expert/expertApi';
 import { IExpert, IExpertVerification } from '@/types/expertTypes';
 import { Button } from '@/components/ui/Button';
-
-// New API interfaces for dashboard data
-interface IDashboardStats {
-    totalStudents: number;
-    totalSessions: number;
-    totalEarnings: number;
-    averageRating: number;
-    pendingMessages: number;
-    upcomingSessions: number;
-    completionRate: number;
-    monthlyGrowth: number;
-}
-
-interface ISessionData {
-    date: string;
-    sessions: number;
-    earnings: number;
-    students: number;
-}
-
-// API functions (you'll need to implement these)
-const getDashboardStats = async (): Promise<IDashboardStats> => {
-    // Replace with your actual API call
-    const response = await fetch('/api/expert/dashboard/stats');
-    if (!response.ok) throw new Error('Failed to fetch dashboard stats');
-    return response.json();
-};
-
-const getSessionAnalytics = async (period: '7d' | '30d' | '90d' = '30d'): Promise<ISessionData[]> => {
-    // Replace with your actual API call
-    const response = await fetch(`/api/expert/dashboard/analytics?period=${period}`);
-    if (!response.ok) throw new Error('Failed to fetch session analytics');
-    return response.json();
-};
+import { getDashboardStats, getSessionAnalytics } from '@/app/service/expert/sessionApi';
+import { IDashboardStats, ISessionData } from '@/types/sessionTypes';
 
 const ExpertDashboard = () => {
     const [expert, setExpert] = useState<IExpert | null>(null);
@@ -88,12 +56,12 @@ const ExpertDashboard = () => {
 
     const loadDashboardData = useCallback(async () => {
         try {
-            const [stats, analytics] = await Promise.all([
+            const [statsRes, analyticsRes] = await Promise.all([
                 getDashboardStats(),
                 getSessionAnalytics(analyticsPeriod),
             ]);
-            setDashboardStats(stats);
-            setSessionData(analytics);
+            setDashboardStats(statsRes.stats);
+            setSessionData(analyticsRes.analytics);
         } catch (error) {
             console.error('Error loading dashboard data:', error);
         }
@@ -207,9 +175,9 @@ const ExpertDashboard = () => {
                         <div className="flex space-x-3">
                             <button className="relative p-2 text-white hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
                                 <Bell className="w-5 h-5" />
-                                {dashboardStats && dashboardStats.pendingMessages > 0 && (
+                                {dashboardStats && dashboardStats.pendingMessages || 0 > 0 && (
                                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
-                                        {dashboardStats.pendingMessages}
+                                        {dashboardStats?.pendingMessages}
                                     </span>
                                 )}
                             </button>
@@ -258,7 +226,7 @@ const ExpertDashboard = () => {
 
                 {/* Stats Cards */}
                 {dashboardStats && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                         <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -292,7 +260,7 @@ const ExpertDashboard = () => {
                             </div>
                         </div>
 
-                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                        {/* <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-400">Total Earnings</p>
@@ -301,9 +269,9 @@ const ExpertDashboard = () => {
                                 </div>
                                 <DollarSign className="w-8 h-8 text-yellow-500" />
                             </div>
-                        </div>
+                        </div> */}
 
-                        <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
+                        {/* <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
                             <div className="flex items-center justify-between">
                                 <div>
                                     <p className="text-sm text-gray-400">Average Rating</p>
@@ -319,51 +287,9 @@ const ExpertDashboard = () => {
                                 </div>
                                 <Star className="w-8 h-8 text-yellow-500" />
                             </div>
-                        </div>
+                        </div> */}
                     </div>
                 )}
-
-                {/* Quick Actions */}
-                <div className="mb-8">
-                    <h2 className="text-lg font-semibold text-gray-100 mb-4">Quick Actions</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                        <button onClick={() => handleQuickAction('messages')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group"
-                        >
-                            <MessageSquare className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-300 mb-1">Customer Messages</h3>
-                            <p className="text-sm text-gray-600">Reply to customer inquiries and questions</p>
-                            {dashboardStats && dashboardStats.pendingMessages > 0 && (
-                                <div className="mt-2">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        {dashboardStats.pendingMessages} pending
-                                    </span>
-                                </div>
-                            )}
-                        </button>
-                        <button onClick={() => handleQuickAction('schedule')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group"
-                        >
-                            <Calendar className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-300 mb-1">Schedule Session</h3>
-                            <p className="text-sm text-gray-600">Book a live teaching session with students</p>
-                            {dashboardStats && dashboardStats.upcomingSessions > 0 && (
-                                <div className="mt-2">
-                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {dashboardStats.upcomingSessions} upcoming
-                                    </span>
-                                </div>
-                            )}
-                        </button>
-                        <button onClick={() => handleQuickAction('settings')}
-                            className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group md:col-span-2 xl:col-span-1"
-                        >
-                            <Settings className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
-                            <h3 className="font-semibold text-gray-300 mb-1">Account Profile</h3>
-                            <p className="text-sm text-gray-600">Manage your profile and preferences</p>
-                        </button>
-                    </div>
-                </div>
 
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -373,14 +299,7 @@ const ExpertDashboard = () => {
                             <h3 className="text-lg font-semibold text-white">Session Analytics</h3>
                             <div className="flex space-x-2">
                                 {(['7d', '30d', '90d'] as const).map((period) => (
-                                    <button
-                                        key={period}
-                                        onClick={() => setAnalyticsPeriod(period)}
-                                        className={`px-3 py-1 rounded-lg text-sm transition-colors ${analyticsPeriod === period
-                                                ? 'bg-blue-500 text-white'
-                                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                                            }`}
-                                    >
+                                    <button key={period} onClick={() => setAnalyticsPeriod(period)} className={`px-3 py-1 rounded-lg text-sm transition-colors ${analyticsPeriod === period ? 'bg-blue-500 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
                                         {period}
                                     </button>
                                 ))}
@@ -392,22 +311,8 @@ const ExpertDashboard = () => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                     <XAxis dataKey="date" stroke="#9CA3AF" />
                                     <YAxis stroke="#9CA3AF" />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1F2937',
-                                            border: '1px solid #374151',
-                                            borderRadius: '8px',
-                                            color: '#F9FAFB'
-                                        }}
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="sessions"
-                                        stroke="#3B82F6"
-                                        fill="#3B82F6"
-                                        fillOpacity={0.2}
-                                        name="Sessions"
-                                    />
+                                    <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F9FAFB' }} />
+                                    <Area type="monotone" dataKey="sessions" stroke="#3B82F6" fill="#3B82F6" fillOpacity={0.2} name="Sessions" />
                                 </AreaChart>
                             </ResponsiveContainer>
                         </div>
@@ -422,26 +327,47 @@ const ExpertDashboard = () => {
                                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                                     <XAxis dataKey="date" stroke="#9CA3AF" />
                                     <YAxis stroke="#9CA3AF" />
-                                    <Tooltip
-                                        contentStyle={{
-                                            backgroundColor: '#1F2937',
-                                            border: '1px solid #374151',
-                                            borderRadius: '8px',
-                                            color: '#F9FAFB'
-                                        }}
-                                        formatter={(value) => [formatCurrency(Number(value)), 'Earnings']}
-                                    />
-                                    <Line
-                                        type="monotone"
-                                        dataKey="earnings"
-                                        stroke="#10B981"
-                                        strokeWidth={3}
-                                        dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }}
-                                        name="Earnings"
-                                    />
+                                    <Tooltip contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#F9FAFB' }} formatter={(value) => [formatCurrency(Number(value)), 'Earnings']} />
+                                    <Line type="monotone" dataKey="earnings" stroke="#10B981" strokeWidth={3} dot={{ fill: '#10B981', strokeWidth: 2, r: 4 }} name="Earnings" />
                                 </LineChart>
                             </ResponsiveContainer>
                         </div>
+                    </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="mb-8">
+                    <h2 className="text-lg font-semibold text-gray-100 mb-4">Quick Actions</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <button onClick={() => handleQuickAction('messages')} className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group" >
+                            <MessageSquare className="w-8 h-8 text-green-600 mb-3 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-semibold text-gray-300 mb-1">Customer Messages</h3>
+                            <p className="text-sm text-gray-600">Reply to customer inquiries and questions</p>
+                            {dashboardStats && dashboardStats.pendingMessages || 0 > 0 && (
+                                <div className="mt-2">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        {dashboardStats?.pendingMessages} pending
+                                    </span>
+                                </div>
+                            )}
+                        </button>
+                        <button onClick={() => handleQuickAction('schedule')} className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group">
+                            <Calendar className="w-8 h-8 text-purple-600 mb-3 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-semibold text-gray-300 mb-1">Schedule Session</h3>
+                            <p className="text-sm text-gray-600">Book a live teaching session with students</p>
+                            {dashboardStats && dashboardStats.upcomingSessions > 0 && (
+                                <div className="mt-2">
+                                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {dashboardStats.upcomingSessions} upcoming
+                                    </span>
+                                </div>
+                            )}
+                        </button>
+                        <button onClick={() => handleQuickAction('settings')} className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group md:col-span-2 xl:col-span-1">
+                            <Settings className="w-8 h-8 text-blue-600 mb-3 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-semibold text-gray-300 mb-1">Account Profile</h3>
+                            <p className="text-sm text-gray-600">Manage your profile and preferences</p>
+                        </button>
                     </div>
                 </div>
             </div>
