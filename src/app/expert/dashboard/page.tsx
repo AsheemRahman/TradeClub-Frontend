@@ -160,7 +160,7 @@ const ExpertDashboard = () => {
                 <div className="relative z-10">
                     <div className="flex items-center justify-between my-3">
                         <div className="flex items-center gap-4">
-                            <div className="w-15 h-15 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden relative">
+                            <div className="w-14 h-14 bg-blue-500 rounded-full flex items-center justify-center text-white font-semibold overflow-hidden relative">
                                 {expert.profilePicture ? (
                                     <Image src={expert.profilePicture} alt="Profile" fill className="rounded-full object-cover" />
                                 ) : (
@@ -168,7 +168,7 @@ const ExpertDashboard = () => {
                                 )}
                             </div>
                             <div>
-                                <h1 className="text-4xl font-bold text-white">Welcome back, {expert.fullName || 'Expert'}! 👋</h1>
+                                <h1 className="text-2xl font-bold text-white">Welcome back, {expert.fullName || 'Expert'}! 👋</h1>
                                 <p className="text-white/80 text-lg">Ready to inspire minds today?</p>
                             </div>
                         </div>
