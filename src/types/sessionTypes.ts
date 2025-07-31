@@ -39,3 +39,46 @@ export interface ISessionFilters {
     endDate?: string;
     search?: string;
 }
+
+// Types
+interface IUser {
+    _id: string;
+    fullName: string;
+    email: string;
+    profilePicture?: string;
+}
+
+interface IExpert {
+    _id: string;
+    name: string;
+}
+
+export interface IAvailability {
+    _id: string;
+    startTime: string;
+    endTime: string;
+    date: Date,
+}
+
+export interface ISession {
+    _id: string;
+    userId: IUser;
+    expertId: IExpert;
+    availabilityId: IAvailability;
+    meetingLink?: string;
+    status: 'upcoming' | 'completed' | 'missed';
+    bookedAt: string;
+    startedAt?: string;
+    endedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface IPaginationMeta {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+}

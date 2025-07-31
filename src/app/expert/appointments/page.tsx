@@ -5,120 +5,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Video, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, Search, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { getSessions } from '@/app/service/expert/sessionApi';
+import { IPaginationMeta, ISession, ISessionFilters } from '@/types/sessionTypes';
 
-// Types
-interface IUser {
-    _id: string;
-    fullName: string;
-    email: string;
-    profilePicture?: string;
-}
 
-interface IExpert {
-    _id: string;
-    name: string;
-}
-
-interface IAvailability {
-    _id: string;
-    startTime: string;
-    endTime: string;
-}
-
-interface ISession {
-    _id: string;
-    userId: IUser;
-    expertId: IExpert;
-    availabilityId: IAvailability;
-    meetingLink?: string;
-    status: 'upcoming' | 'completed' | 'missed';
-    bookedAt: string;
-    startedAt?: string;
-    endedAt?: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-interface IPaginationMeta {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-}
-
-// interface ISessionsResponse {
-//     sessions: ISession[];
-//     pagination: IPaginationMeta;
-// }
-
-interface ISessionFilters {
-    status?: string;
-    date?: string;
-    startDate?: string;
-    endDate?: string;
-    search?: string;
-}
-
-// API service functions
-// class SessionService {
-//     private static baseUrl = '/api/expert/sessions';
-
-//     static async getSessions(
-//         page: number = 1,
-//         limit: number = 10,
-//         filters: ISessionFilters = {}
-//     ): Promise<ISessionsResponse> {
-//         const params = new URLSearchParams({
-//             page: page.toString(),
-//             limit: limit.toString(),
-//             ...Object.fromEntries(
-//                 Object.entries(filters).filter(([, v]) => v !== undefined && v !== '')
-//             )
-//         });
-
-//         const response = await fetch(`${this.baseUrl}?${params}`, {
-//             method: 'GET',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${localStorage.getItem('expertToken')}` // Adjust based on your auth
-//             }
-//         });
-
-//         if (!response.ok) {
-//             throw new Error('Failed to fetch sessions');
-//         }
-
-//         return response.json();
-//     }
-
-//     static async updateSessionStatus(sessionId: string, status: string): Promise<ISession> {
-//         const response = await fetch(`${this.baseUrl}/${sessionId}/status`, {
-//             method: 'PUT',
-//             headers: {
-//                 'Content-Type': 'application/json',
-//                 'Authorization': `Bearer ${localStorage.getItem('expertToken')}`
-//             },
-//             body: JSON.stringify({
-//                 status,
-//                 startedAt: status === 'started' ? new Date().toISOString() : undefined
-//             })
-//         });
-
-//         if (!response.ok) {
-//             throw new Error('Failed to update session status');
-//         }
-
-//         return response.json();
-//     }
-// }
-
-// Main Component
 const ExpertSessionsDashboard: React.FC = () => {
-    // State management
     const [sessions, setSessions] = useState<ISession[]>([]);
-    console.log("sessions data", sessions)
     const [pagination, setPagination] = useState<IPaginationMeta>({
         currentPage: 1,
         totalPages: 1,
@@ -133,9 +24,7 @@ const ExpertSessionsDashboard: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
 
-    // Get current date
     const today = new Date().toISOString().split('T')[0];
-    // Fetch sessions
     const fetchSessions = useCallback(async (page: number = 1) => {
         setLoading(true);
         try {
@@ -148,10 +37,11 @@ const ExpertSessionsDashboard: React.FC = () => {
                 }),
                 ...(searchTerm && { search: searchTerm })
             };
-
             const response = await getSessions(page, 10, filterParams);
-            setSessions(response.sessions);
-            setPagination(response.pagination);
+            if (response.status) {
+                setSessions(response.sessions);
+                setPagination(response.pagination);
+            }
         } catch (err) {
             toast.error(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -207,16 +97,14 @@ const ExpertSessionsDashboard: React.FC = () => {
     const canJoinSession = (session: ISession): boolean => {
         const now = new Date();
         const startTime = session.availabilityId?.startTime;
-        console.log("startTime value:", startTime, typeof startTime);
-        if (!startTime) return false; // No start time
-        const sessionStart = new Date(startTime);
-        console.log("test", sessionStart)
-        if (isNaN(sessionStart.getTime())) return false; // Invalid date
-        const sessionDate = sessionStart.toISOString().split('T')[0];
+        const sessionDate = session.availabilityId?.date; // ( "2025-08-02")
+        if (!startTime || !sessionDate) return false;
+        const sessionStart = new Date(`${sessionDate}T${startTime}:00`);
+        if (isNaN(sessionStart.getTime())) return false;
         const timeDiff = sessionStart.getTime() - now.getTime();
         const minutesDiff = timeDiff / (1000 * 60);
+        console.log("sample", minutesDiff)
         return (
-            sessionDate === today &&
             session.status === 'upcoming' &&
             minutesDiff <= 15 &&
             minutesDiff >= -60
@@ -349,7 +237,7 @@ const ExpertSessionsDashboard: React.FC = () => {
 
     if (loading && sessions.length === 0) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center mx-5 rounded-lg">
                 <div className="text-center">
                     <RefreshCw className="h-8 w-8 animate-spin text-blue-600 mx-auto mb-4" />
                     <p className="text-gray-600">Loading sessions...</p>
@@ -522,6 +410,7 @@ const ExpertSessionsDashboard: React.FC = () => {
                                 const statusDisplay = getStatusDisplay(session.status);
                                 const StatusIcon = statusDisplay.icon;
                                 const joinable = canJoinSession(session);
+                                console.log("asheem", joinable)
 
                                 return (
                                     <div key={session._id} className="p-6 hover:bg-gray-50 transition-colors">
@@ -580,7 +469,8 @@ const ExpertSessionsDashboard: React.FC = () => {
                                             </div>
 
                                             <div className="mt-4 lg:mt-0 lg:ml-6 flex flex-col sm:flex-row gap-2">
-                                                {joinable && session.meetingLink && (
+                                                {/* {joinable && session.meetingLink && ( */}
+                                                {joinable && (
                                                     <button onClick={() => handleJoinSession(session)} disabled={loading}
                                                         className="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 transition-colors"
                                                     >
