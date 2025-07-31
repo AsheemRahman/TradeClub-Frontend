@@ -191,10 +191,10 @@ const ExpertDashboard = () => {
                 <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 {/* Verification Banner */}
                 {expert.isVerified !== "Approved" && (
-                    <div className="mb-8 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 shadow-sm">
+                    <div className="mb-4 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-6 shadow-sm">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                             <div className="flex items-start space-x-4">
                                 <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -226,7 +226,7 @@ const ExpertDashboard = () => {
 
                 {/* Stats Cards */}
                 {dashboardStats && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
                         <div className="bg-[#151231] p-6 rounded-xl shadow-lg border border-gray-800">
                             <div className="flex items-center justify-between">
                                 <div>
@@ -336,7 +336,7 @@ const ExpertDashboard = () => {
                 </div>
 
                 {/* Quick Actions */}
-                <div className="mb-8">
+                <div>
                     <h2 className="text-lg font-semibold text-gray-100 mb-4">Quick Actions</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                         <button onClick={() => handleQuickAction('messages')} className="bg-[#151231] p-6 rounded-xl shadow-sm border border-gray-800 hover:shadow-md hover:bg-gray-800 transition-all text-left group" >
