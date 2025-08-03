@@ -37,14 +37,14 @@ export default function Navbar() {
                 </div>
 
                 {/* Navigation Links (Desktop) */}
-                <div className="hidden lg:flex items-center gap-20">
+                <div className="hidden lg:flex items-center">
                     <div className="flex space-x-8 mr-20">
-                        <Link href={user ? '/home' : '/'} className="font-['Allura'] text-lg hover:text-gray-300">Home</Link>
-                        <Link href="/courses" className="text-lg hover:text-gray-300">Course</Link>
-                        <Link href="/my-learning" className="text-lg hover:text-gray-300">My-learning</Link>
-                        <Link href="/consultation" className="font-['Allura'] text-lg hover:text-gray-300">Consultation</Link>
-                        <Link href="/subscription" className="font-['Allura'] text-lg hover:text-gray-300">Subscription</Link>
-                        <Link href="/contact" className="font-['Allura'] text-lg hover:text-gray-300">Contact</Link>
+                        <Link href={user ? '/home' : '/'} className="font-['Allura'] text-lg hover:text-gray-400">Home</Link>
+                        <Link href="/courses" className="text-lg hover:text-gray-400">Course</Link>
+                        <Link href="/my-learning" className="text-lg hover:text-gray-400">My-learning</Link>
+                        <Link href="/consultation" className="font-['Allura'] text-lg hover:text-gray-400">Consultation</Link>
+                        <Link href="/subscription" className="font-['Allura'] text-lg hover:text-gray-400">Subscription</Link>
+                        <Link href="/contact" className="font-['Allura'] text-lg hover:text-gray-400">Contact</Link>
                     </div>
 
                     {/* CTA Buttons */}
