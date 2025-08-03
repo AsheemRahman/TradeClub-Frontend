@@ -69,14 +69,14 @@ const SubscriptionPlansPage = () => {
     const mostPopular = getMostPopularPlan();
 
     return (
-        <div className="min-h-screen bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl mx-5">
+        <div className="min-h-screen rounded-lg shadow-2xl mx-5">
             {/* Hero Section */}
             <div className="pt-8 pb-8 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-7xl mx-auto text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+                    <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                         Choose Your Perfect Plan
                     </h1>
-                    <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-4">
+                    <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-4">
                         Unlock premium features and take your experience to the next level with our flexible subscription plans.
                     </p>
                 </div>
