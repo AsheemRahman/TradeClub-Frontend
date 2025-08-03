@@ -40,8 +40,8 @@ export default function Navbar() {
                 <div className="hidden lg:flex items-center">
                     <div className="flex space-x-8 mr-20">
                         <Link href={user ? '/home' : '/'} className="font-['Allura'] text-lg hover:text-gray-400">Home</Link>
-                        <Link href="/courses" className="text-lg hover:text-gray-400">Course</Link>
-                        <Link href="/my-learning" className="text-lg hover:text-gray-400">My-learning</Link>
+                        <Link href="/courses" className="font-['Allura'] text-lg hover:text-gray-400">Course</Link>
+                        <Link href="/my-learning" className="font-['Allura'] text-lg hover:text-gray-400">My-learning</Link>
                         <Link href="/consultation" className="font-['Allura'] text-lg hover:text-gray-400">Consultation</Link>
                         <Link href="/subscription" className="font-['Allura'] text-lg hover:text-gray-400">Subscription</Link>
                         <Link href="/contact" className="font-['Allura'] text-lg hover:text-gray-400">Contact</Link>
