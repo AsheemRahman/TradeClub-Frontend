@@ -51,9 +51,9 @@ const SubscriptionPlansPage = () => {
     };
 
     const formatDuration = (duration: number) => {
-        if (duration === 1) return 'Monthly';
-        if (duration === 12) return 'Yearly';
-        if (duration < 12) return `${duration} Months`;
+        if (duration === 30) return 'Monthly';
+        if (duration === 365) return 'Yearly';
+        if (duration < 30) return `${duration} Months`;
         return `${Math.floor(duration / 12)} Year${Math.floor(duration / 12) > 1 ? 's' : ''}`;
     };
 
@@ -131,7 +131,7 @@ const SubscriptionPlansPage = () => {
                                                         <span className="text-lg">
                                                             {formatDuration(plan.duration)}
                                                         </span>
-                                                        {plan.duration > 1 && (
+                                                        {plan.duration > 365 && (
                                                             <div className="text-sm">
                                                                 ({formatPrice(monthlyPrice)}/month)
                                                             </div>
@@ -153,10 +153,7 @@ const SubscriptionPlansPage = () => {
                                                                     <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
                                                                 </svg>
                                                                 <span className="font-medium">
-                                                                    {plan.accessLevel.expertCallsPerMonth === 0
-                                                                        ? 'No expert calls'
-                                                                        : `${plan.accessLevel.expertCallsPerMonth} expert calls/month`
-                                                                    }
+                                                                    {plan.accessLevel.expertCallsPerMonth === 0 ? 'No expert calls' : `${plan.accessLevel.expertCallsPerMonth} expert calls/month`}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -240,7 +237,7 @@ const SubscriptionPlansPage = () => {
             </div>
 
             {/* FAQ or Additional Info Section */}
-            <div className="bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+            <div className="bg-gray-50 rounded-lg py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
                         Frequently Asked Questions
