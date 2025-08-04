@@ -1,22 +1,35 @@
 import React from "react";
 import { TrendingUp, Shield } from "lucide-react";
 
-
-const subscription = {
-    type: 'free',
-    status: 'active',
-    endDate: '2024-12-31'
+interface UserData {
+    id: string;
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    profilePicture: string | null;
+    createdAt: string;
 }
 
-
-const expertConsultation = {
-    availableSlots: 3,
-    usedSlots: 2,
-    totalSlots: 5
+interface SubscriptionData {
+    type: string;
+    status: string;
+    callsRemaining: number;
+    totalSlots: number;
+    endDate: string;
 }
 
+interface QuickStatsProps {
+    userData: UserData;
+    subscriptionData: SubscriptionData | null;
+}
 
-const QuickStats = () => {
+const QuickStats: React.FC<QuickStatsProps> = ({ userData, subscriptionData }) => {
+    const expertConsultation = {
+        availableSlots: subscriptionData ? subscriptionData.totalSlots - subscriptionData.callsRemaining : 0,
+        usedSlots: subscriptionData ? subscriptionData.callsRemaining : 0,
+        totalSlots: subscriptionData ? subscriptionData.totalSlots : 0,
+    };
+
     return (
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl p-6">
             <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
@@ -33,17 +46,20 @@ const QuickStats = () => {
                 </div>
                 <div className="flex justify-between">
                     <span className="text-slate-400">Member Since</span>
-                    <span className="font-semibold text-white">Jan 2024</span>
+                    <span className="font-semibold text-white">
+                        {userData.createdAt ? new Date(userData.createdAt).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "N/A"}
+                    </span>
                 </div>
                 <div className="flex justify-between">
                     <span className="text-slate-400">Total Purchases</span>
                     <span className="font-semibold text-white">3</span>
                 </div>
-                {subscription.type !== "free" && (
+
+                {subscriptionData && (
                     <div className="flex justify-between">
                         <span className="text-slate-400">Expert Sessions</span>
                         <span className="font-semibold text-white">
-                            {expertConsultation.usedSlots}
+                            {expertConsultation.usedSlots} / {expertConsultation.totalSlots}
                         </span>
                     </div>
                 )}

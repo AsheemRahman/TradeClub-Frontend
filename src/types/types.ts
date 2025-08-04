@@ -55,7 +55,8 @@ export interface ICoupon {
 }
 
 export interface IOrder {
-    id?:string
+    _id?: string;
+    id?: string;
     userId: string;
     type: 'Course' | 'SubscriptionPlan';
     itemId: string;

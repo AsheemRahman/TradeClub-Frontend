@@ -82,3 +82,35 @@ export interface IPaginationMeta {
     hasNextPage: boolean;
     hasPrevPage: boolean;
 }
+
+// Types
+interface Expert {
+    _id: string;
+    fullName: string;
+    email: string;
+    specialization: string;
+    profilePicture?: string;
+    bio?: string;
+    rating?: number;
+}
+
+interface ExpertAvailability {
+    _id: string;
+    startTime: string;
+    endTime: string;
+    date: string;
+}
+
+export interface typeSession {
+    _id: string;
+    userId: string;
+    expertId: Expert;
+    availabilityId: ExpertAvailability;
+    meetingLink?: string;
+    status: 'upcoming' | 'completed' | 'missed';
+    bookedAt: string;
+    startedAt?: string;
+    endedAt?: string;
+    createdAt: string;
+    updatedAt: string;
+}

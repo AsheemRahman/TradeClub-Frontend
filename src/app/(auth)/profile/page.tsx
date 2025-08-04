@@ -16,13 +16,11 @@ import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsult
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
 import PurchaseHistory from '@/components/user/profile/PurchaseHistory';
 
-import { getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
-import { subscription } from '@/lib/mockData'
+import { checkSubscription, getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
 import { UpdateProfilePayload } from '@/types/types';
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
 import { signOut } from 'next-auth/react';
-
 
 
 const UserProfile = () => {
@@ -33,7 +31,9 @@ const UserProfile = () => {
     const [otpState, setOtpState] = useState({ showOtpModal: false, otpCode: '', isVerifying: false, otpSent: false, countdown: 0 });
     const [passwordValidation, setPasswordValidation] = useState({ minLength: false, hasUppercase: false, hasLowercase: false, hasNumber: false, hasSpecialChar: false, passwordsMatch: false });
     const [pendingUpdate, setPendingUpdate] = useState<UpdateProfilePayload | null>(null);
-    const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null, });
+    const [userData, setUserData] = useState({ id: '', fullName: '', email: '', phoneNumber: '', profilePicture: null, createdAt: '' });
+
+    const [subscription, setSubscription] = useState<{ type: string; status: string; callsRemaining: number; totalSlots: number; endDate: string; } | null>(null);
 
     const router = useRouter();
     const authStore = useAuthStore();
@@ -47,13 +47,33 @@ const UserProfile = () => {
                 email: userData.userDetails.email,
                 phoneNumber: userData.userDetails.phoneNumber,
                 profilePicture: userData.userDetails.profilePicture || "/images/profilePicture.jpg",
+                createdAt:userData.userDetails.createdAt
             };
             setUserData(transformedData);
         }
     };
 
+    const fetchSubscription = async () => {
+        try {
+            const response = await checkSubscription();
+            if (response.status && response.subscription) {
+                const { subscriptionPlan, paymentStatus, endDate, callsRemaining } = response.subscription;
+                const isExpired = new Date() > new Date(endDate);
+                setSubscription({
+                    type: subscriptionPlan.name || 'free', status: !isExpired && paymentStatus === 'paid' ? 'active' : 'expired',
+                    callsRemaining: callsRemaining, totalSlots: subscriptionPlan.accessLevel.expertCallsPerMonth, endDate: endDate || ''
+                });
+            } else {
+                setSubscription({ type: 'free', status: 'inactive', callsRemaining: 0, totalSlots: 0, endDate: '' });
+            }
+        } catch (err) {
+            console.error('Error fetching subscription:', err);
+        }
+    };
+
     useEffect(() => {
         getProfileData();
+        fetchSubscription();
     }, [])
 
     const startEditing = () => {
@@ -190,10 +210,10 @@ const UserProfile = () => {
     }
 
     const getSubscriptionBadge = () => {
-        switch (subscription.type) {
-            case 'premium':
+        switch (subscription?.type) {
+            case 'Starter':
                 return 'bg-purple-700 text-white';
-            case 'basic':
+            case 'Pro Trader':
                 return 'bg-slate-600 text-white';
             default:
                 return 'bg-slate-500 text-white';
@@ -222,10 +242,7 @@ const UserProfile = () => {
             formData.append('file', file);
             formData.append('folder', 'profile-pictures');
             try {
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    body: formData,
-                });
+                const res = await fetch('/api/upload', { method: 'POST', body: formData, });
                 const data = await res.json();
                 if (data.success && data.url) {
                     setEditForm(prev => ({ ...prev, profilePicture: data.url, }));
@@ -279,7 +296,7 @@ const UserProfile = () => {
                                         <span className={`px-4 py-2 rounded-xl text-sm font-semibold capitalize ${getSubscriptionBadge()}`}>
                                             <span className="flex items-center gap-2">
                                                 <Award className="w-4 h-4" />
-                                                {subscription.type} Plan
+                                                {subscription?.type} Plan
                                             </span>
                                         </span>
                                     </>
@@ -355,44 +372,14 @@ const UserProfile = () => {
                                 {/* Subscription Status */}
                                 <SubscriptionCard />
                                 {/* Expert Consultation Slots */}
-                                {subscription.type !== 'free' && (
-                                    <ExpertConsultationCard />
+                                {subscription?.status == "active" && (
+                                    <ExpertConsultationCard subscription={subscription} />
                                 )}
                             </div>
                         )}
 
                         {activeTab === 'purchases' && (
                             <PurchaseHistory />
-                            // <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl p-8 w-full">
-                            //     <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-3">
-                            //         <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
-                            //             <CreditCard className="w-5 h-5 text-white" />
-                            //         </div>
-                            //         Purchase History
-                            //     </h3>
-                            //     <div className="space-y-4 w-full">
-                            //         {purchaseHistory && purchaseHistory.map((purchase) => (
-                            //             <div key={purchase.id} className="bg-slate-700/30 p-6 rounded-xl border border-slate-600/50 hover:bg-slate-700/50 transition-all duration-200 w-full">
-                            //                 <div className="flex justify-between items-start">
-                            //                     <div>
-                            //                         <h4 className="font-semibold text-white text-lg">{purchase.productName}</h4>
-                            //                         <p className="text-slate-400 capitalize mb-1">{purchase.type.replace('-', ' ')}</p>
-                            //                         <p className="text-slate-500 text-sm">{purchase.createdAt}</p>
-                            //                     </div>
-                            //                     <div className="text-right">
-                            //                         <p className="font-bold text-white text-xl mb-4">${purchase.amount}</p>
-                            //                         <span className={`text-sm px-3 py-1 rounded-lg font-medium ${purchase.status === 'completed'
-                            //                             ? 'bg-green-500/20 text-green-300 border border-green-500/30'
-                            //                             : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'
-                            //                             }`}>
-                            //                             {purchase.status}
-                            //                         </span>
-                            //                     </div>
-                            //                 </div>
-                            //             </div>
-                            //         ))}
-                            //     </div>
-                            // </div>
                         )}
 
                         {activeTab === 'consultations' && (
@@ -536,10 +523,8 @@ const UserProfile = () => {
 
             {/* Sidebar */}
             <div className="space-y-8">
-                <QuickStats />
-                {subscription.type === 'free' && (
-                    <UpgradePlanCard />
-                )}
+                <QuickStats userData={userData} subscriptionData={subscription} />
+                <UpgradePlanCard />
                 <AchievementsCard />
             </div>
         </div>

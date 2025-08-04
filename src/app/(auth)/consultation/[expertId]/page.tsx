@@ -1,13 +1,16 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react';
-import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
+import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+
 import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User } from 'lucide-react';
 import { BookingDetails, DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
+
 import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
-import { toast } from 'react-toastify';
 import { slotBooking } from '@/app/service/user/orderApi';
+
+import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { sloBookingValidation } from '@/app/utils/Validation';
 import { showBookingConfirmation } from '@/app/utils/showBooking';

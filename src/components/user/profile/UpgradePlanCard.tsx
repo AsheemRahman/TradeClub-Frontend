@@ -1,7 +1,9 @@
 import { Star } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 
 const UpgradePlanCard = () => {
+    const router = useRouter()
 
     return (
         <div className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl shadow-2xl p-6 text-white relative overflow-hidden">
@@ -14,7 +16,7 @@ const UpgradePlanCard = () => {
                 <p className="text-blue-100 mb-4">
                     Get access to expert consultations and premium features.
                 </p>
-                <button className="w-full bg-white/20 backdrop-blur-sm text-white py-3 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200 border border-white/20">
+                <button onClick={() => { router.push("/subscription") }} className="w-full bg-white/20 backdrop-blur-sm text-white py-3 rounded-xl font-semibold hover:bg-white/30 transition-all duration-200 border border-white/20">
                     View Plans
                 </button>
             </div>

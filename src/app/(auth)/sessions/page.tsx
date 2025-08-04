@@ -6,43 +6,12 @@ import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { getSessions } from '@/app/service/user/userApi';
 import { Calendar } from 'lucide-react';
-
-// Types
-interface Expert {
-    _id: string;
-    fullName: string;
-    email: string;
-    specialization: string;
-    profilePicture?: string;
-    bio?: string;
-    rating?: number;
-}
-
-interface ExpertAvailability {
-    _id: string;
-    startTime: string;
-    endTime: string;
-    date: string;
-}
-
-interface Session {
-    _id: string;
-    userId: string;
-    expertId: Expert;
-    availabilityId: ExpertAvailability;
-    meetingLink?: string;
-    status: 'upcoming' | 'completed' | 'missed';
-    bookedAt: string;
-    startedAt?: string;
-    endedAt?: string;
-    createdAt: string;
-    updatedAt: string;
-}
+import { typeSession } from '@/types/sessionTypes';
 
 type SessionStatus = 'upcoming' | 'completed' | 'missed';
 
 const UserSessionsPage = () => {
-    const [sessions, setSessions] = useState<Session[]>([]);
+    const [sessions, setSessions] = useState<typeSession[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'missed'>('all');
@@ -76,7 +45,7 @@ const UserSessionsPage = () => {
         setCurrentPage(1);
     };
 
-    const getStatusBadge = (status: Session['status']) => {
+    const getStatusBadge = (status: typeSession['status']) => {
         const statusStyles = {
             upcoming: 'bg-blue-100 text-blue-800 border-blue-200',
             completed: 'bg-green-100 text-green-800 border-green-200',
@@ -89,7 +58,7 @@ const UserSessionsPage = () => {
         );
     };
 
-    const canJoinMeeting = (session: Session): boolean => {
+    const canJoinMeeting = (session: typeSession): boolean => {
         if (!session.meetingLink || session.status !== 'upcoming') return false;
         const sessionStart = new Date(session.availabilityId.date + 'T' + session.availabilityId.startTime);
         const now = new Date();
@@ -97,7 +66,7 @@ const UserSessionsPage = () => {
         return now >= fifteenMinutesBefore && now <= sessionStart;
     };
 
-    const formatSessionTime = (session: Session) => {
+    const formatSessionTime = (session: typeSession) => {
         const date = new Date(session.availabilityId.date);
         const startTime = session.availabilityId.startTime;
         const endTime = session.availabilityId.endTime;

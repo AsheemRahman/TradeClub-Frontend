@@ -1,15 +1,18 @@
 import { MessageCircle } from 'lucide-react';
 
-
-const expertConsultation = {
-    availableSlots: 3,
-    usedSlots: 2,
-    totalSlots: 5
+interface Subscription {
+    callsRemaining: number;
+    totalSlots: number;
 }
 
+interface ExpertConsultationCardProps {
+    subscription: Subscription;
+}
 
-const ExpertConsultationCard = () => {
-    const { availableSlots, usedSlots, totalSlots } = expertConsultation;
+const ExpertConsultationCard = ({ subscription }: ExpertConsultationCardProps) => {
+    const { callsRemaining, totalSlots } = subscription;
+
+    const usedSlots = totalSlots - callsRemaining;
 
     return (
         <div className="bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 rounded-2xl shadow-xl p-8 w-full">
@@ -22,7 +25,7 @@ const ExpertConsultationCard = () => {
 
             <div className="grid grid-cols-3 gap-6 mb-6">
                 <div className="text-center bg-slate-700/30 p-6 rounded-xl border border-slate-600/50">
-                    <p className="text-3xl font-bold text-blue-400 mb-2">{availableSlots}</p>
+                    <p className="text-3xl font-bold text-blue-400 mb-2">{callsRemaining}</p>
                     <p className="text-slate-400">Available</p>
                 </div>
                 <div className="text-center bg-slate-700/30 p-6 rounded-xl border border-slate-600/50">
