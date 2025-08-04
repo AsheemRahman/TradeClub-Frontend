@@ -94,3 +94,20 @@ export const checkSubscription = async () => {
         handleAxiosError(error);
     }
 };
+
+type SessionStatus = 'upcoming' | 'completed' | 'missed';
+
+interface ISessions {
+    page: string;
+    limit: string;
+    status?: SessionStatus;
+}
+
+export const getSessions = async (params: ISessions) => {
+    try {
+        const response = await axiosInstance.get('/user/sessions', { params });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
