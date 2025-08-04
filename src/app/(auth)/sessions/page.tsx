@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { getSessions } from '@/app/service/user/userApi';
+import { Calendar } from 'lucide-react';
 
 // Types
 interface Expert {
@@ -109,7 +110,7 @@ const UserSessionsPage = () => {
 
     if (loading && sessions.length === 0) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8 mx-5 rounded-lg">
+            <div className="min-h-screen bg-[#151231] py-8 mx-5 rounded-lg">
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="animate-pulse">
                         <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
@@ -128,12 +129,26 @@ const UserSessionsPage = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8 mx-5 rounded-lg">
+        <div className="min-h-screen bg-[#151231] py-8 mx-10 rounded-lg">
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">My Sessions</h1>
-                    <p className="text-gray-600">Manage and join your booked expert sessions</p>
+                <div className="relative overflow-hidden bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-2xl shadow-2xl p-5 mb-4">
+                    <div className="absolute inset-0 bg-black/20"></div>
+                    <div className="relative z-10">
+                        <div className="flex items-center justify-between my-3">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-white/20 backdrop-blur-sm rounded-xl">
+                                    <Calendar className="w-8 h-8 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-2xl font-bold text-white">My Sessions</h1>
+                                    <p className="text-white/80 text-lg">Manage and join your booked expert sessions</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full translate-y-24 -translate-x-24"></div>
                 </div>
                 {/* Filter Tabs */}
                 <div className="mb-6">
@@ -175,7 +190,7 @@ const UserSessionsPage = () => {
                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 018 0v4m-4 6v2m0 0v2m0-2h2m-2 0H10m8-11v18a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h4" />
                         </svg>
-                        <h3 className="mt-2 text-sm font-medium text-gray-900">No sessions found</h3>
+                        <h3 className="mt-2 text-sm font-medium text-white">No sessions found</h3>
                         <p className="mt-1 text-sm text-gray-500">
                             {filter === 'all' ? "You haven't booked any sessions yet." : `No ${filter} sessions found.`}
                         </p>
@@ -228,7 +243,7 @@ const UserSessionsPage = () => {
                                                         <div className="flex items-center mb-3">
                                                             <div className="flex items-center">
                                                                 {[...Array(5)].map((_, i) => (
-                                                                    <svg key={i}  className={`h-4 w-4 ${i < Math.floor(session.expertId.rating!) ? 'text-yellow-400' : 'text-gray-300' }`}
+                                                                    <svg key={i} className={`h-4 w-4 ${i < Math.floor(session.expertId.rating!) ? 'text-yellow-400' : 'text-gray-300'}`}
                                                                         fill="currentColor" viewBox="0 0 20 20"
                                                                     >
                                                                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -270,7 +285,7 @@ const UserSessionsPage = () => {
                                             {/* Action Buttons */}
                                             <div className="flex flex-col space-y-2 ml-4">
                                                 {session.meetingLink && canJoin && (
-                                                    <a href={session.meetingLink}  target="_blank" rel="noopener noreferrer"
+                                                    <a href={session.meetingLink} target="_blank" rel="noopener noreferrer"
                                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                                     >
                                                         <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,7 +296,7 @@ const UserSessionsPage = () => {
                                                 )}
 
                                                 {session.meetingLink && !canJoin && session.status === 'upcoming' && (
-                                                    <button disabled  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed" >
+                                                    <button disabled className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-400 bg-gray-50 cursor-not-allowed" >
                                                         <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                                                         </svg>
