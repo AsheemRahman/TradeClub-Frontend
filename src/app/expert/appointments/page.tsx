@@ -97,13 +97,12 @@ const ExpertSessionsDashboard: React.FC = () => {
     const canJoinSession = (session: ISession): boolean => {
         const now = new Date();
         const startTime = session.availabilityId?.startTime;
-        const sessionDate = session.availabilityId?.date; // ( "2025-08-02")
+        const sessionDate = session.availabilityId?.date;
         if (!startTime || !sessionDate) return false;
         const sessionStart = new Date(`${sessionDate}T${startTime}:00`);
         if (isNaN(sessionStart.getTime())) return false;
         const timeDiff = sessionStart.getTime() - now.getTime();
         const minutesDiff = timeDiff / (1000 * 60);
-        console.log("sample", minutesDiff)
         return (
             session.status === 'upcoming' &&
             minutesDiff <= 15 &&
@@ -128,7 +127,6 @@ const ExpertSessionsDashboard: React.FC = () => {
         try {
             await navigator.clipboard.writeText(text);
             toast.info("Copy to clipboard")
-            // You might want to show a toast notification here
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);
         }
@@ -143,7 +141,7 @@ const ExpertSessionsDashboard: React.FC = () => {
         });
     };
 
-    const formatDate = (dateString: string): string => {
+    const formatDate = (dateString: string | Date): string => {
         return new Date(dateString).toLocaleDateString('en-US', {
             weekday: 'short',
             year: 'numeric',
@@ -410,7 +408,6 @@ const ExpertSessionsDashboard: React.FC = () => {
                                 const statusDisplay = getStatusDisplay(session.status);
                                 const StatusIcon = statusDisplay.icon;
                                 const joinable = canJoinSession(session);
-                                console.log("asheem", joinable)
 
                                 return (
                                     <div key={session._id} className="p-6 hover:bg-gray-50 transition-colors">
@@ -445,11 +442,11 @@ const ExpertSessionsDashboard: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                                     <div className="flex items-center text-gray-600">
                                                         <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        {formatDate(session.availabilityId.startTime)}
+                                                        {formatDate(session.availabilityId.date)}
                                                     </div>
                                                     <div className="flex items-center text-gray-600">
                                                         <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                                                        {formatTime(session.availabilityId.startTime)} - {formatTime(session.availabilityId.endTime)}
+                                                        {session.availabilityId.startTime} - {session.availabilityId.endTime}
                                                     </div>
                                                     <div className="flex items-center text-gray-600">
                                                         <Video className="h-4 w-4 mr-2 flex-shrink-0" />
