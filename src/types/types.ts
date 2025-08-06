@@ -77,3 +77,10 @@ export interface GetUserParams {
     page?: number;
     limit?: number;
 }
+
+export interface IUserProfile {
+    _id: string;
+    fullName: string;
+    email: string;
+    phoneNumber?: string;
+}

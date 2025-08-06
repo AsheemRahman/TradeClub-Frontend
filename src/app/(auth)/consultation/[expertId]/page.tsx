@@ -4,16 +4,17 @@ import Image from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 
-import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User } from 'lucide-react';
+import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User, Users } from 'lucide-react';
 import { BookingDetails, DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 
-import { getExpertAvailability, getExpertById } from '@/app/service/user/userApi';
+import { getExpertAvailability, getExpertById, getUserProfile } from '@/app/service/user/userApi';
 import { slotBooking } from '@/app/service/user/orderApi';
 
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { sloBookingValidation } from '@/app/utils/Validation';
 import { showBookingConfirmation } from '@/app/utils/showBooking';
+import { IUserProfile } from '@/types/types';
 
 
 const BookingPage = () => {
@@ -29,7 +30,49 @@ const BookingPage = () => {
     const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
     const [currentWeek, setCurrentWeek] = useState(0);
     const [bookingStep, setBookingStep] = useState<'schedule' | 'details' | 'payment'>('schedule');
-    const { register, handleSubmit, formState: { errors } } = useForm<BookingDetails>();
+
+    const [bookingFor, setBookingFor] = useState<'self' | 'other'>('self');
+    const [userProfile, setUserProfile] = useState<IUserProfile | null>(null);
+    const [loadingUser, setLoadingUser] = useState(false);
+
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm<BookingDetails>();
+
+    // Fetch user profile when "self" is selected
+    const fetchUserProfile = useCallback(async () => {
+        if (bookingFor === 'self') {
+            try {
+                setLoadingUser(true);
+                const response = await getUserProfile();
+                if (response.status && response.userDetails) {
+                    setUserProfile(response.userDetails);
+                    setValue('name', response.userDetails.fullName);
+                    setValue('email', response.userDetails.email);
+                    setValue('phone', response.userDetails.phoneNumber || '');
+                }
+            } catch (error) {
+                console.error('Error fetching user profile:', error);
+                toast.error('Failed to fetch user profile');
+            } finally {
+                setLoadingUser(false);
+            }
+        }
+    }, [bookingFor, setValue]);
+
+    // Clear form when switching to "other"
+    const handleBookingForChange = (value: 'self' | 'other') => {
+        setBookingFor(value);
+        if (value === 'other') {
+            setValue('name', '');
+            setValue('email', '');
+            setValue('phone', '');
+            setUserProfile(null);
+        }
+    };
+
+    // Fetch user profile when bookingFor changes to 'self'
+    useEffect(() => {
+        fetchUserProfile();
+    }, [fetchUserProfile]);
 
     const fetchAvailability = useCallback(async () => {
         try {
@@ -154,13 +197,13 @@ const BookingPage = () => {
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,
                 clientDetails: data,
+                bookingFor: bookingFor,
             };
             const response = await slotBooking(bookingData);
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }
-            // toast.success('Booking confirmed! You will receive a confirmation email shortly.');
-            // ✅ Show success Swal
+            // Show success Swal
             showBookingConfirmation({
                 expertName: expert.fullName,
                 selectedDate,
@@ -371,38 +414,99 @@ const BookingPage = () => {
                             {/* Booking Details */}
                             {bookingStep === 'details' && (
                                 <div>
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Your Details</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Booking Details</h2>
+                                    {/* Booking For Selection */}
+                                    <div className="mb-8">
+                                        <label className="block text-sm font-medium text-gray-700 mb-4">
+                                            Who is this booking for?
+                                        </label>
+                                        <div className="flex gap-4">
+                                            <button type="button" onClick={() => handleBookingForChange('self')}
+                                                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${bookingFor === 'self'
+                                                        ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                                    }`}
+                                            >
+                                                <User className="w-5 h-5" />
+                                                <div className="text-left">
+                                                    <div className="font-semibold">For Myself</div>
+                                                    <div className="text-sm opacity-75">Use my profile details</div>
+                                                </div>
+                                            </button>
+
+                                            <button type="button" onClick={() => handleBookingForChange('other')}
+                                                className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${bookingFor === 'other' ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'}`}
+                                            >
+                                                <Users className="w-5 h-5" />
+                                                <div className="text-left">
+                                                    <div className="font-semibold">For Someone Else</div>
+                                                    <div className="text-sm opacity-75">Enter their details</div>
+                                                </div>
+                                            </button>
+                                        </div>
+                                    </div>
 
                                     <form onSubmit={handleSubmit((data) => handleSlotBooking(data))}>
+                                        {/* Show loading spinner when fetching user profile */}
+                                        {loadingUser && bookingFor === 'self' && (
+                                            <div className="flex items-center justify-center py-8">
+                                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                                                <span className="ml-3 text-gray-600">Loading your profile...</span>
+                                            </div>
+                                        )}
+
+                                        {/* Show user profile info when booking for self */}
+                                        {bookingFor === 'self' && userProfile && !loadingUser && (
+                                            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl">
+                                                <h4 className="font-semibold text-green-800 mb-2">Booking for yourself</h4>
+                                                <div className="text-sm text-green-700">
+                                                    <p><strong>Name:</strong> {userProfile.fullName}</p>
+                                                    <p><strong>Email:</strong> {userProfile.email}</p>
+                                                    {userProfile.phoneNumber && <p><strong>Phone:</strong> {userProfile.phoneNumber}</p>}
+                                                </div>
+                                            </div>
+                                        )}
+
                                         <div className="grid md:grid-cols-2 gap-6 mb-8">
-                                            {/* Full Name */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    <User className="w-4 h-4 inline mr-2" /> Full Name *
-                                                </label>
-                                                <input type="text" {...register("name", sloBookingValidation.name)} placeholder="Enter your full name"
-                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                                {errors.name && (<p className="text-red-500 text-sm mt-1">{errors.name.message}</p>)}
-                                            </div>
+                                            {/* Name and Email - show inputs only for 'other' */}
+                                            {bookingFor === 'other' && (
+                                                <>
+                                                    {/* Full Name */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            <User className="w-4 h-4 inline mr-2" /> Full Name *
+                                                        </label>
+                                                        <input
+                                                            type="text"
+                                                            {...register("name", sloBookingValidation.name)}
+                                                            placeholder="Enter full name"
+                                                            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        />
+                                                        {errors.name && (<p className="text-red-500 text-sm mt-1">{errors.name.message}</p>)}
+                                                    </div>
 
-                                            {/* Email */}
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                    <Mail className="w-4 h-4 inline mr-2" /> Email Address *
-                                                </label>
-                                                <input type="email" {...register("email", sloBookingValidation.email)} placeholder="Enter your email"
-                                                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                                />
-                                                {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
-                                            </div>
+                                                    {/* Email */}
+                                                    <div>
+                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                            <Mail className="w-4 h-4 inline mr-2" /> Email Address *
+                                                        </label>
+                                                        <input
+                                                            type="email"
+                                                            {...register("email", sloBookingValidation.email)}
+                                                            placeholder="Enter email address"
+                                                            className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        />
+                                                        {errors.email && (<p className="text-red-500 text-sm mt-1">{errors.email.message}</p>)}
+                                                    </div>
+                                                </>
+                                            )}
 
-                                            {/* Phone */}
-                                            <div>
+                                            {/* Phone - show for both self and other */}
+                                            <div className={bookingFor === 'self' ? 'md:col-span-2' : ''}>
                                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     <Phone className="w-4 h-4 inline mr-2" /> Phone Number
                                                 </label>
-                                                <input type="tel" {...register("phone", sloBookingValidation.phone)} placeholder="Enter your phone number"
+                                                <input type="tel" {...register("phone", sloBookingValidation.phone)} placeholder="Enter phone number" disabled={bookingFor === 'self' && !!userProfile?.phoneNumber}
                                                     className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
                                                 {errors.phone && (<p className="text-red-500 text-sm mt-1">{errors.phone.message}</p>)}
@@ -421,18 +525,15 @@ const BookingPage = () => {
                                         </div>
 
                                         <div className="flex justify-between">
-                                            <button
-                                                type="button"
-                                                onClick={() => setBookingStep("schedule")}
+                                            <button type="button" onClick={() => setBookingStep("schedule")}
                                                 className="border-2 border-gray-300 text-gray-700 px-8 py-3 rounded-xl font-semibold hover:bg-gray-50 transition-colors"
                                             >
                                                 Back
                                             </button>
-                                            <button
-                                                type="submit"
+                                            <button type="submit" disabled={loadingUser}
                                                 className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                Book the Appointment
+                                                {loadingUser ? 'Loading...' : 'Book the Appointment'}
                                             </button>
                                         </div>
                                     </form>
