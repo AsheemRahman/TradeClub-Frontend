@@ -11,6 +11,7 @@ import { loginType } from '@/types/types';
 import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
 
 import { useAuthStore } from '@/store/authStore';
+import { useExpertStore } from '@/store/expertStore';
 
 interface LoginPage {
     role: 'user' | 'expert';
@@ -25,6 +26,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     const router = useRouter();
     const isUser = role === 'user';
     const authStore = useAuthStore();
+    const expertStore = useExpertStore();
 
     const handleGoogleLogin = async () => {
         try {
@@ -42,8 +44,14 @@ const Login: React.FC<LoginPage> = ({ role }) => {
     useEffect(() => {
         if (status === 'loading') return;
         const alreadyLoggedIn = authStore.user !== null;
-        if (alreadyLoggedIn || (status === 'authenticated' && session?.user)) {
-            router.replace(isUser ? '/home' : '/expert/dashboard');
+        const alreadyExpertIn = expertStore.expert !== null
+        if (alreadyLoggedIn && isUser) {
+            router.replace('/home');
+            return;
+        }
+        if (alreadyExpertIn && !isUser) {
+            router.replace('/expert/dashboard');
+            return;
         }
         if (!alreadyLoggedIn && status === 'authenticated' && session?.user) {
             const sendUserToBackend = async () => {
@@ -57,9 +65,14 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                     const response = await googleSignup(userData);
                     if (response.status) {
                         const { user, expert, accessToken } = response.data;
-                        authStore.setUserAuth(isUser ? user : expert, accessToken);
-                        toast.success(response.message || "Google Login Successfully");
-                        router.replace(isUser ? '/home' : '/expert/dashboard');
+                        if (!isUser) {
+                            expertStore.setExpertAuth(expert, accessToken);
+                        } else {
+                            authStore.setUserAuth(user, accessToken);
+                        }
+                        setTimeout(() => {
+                            router.replace(isUser ? '/home' : '/expert/dashboard');
+                        }, 0);
                     } else {
                         toast.error(response?.message || 'Google Login failed. Please try again.');
                     }
@@ -70,7 +83,8 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             };
             sendUserToBackend();
         }
-    }, [session, status, role, authStore, isUser, router]);
+    }, [session, status, role, authStore, expertStore, isUser, router]);
+
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -80,7 +94,11 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             const response = await LoginPost(payload);
             if (response.status) {
                 const { user, expert, accessToken } = response.data;
-                authStore.setUserAuth(isUser ? user : expert, accessToken);
+                if (!isUser) {
+                    expertStore.setExpertAuth(expert, accessToken);
+                } else {
+                    authStore.setUserAuth(user, accessToken);
+                }
                 toast.success(response.message);
                 router.replace(isUser ? '/home' : '/expert/dashboard');
             } else {

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import React from 'react';
 import { Irish_Grover } from 'next/font/google';
-import { useAuthStore } from '@/store/authStore';
+import { useExpertStore } from '@/store/expertStore';
 
 const irishGrover = Irish_Grover({
     weight: '400',
@@ -10,7 +10,7 @@ const irishGrover = Irish_Grover({
 
 
 export default function ExpertNavbar() {
-    const { user } = useAuthStore();
+    const { expert } = useExpertStore();
 
     return (
         <>
@@ -25,7 +25,7 @@ export default function ExpertNavbar() {
 
                     {/* CTA Buttons */}
                     <div className="flex items-center space-x-4">
-                        {!user && <>
+                        {!expert && <>
                             <Link href="/expert/login" className="px-4 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] flex items-center font-medium">
                                 Get Started
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">

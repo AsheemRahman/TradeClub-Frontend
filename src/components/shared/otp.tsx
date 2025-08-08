@@ -11,6 +11,7 @@ import { expertVerifyOtp } from '@/app/service/expert/expertApi';
 import { resendOtp } from '@/app/service/user/userApi';
 import { resendExpertOtp } from '@/app/service/expert/expertApi';
 import { useAuthStore } from '@/store/authStore';
+import { useExpertStore } from '@/store/expertStore';
 
 
 interface OTPProps {
@@ -31,11 +32,19 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
     const router = useRouter();
     const searchParams = useSearchParams();
     const authStore = useAuthStore();
+    const expertStore = useExpertStore();
 
     useEffect(() => {
-        const alreadyLoggedIn = authStore.user !== null;
-        if (alreadyLoggedIn) {
-            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        if (role === "user") {
+            const alreadyLoggedIn = authStore.user !== null;
+            if (alreadyLoggedIn) {
+                router.replace('/home');
+            }
+        } else {
+            const alreadyLoggedIn = expertStore.expert !== null;
+            if (alreadyLoggedIn) {
+                router.replace('/expert/dashboard');
+            }
         }
         const emailFromQuery = searchParams.get('email');
         const typeFromQuery = searchParams.get('type');
@@ -57,7 +66,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
             }, 1000);
             return () => clearInterval(interval);
         }
-    }, [searchParams, authStore.user, role, router]);
+    }, [searchParams, authStore.user, expertStore.expert, role, router]);
 
     const handleChange = (index: number, value: string) => {
         if (!/^\d?$/.test(value)) return;

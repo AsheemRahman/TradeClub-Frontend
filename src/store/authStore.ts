@@ -2,24 +2,11 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 
-export type Role = 'user' | 'expert'
-
-
-interface BaseUser {
+export interface User {
     id: string;
-    role: Role;
-}
-
-interface ExpertUser extends BaseUser {
-    role: 'expert';
-    isVerified?: 'Approved' | 'Pending' | 'Declined';
-}
-
-interface NormalUser extends BaseUser {
     role: 'user';
 }
 
-export type User = ExpertUser | NormalUser;
 
 interface AuthState {
     user: User | null;
@@ -46,7 +33,5 @@ export const useAuthStore = create<AuthState>()(
         logout: async () => {
             set({ user: null, token: null });
         },
-    }),
-        { name: 'tradeclub-auth' }
-    )
+    }), { name: 'tradeclub-auth' })
 );

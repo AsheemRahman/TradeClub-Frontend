@@ -4,8 +4,8 @@ import { toast } from 'react-toastify';
 import { signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { logoutApi } from '@/app/service/shared/sharedApi';
-import { useAuthStore } from '@/store/authStore';
 import { FaChartPie, FaUserFriends, FaShoppingCart, FaSignOutAlt, FaWallet, FaCalendarAlt, FaComments, } from 'react-icons/fa';
+import { useExpertStore } from '@/store/expertStore';
 
 const menuItems = [
     { label: 'Dashboard', icon: <FaChartPie />, href: '/expert/dashboard' },
@@ -22,9 +22,9 @@ const menuItems = [
 export default function Sidebar() {
     const router = useRouter();
     const pathname = usePathname();
-    const authStore = useAuthStore();
-    const user = authStore.user;
-    const isVerified = user?.role === 'expert' && user.isVerified === 'Approved';
+    const expertStore = useExpertStore();
+    const expert = expertStore.expert;
+    const isVerified = expert?.role === 'expert' && expert.isVerified === 'Approved';
 
     const restrictedRoutes = [
         '/expert/appointments',
@@ -48,7 +48,7 @@ export default function Sidebar() {
     const handleLogout = async () => {
         const response = await logoutApi('expert');
         if (response?.status) {
-            authStore.logout();
+            expertStore.logout();
             await signOut({ callbackUrl: '/expert/login' });
             router.replace('/expert/login');
         }

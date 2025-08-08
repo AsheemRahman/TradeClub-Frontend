@@ -7,6 +7,7 @@ import { forgotPassword } from "@/app/service/shared/sharedApi";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
+import { useExpertStore } from "@/store/expertStore";
 
 interface ForgotPasswordProps {
     role: 'user' | 'expert';
@@ -16,13 +17,21 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ role }) => {
     const [email, setEmail] = useState("");
     const router = useRouter()
     const authStore = useAuthStore();
+    const expertStore = useExpertStore();
 
     useEffect(() => {
-        const alreadyLoggedIn = authStore.user !== null;
-        if (alreadyLoggedIn) {
-            router.replace(role == "user" ? '/home' : '/expert/dashboard');
+        if (role === "user") {
+            const alreadyLoggedIn = authStore.user !== null;
+            if (alreadyLoggedIn) {
+                router.replace('/home');
+            }
+        } else {
+            const alreadyLoggedIn = expertStore.expert !== null;
+            if (alreadyLoggedIn) {
+                router.replace('/expert/dashboard');
+            }
         }
-    }, [authStore.user, role, router])
+    }, [authStore.user, expertStore.expert, role, router])
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
