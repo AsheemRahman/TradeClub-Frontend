@@ -73,6 +73,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                         setTimeout(() => {
                             router.replace(isUser ? '/home' : '/expert/dashboard');
                         }, 0);
+                        toast.success(response.message);
                     } else {
                         toast.error(response?.message || 'Google Login failed. Please try again.');
                     }
