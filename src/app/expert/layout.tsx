@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
 export default function ExpertLayout({ children }: { children: React.ReactNode }) {
 
     const pathname = usePathname();
-    const noSidebarRoutes = ['/expert/login', '/expert/register', '/expert/verification', '/expert/verification-pending', '/expert/verify-otp', '/expert/forgotPassword', '/expert/resetPassword'];
+    const noSidebarRoutes = ['/expert/login', '/expert/register', '/expert/verification', '/expert/verification-pending', '/expert/verify-otp', '/expert/forgotPassword', '/expert/resetPassword','/expert/message'];
     const showSidebar = !noSidebarRoutes.includes(pathname);
 
     return (

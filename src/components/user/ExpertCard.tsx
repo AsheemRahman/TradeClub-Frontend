@@ -27,15 +27,14 @@ export const ExpertCard = ({ expert }: { expert: IExpert }) => {
     };
 
     const handleBookSlot = (expertId?: string) => {
-        console.log("test in booking", expertId)
         if (!expertId) return;
         router.push(`/consultation/${expertId}`)
     }
 
     const handleChat = (expertId?: string) => {
         if (!expertId) return;
-        router.push(`/message/${expertId}`)
-    }
+        router.push(`/message?expertId=${expertId}`);
+    };
 
     return (
         <div className="group bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-gray-100 hover:border-blue-200 transform hover:-translate-y-2">
