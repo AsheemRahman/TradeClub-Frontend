@@ -33,10 +33,7 @@ export const createChat = async (id: string) => {
     }
 }
 
-
-// chatService.ts
 export const sendMessage = async ( receiverId: string, message: string, role: string, imageUrl?: string) => {
-    console.log("Image url", imageUrl)
     try {
         // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
         // const response = await axiosInstance.post(`/${role}/chat/send/${receiverId}`, {
@@ -58,8 +55,6 @@ export const getMessages = async (reciverId: string,) => {
         handleAxiosError(error)
     }
 }
-
-// chatService.ts
 
 export const deleteMessages = async (receiverId: string, messageIds: string[]) => {
     try {

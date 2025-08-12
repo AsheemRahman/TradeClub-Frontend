@@ -18,13 +18,11 @@ export const useSocketContext = () => {
 };
 
 export const SocketContextProvider = ({ children }: { children: ReactNode }) => {
-    const expert = useExpertStore();
-    const user = useAuthStore();
+    const { expert } = useExpertStore();
+    const { user } = useAuthStore()
     const [socket, setSocket] = useState<Socket | null>(null);
     const [onlineUser, setOnlineUser] = useState<string[]>([]);
-    const userId = expert.expert?.id || user.user?.id;
-    console.log(userId, 'userId in socket context');
-    console.log(socket, 'socket in socket context');
+    const userId = expert?.id || user?.id;
 
     useEffect(() => {
         if (!userId) {
@@ -35,7 +33,7 @@ export const SocketContextProvider = ({ children }: { children: ReactNode }) => 
             }
             return;
         }
-        const socketInstance = io(process.env.NEXTAUTH_URL || 'http://localhost:5000', {
+        const socketInstance = io(process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3000', {
             transports: ['websocket', 'polling'],
             autoConnect: true,
             query: { userId },
@@ -66,7 +64,8 @@ export const SocketContextProvider = ({ children }: { children: ReactNode }) => 
         return () => {
             socketInstance.disconnect();
         };
-    }, [userId, socket]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [userId]);
 
     return (
         <SocketContext.Provider value={{ socket, onlineUser }}>
