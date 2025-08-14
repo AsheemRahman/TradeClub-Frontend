@@ -111,3 +111,21 @@ export const getSessions = async (params: ISessions) => {
         handleAxiosError(error);
     }
 };
+
+export const getSessionDetails = async (id: string) => {
+    try {
+        const response = await axiosInstance.get(`/user/session/${id}`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const updateSessionStatus = async (id: string, status: string) => {
+    try {
+        const response = await axiosInstance.put(`/user/update-session/${id}`, status);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};

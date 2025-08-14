@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { getSessions } from '@/app/service/user/userApi';
 import { Calendar } from 'lucide-react';
 import { typeSession } from '@/types/sessionTypes';
+import { useRouter } from 'next/navigation';
 
 type SessionStatus = 'upcoming' | 'completed' | 'missed';
 
@@ -17,6 +18,8 @@ const UserSessionsPage = () => {
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed' | 'missed'>('all');
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+
+    const router = useRouter()
 
     // Fetch sessions
     const fetchSessions = async (page: number = 1, status?: string) => {
@@ -59,11 +62,12 @@ const UserSessionsPage = () => {
     };
 
     const canJoinMeeting = (session: typeSession): boolean => {
-        if (!session.meetingLink || session.status !== 'upcoming') return false;
+        // if (!session.meetingLink || session.status !== 'upcoming') return false;
         const sessionStart = new Date(session.availabilityId.date + 'T' + session.availabilityId.startTime);
+        const sessionEnd = new Date(session.availabilityId.date + 'T' + session.availabilityId.endTime);
         const now = new Date();
-        const fifteenMinutesBefore = new Date(sessionStart.getTime() - 15 * 60 * 1000);
-        return now >= fifteenMinutesBefore && now <= sessionStart;
+        const fifteenMinutesBefore = new Date(sessionStart.getTime() - 50 * 60 * 1000);
+        return now >= fifteenMinutesBefore && now <= sessionEnd;
     };
 
     const formatSessionTime = (session: typeSession) => {
@@ -253,8 +257,9 @@ const UserSessionsPage = () => {
 
                                             {/* Action Buttons */}
                                             <div className="flex flex-col space-y-2 ml-4">
-                                                {session.meetingLink && canJoin && (
-                                                    <a href={session.meetingLink} target="_blank" rel="noopener noreferrer"
+                                                {/* {session.meetingLink && canJoin && ( */}
+                                                {canJoin && (
+                                                    <a onClick={() => router.push(`/video-call/${session._id}`)} target="_blank" rel="noopener noreferrer"
                                                         className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                                                     >
                                                         <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">

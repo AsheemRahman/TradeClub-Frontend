@@ -6,6 +6,7 @@ import { Calendar, Clock, Video, User, CheckCircle, XCircle, AlertCircle, Chevro
 import { toast } from 'react-toastify';
 import { getSessions } from '@/app/service/expert/sessionApi';
 import { IPaginationMeta, ISession, ISessionFilters } from '@/types/sessionTypes';
+import { useRouter } from 'next/navigation';
 
 
 const ExpertSessionsDashboard: React.FC = () => {
@@ -23,6 +24,8 @@ const ExpertSessionsDashboard: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
+
+    const router = useRouter()
 
     const today = new Date().toISOString().split('T')[0];
     const fetchSessions = useCallback(async (page: number = 1) => {
@@ -111,16 +114,16 @@ const ExpertSessionsDashboard: React.FC = () => {
     };
 
     const handleJoinSession = async (session: ISession) => {
-        if (session.meetingLink) {
-            window.open(session.meetingLink, '_blank');
-            try {
-                // await SessionService.updateSessionStatus(session._id, 'started');
-                // Refresh the current page to show updated status
-                fetchSessions(pagination.currentPage);
-            } catch (err) {
-                console.error('Failed to update session status:', err);
-            }
-        }
+        router.push(`/expert/videocall/${session._id}`)
+        // if (session.meetingLink) {
+        //     window.open(session.meetingLink, '_blank');
+        //     try {
+        //         // await SessionService.updateSessionStatus(session._id, 'started');
+        //         fetchSessions(pagination.currentPage);
+        //     } catch (err) {
+        //         console.error('Failed to update session status:', err);
+        //     }
+        // }
     };
 
     const copyToClipboard = async (text: string) => {
