@@ -16,7 +16,6 @@ export const handleAxiosError = (error: unknown) => {
 
 export const getChats = async (role: string) => {
     try {
-        // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
         const response = await axiosInstance.get(`/chat/getChats?role=${role}`);
         return response.data;
     } catch (error: unknown) {
@@ -35,8 +34,6 @@ export const createChat = async (id: string) => {
 
 export const sendMessage = async ( receiverId: string, message: string, role: string, imageUrl?: string) => {
     try {
-        // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
-        // const response = await axiosInstance.post(`/${role}/chat/send/${receiverId}`, {
         const response = await axiosInstance.post(`/chat/send/${receiverId}`, { message, imageUrl});
         return response.data;
     } catch (error: unknown) {
@@ -47,8 +44,6 @@ export const sendMessage = async ( receiverId: string, message: string, role: st
 
 export const getMessages = async (reciverId: string,) => {
     try {
-        // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
-        // const response = await axiosInstance.get(`/${role}/chat/get-messages/${reciverId}`);
         const response = await axiosInstance.get(`/chat/get-messages/${reciverId}`);
         return response.data
     } catch (error: unknown) {
@@ -58,8 +53,6 @@ export const getMessages = async (reciverId: string,) => {
 
 export const deleteMessages = async (receiverId: string, messageIds: string[]) => {
     try {
-        // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
-        // const response = await axiosInstance.delete(`/${role}/chat/delete-message/${receiverId}`, { data: { messageIds } })
         const response = await axiosInstance.delete(`/chat/delete-message/${receiverId}`, { data: { messageIds } })
         return response.data;
     } catch (error: unknown) {
@@ -69,8 +62,6 @@ export const deleteMessages = async (receiverId: string, messageIds: string[]) =
 
 export const markMessagesAsRead = async (receiverId: string) => {
     try {
-        // const axiosInstance = role === 'tutor' ? tutorAxiosInstance : studentAxiosInstance;
-        // const response = await axiosInstance.post(`/${role}/chat/mark-read/${receiverId}`);
         const response = await axiosInstance.post(`/chat/mark-read/${receiverId}`);
         return response.data;
     } catch (error: unknown) {

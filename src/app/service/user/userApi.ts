@@ -2,6 +2,7 @@ import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
 import { UpdateProfilePayload } from "@/types/types";
+import { USER } from "@/lib/constants";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -16,7 +17,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const verifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axiosInstance.post(`/user/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`${USER}/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -25,7 +26,7 @@ export const verifyOtp = async (otp: number, email: string) => {
 
 export const resendOtp = async (email: string) => {
     try {
-        const response = await axiosInstance.post(`/user/resend-otp`, { email })
+        const response = await axiosInstance.post(`${USER}/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -34,7 +35,7 @@ export const resendOtp = async (email: string) => {
 
 export const getUserProfile = async () => {
     try {
-        const profile = await axiosInstance.get(`/user/get-profile`);
+        const profile = await axiosInstance.get(`${USER}/get-profile`);
         return profile.data;
     } catch (error) {
         handleAxiosError(error)
@@ -43,7 +44,7 @@ export const getUserProfile = async () => {
 
 export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     try {
-        const updateProfile = await axiosInstance.post(`/user/update-profile`, updatedPayload);
+        const updateProfile = await axiosInstance.post(`${USER}/update-profile`, updatedPayload);
         return updateProfile.data;
     } catch (error) {
         handleAxiosError(error)
@@ -52,7 +53,7 @@ export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
 
 export const SubscriptionData = async () => {
     try {
-        const response = await axiosInstance.get(`/user/fetch-plans`,);
+        const response = await axiosInstance.get(`${USER}/fetch-plans`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -61,7 +62,7 @@ export const SubscriptionData = async () => {
 
 export const getAllExpert = async () => {
     try {
-        const response = await axiosInstance.get(`/user/experts`,);
+        const response = await axiosInstance.get(`${USER}/experts`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -70,7 +71,7 @@ export const getAllExpert = async () => {
 
 export const getExpertById = async (expertId: string) => {
     try {
-        const response = await axiosInstance.get(`/user/expert/${expertId}`,);
+        const response = await axiosInstance.get(`${USER}/expert/${expertId}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -79,7 +80,7 @@ export const getExpertById = async (expertId: string) => {
 
 export const getExpertAvailability = async (expertId: string, startDate: Date, endDate: Date) => {
     try {
-        const response = await axiosInstance.get(`/user/expert/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
+        const response = await axiosInstance.get(`${USER}/expert/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -88,7 +89,7 @@ export const getExpertAvailability = async (expertId: string, startDate: Date, e
 
 export const checkSubscription = async () => {
     try {
-        const response = await axiosInstance.get(`/user/check-subscription`);
+        const response = await axiosInstance.get(`${USER}/check-subscription`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -105,7 +106,7 @@ interface ISessions {
 
 export const getSessions = async (params: ISessions) => {
     try {
-        const response = await axiosInstance.get('/user/sessions', { params });
+        const response = await axiosInstance.get(`${USER}/sessions`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -114,7 +115,7 @@ export const getSessions = async (params: ISessions) => {
 
 export const getSessionDetails = async (id: string) => {
     try {
-        const response = await axiosInstance.get(`/user/session/${id}`);
+        const response = await axiosInstance.get(`${USER}/session/${id}`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -123,7 +124,7 @@ export const getSessionDetails = async (id: string) => {
 
 export const updateSessionStatus = async (id: string, status: string) => {
     try {
-        const response = await axiosInstance.put(`/user/update-session/${id}`, status);
+        const response = await axiosInstance.put(`${USER}/update-session/${id}`, status);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

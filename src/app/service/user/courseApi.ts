@@ -1,6 +1,7 @@
 import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
+import { USER } from "@/lib/constants";
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -14,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const courseData = async (params?: { search?: string; category?: string; minPrice?: number; maxPrice?: number; sort?: string; page?: number; limit?: number; }) => {
     try {
-        const response = await axiosInstance.get(`/user/courses`, { params });
+        const response = await axiosInstance.get(`${USER}/courses`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -23,7 +24,7 @@ export const courseData = async (params?: { search?: string; category?: string; 
 
 export const categoryData = async () => {
     try {
-        const response = await axiosInstance.get(`/user/category`,);
+        const response = await axiosInstance.get(`${USER}/category`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -32,7 +33,7 @@ export const categoryData = async () => {
 
 export const getCourseById = async (id: string) => {
     try {
-        const response = await axiosInstance.get(`/user/course/${id}`,);
+        const response = await axiosInstance.get(`${USER}/course/${id}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -41,7 +42,7 @@ export const getCourseById = async (id: string) => {
 
 export const checkEnrolled = async (id: string) => {
     try {
-        const response = await axiosInstance.get(`/user/check-enrolled/${id}`,);
+        const response = await axiosInstance.get(`${USER}/check-enrolled/${id}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -50,7 +51,7 @@ export const checkEnrolled = async (id: string) => {
 
 export const getProgress = async (courseId: string) => {
     try {
-        const response = await axiosInstance.get(`/user/course/${courseId}/progress`,);
+        const response = await axiosInstance.get(`${USER}/course/${courseId}/progress`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -59,7 +60,7 @@ export const getProgress = async (courseId: string) => {
 
 export const updateCourseProgress = async (courseId: string, contentId: string, watchedDuration: number, isCompleted: boolean) => {
     try {
-        const response = await axiosInstance.post(`/user/course/${courseId}/progress`, { contentId, watchedDuration, isCompleted, });
+        const response = await axiosInstance.post(`${USER}/course/${courseId}/progress`, { contentId, watchedDuration, isCompleted, });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
