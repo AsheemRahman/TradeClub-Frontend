@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import { Wallet, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownLeft, Calendar, Filter, Search, Eye, EyeOff, IndianRupee } from 'lucide-react';
-import { fetchWallet } from '@/app/service/expert/expertApi';
+import expertApi from '@/app/service/expert/expertApi';
 import { WalletData } from '@/types/expertTypes';
 
 
@@ -20,7 +20,7 @@ const ExpertWalletDashboard: React.FC = () => {
 
     const fetchData = useCallback(async () => {
         try {
-            const response = await fetchWallet();
+            const response = await expertApi.fetchWallet();
             if (response.status) {
                 const details = response.walletDetails;
                 setWalletData({

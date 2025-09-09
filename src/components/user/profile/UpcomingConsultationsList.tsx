@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Calendar, Clock } from "lucide-react";
-import { getSessions } from "@/app/service/user/userApi";
+import userApi from "@/app/service/user/userApi";
 import { typeSession } from "@/types/sessionTypes";
 
 
@@ -25,7 +25,7 @@ const UpcomingConsultationsList = () => {
     const fetchConsultations = async (currentPage: number) => {
         try {
             setLoading(true);
-            const response = await getSessions({
+            const response = await userApi.getSessions({
                 page: currentPage.toString(),
                 limit: limit.toString(),
                 status: "upcoming"

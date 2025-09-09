@@ -15,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const fetchPlans = async () => {
+const fetchPlans = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/fetch-plans`,);
         return response.data;
@@ -24,7 +24,7 @@ export const fetchPlans = async () => {
     }
 };
 
-export const createPlan = async (planData: ISubscriptionFormData) => {
+const createPlan = async (planData: ISubscriptionFormData) => {
     try {
         const response = await adminAxiosInstance.post(`${ADMIN}/create-plan`, planData,);
         return response.data;
@@ -33,7 +33,7 @@ export const createPlan = async (planData: ISubscriptionFormData) => {
     }
 };
 
-export const updatePlan = async (id: string, planData: ISubscriptionFormData) => {
+const updatePlan = async (id: string, planData: ISubscriptionFormData) => {
     try {
         const response = await adminAxiosInstance.put(`${ADMIN}/update-plan/${id}`, planData,);
         return response.data;
@@ -42,7 +42,7 @@ export const updatePlan = async (id: string, planData: ISubscriptionFormData) =>
     }
 };
 
-export const deletePlan = async (id: string) => {
+const deletePlan = async (id: string) => {
     try {
         const response = await adminAxiosInstance.delete(`${ADMIN}/delete-plan/${id}`,);
         return response.data;
@@ -51,7 +51,7 @@ export const deletePlan = async (id: string) => {
     }
 };
 
-export const planStatus = async (id: string) => {
+const planStatus = async (id: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/plan-status/${id}`,);
         return response.data;
@@ -59,3 +59,13 @@ export const planStatus = async (id: string) => {
         handleAxiosError(error);
     }
 };
+
+const subscriptionApi = {
+    fetchPlans,
+    createPlan,
+    updatePlan,
+    deletePlan,
+    planStatus,
+};
+
+export default subscriptionApi;

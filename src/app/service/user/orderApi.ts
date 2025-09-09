@@ -15,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const SubscriptionPurchase = async (planId: string) => {
+const SubscriptionPurchase = async (planId: string) => {
     try {
         const res = await axiosInstance.post(`${USER}/subscription-checkout`, { planId });
         window.location.href = res.data.url;
@@ -24,7 +24,7 @@ export const SubscriptionPurchase = async (planId: string) => {
     }
 };
 
-export const handlePurchase = async (course: ICourse) => {
+const handlePurchase = async (course: ICourse) => {
     try {
         const res = await axiosInstance.post(`${USER}/create-checkout-session`, { course });
         window.location.href = res.data.url;
@@ -33,7 +33,7 @@ export const handlePurchase = async (course: ICourse) => {
     }
 };
 
-export const getPurchase = async () => {
+const getPurchase = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/purchase-history`);
         return response.data;
@@ -42,7 +42,7 @@ export const getPurchase = async () => {
     }
 };
 
-export const getPurchasedCourses = async () => {
+const getPurchasedCourses = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/purchased-courses`);
         return response.data;
@@ -51,7 +51,7 @@ export const getPurchasedCourses = async () => {
     }
 };
 
-export const createOrder = async (sessionId: string) => {
+const createOrder = async (sessionId: string) => {
     try {
         const response = await axiosInstance.post(`${USER}/create-order`, { sessionId });
         return response.data;
@@ -60,7 +60,7 @@ export const createOrder = async (sessionId: string) => {
     }
 };
 
-export const createFailedOrder = async (sessionId: string) => {
+const createFailedOrder = async (sessionId: string) => {
     try {
         const response = await axiosInstance.post(`${USER}/order-failed`, { sessionId });
         return response.data;
@@ -69,7 +69,7 @@ export const createFailedOrder = async (sessionId: string) => {
     }
 };
 
-export const slotBooking = async (slotBooking: BookingData) => {
+const slotBooking = async (slotBooking: BookingData) => {
     try {
         const response = await axiosInstance.post(`${USER}/slot-booking`, slotBooking);
         return response.data;
@@ -77,3 +77,15 @@ export const slotBooking = async (slotBooking: BookingData) => {
         handleAxiosError(error);
     }
 };
+
+const orderApi = {
+    SubscriptionPurchase,
+    handlePurchase,
+    getPurchase,
+    getPurchasedCourses,
+    createOrder,
+    createFailedOrder,
+    slotBooking,
+};
+
+export default orderApi;

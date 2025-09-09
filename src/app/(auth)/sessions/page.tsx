@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
-import { getSessions } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import { Calendar } from 'lucide-react';
 import { typeSession } from '@/types/sessionTypes';
 import { useRouter } from 'next/navigation';
@@ -26,7 +26,7 @@ const UserSessionsPage = () => {
         try {
             setLoading(true);
             const allowedStatuses: SessionStatus[] = ['upcoming', 'completed', 'missed'];
-            const response = await getSessions({ page: page.toString(), limit: '10', ...(allowedStatuses.includes(status as SessionStatus) && { status: status as SessionStatus }), });
+            const response = await userApi.getSessions({ page: page.toString(), limit: '10', ...(allowedStatuses.includes(status as SessionStatus) && { status: status as SessionStatus }), });
             if (!response || !response.status) {
                 throw new Error('Failed to fetch sessions');
             }

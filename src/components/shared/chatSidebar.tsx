@@ -4,7 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useExpertStore } from '@/store/expertStore';
 import useConversation from '@/store/conversationStore';
 import { UserMinimal } from '@/types/types';
-import { getChats } from '@/app/service/shared/chatApi';
+import chatApi from '@/app/service/shared/chatApi';
 import { useSocketContext } from '@/context/socketContext';
 import Image from 'next/image';
 
@@ -25,7 +25,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ role, onSelectUser, selectedU
 
     const fetchChats = useCallback(async () => {
         try {
-            const response = await getChats(role);
+            const response = await chatApi.getChats(role);
             if (response) {
                 const usersWithUnread = response.data.map((user: UserMinimal) => ({
                     ...user,

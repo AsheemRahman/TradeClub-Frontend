@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
 import { ExpertProfile } from '../../../types/expertTypes';
-import { getExpertData } from '@/app/service/expert/expertApi';
+import expertApi from '@/app/service/expert/expertApi';
 
 import { Button } from '../../../components/ui/Button';
 import { ProfileField } from '@/components/expert/profile/ProfileField';
@@ -30,7 +30,7 @@ export default function ExpertProfilePage() {
         try {
             setLoading(true);
             setError(null);
-            const response = await getExpertData()
+            const response = await expertApi.getExpertData()
             if (!response.status) {
                 throw new Error('Failed to fetch profile data');
             }

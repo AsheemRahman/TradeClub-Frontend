@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import { IExpert } from '@/types/expertTypes';
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback, } from 'react';
-import { approveExpert, declineExpert, getExpertById } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 
 
 export default function ExpertDetailPage() {
@@ -41,7 +41,7 @@ export default function ExpertDetailPage() {
 
     const fetchExpertDetails = useCallback(async () => {
         try {
-            const response = await getExpertById(id);
+            const response = await adminApi.getExpertById(id);
             if (response.status) {
                 setExpert(response.Expert);
             } else {
@@ -86,7 +86,7 @@ export default function ExpertDetailPage() {
     }
 
     const handleApprove = async () => {
-        const response = await approveExpert(id);
+        const response = await adminApi.approveExpert(id);
         if (response.status) {
             toast.success("Expert Approved Successfully")
             fetchExpertDetails();
@@ -100,7 +100,7 @@ export default function ExpertDetailPage() {
 
         setIsSubmittingRejection(true);
         try {
-            const response = await declineExpert(id, rejectionReason);
+            const response = await adminApi.declineExpert(id, rejectionReason);
             if (response.status) {
                 toast.success("Expert Declined Successfully");
                 closeRejectionModal();

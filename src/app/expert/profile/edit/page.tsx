@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { ExpertProfileEdit } from '@/components/expert/profile/ExpertProfileEdit';
 import { ExpertProfile, ExpertProfileFormData } from '@/types/expertTypes';
-import { getExpertData, updateProfile } from '@/app/service/expert/expertApi';
+import expertApi from '@/app/service/expert/expertApi';
 import { useRouter } from 'next/navigation';
 
 export default function ExpertProfileEditPage() {
@@ -19,7 +19,7 @@ export default function ExpertProfileEditPage() {
 
     const fetchExpertData = async () => {
         try {
-            const response = await getExpertData()
+            const response = await expertApi.getExpertData()
             if (!response.status) {
                 throw new Error('Failed to fetch profile data');
             }
@@ -35,7 +35,7 @@ export default function ExpertProfileEditPage() {
     const handleSave = async (formData: ExpertProfileFormData) => {
         setSaving(true);
         try {
-            const response = await updateProfile(formData);
+            const response = await expertApi.updateProfile(formData);
             if (!response.status) {
                 throw new Error(response.message || "Failed to update profile");
             }

@@ -15,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const getCategory = async () => {
+const getCategory = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/category`,);
         return response.data;
@@ -24,7 +24,7 @@ export const getCategory = async () => {
     }
 };
 
-export const addCategory = async (categoryName: string) => {
+const addCategory = async (categoryName: string) => {
     try {
         const response = await adminAxiosInstance.post(`${ADMIN}/add-category`, { categoryName },);
         return response.data;
@@ -33,7 +33,7 @@ export const addCategory = async (categoryName: string) => {
     }
 };
 
-export const deleteCategory = async (id: string) => {
+const deleteCategory = async (id: string) => {
     try {
         const response = await adminAxiosInstance.delete(`${ADMIN}/delete-category/${id}`);
         return response.data;
@@ -42,7 +42,7 @@ export const deleteCategory = async (id: string) => {
     }
 };
 
-export const editCategory = async (id: string, categoryName: string) => {
+const editCategory = async (id: string, categoryName: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/edit-category/${id}`, { categoryName },);
         return response.data;
@@ -51,7 +51,7 @@ export const editCategory = async (id: string, categoryName: string) => {
     }
 };
 
-export const getCourse = async () => {
+const getCourse = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/courses`, );
         return response.data;
@@ -60,7 +60,7 @@ export const getCourse = async () => {
     }
 };
 
-export const getCourseByID = async (id: string) => {
+const getCourseByID = async (id: string) => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/course/${id}`,);
         return response.data;
@@ -69,7 +69,7 @@ export const getCourseByID = async (id: string) => {
     }
 };
 
-export const addCourse = async (courseData: ICourseFormData) => {
+const addCourse = async (courseData: ICourseFormData) => {
     try {
         const response = await adminAxiosInstance.post(`${ADMIN}/add-course`, courseData,);
         return response.data;
@@ -78,7 +78,7 @@ export const addCourse = async (courseData: ICourseFormData) => {
     }
 };
 
-export const editCourse = async (id: string, courseData: ICourseFormData) => {
+const editCourse = async (id: string, courseData: ICourseFormData) => {
     try {
         const response = await adminAxiosInstance.put(`${ADMIN}/edit-course/${id}`, courseData,);
         return response.data;
@@ -87,7 +87,7 @@ export const editCourse = async (id: string, courseData: ICourseFormData) => {
     }
 };
 
-export const deleteCourse = async (id: string) => {
+const deleteCourse = async (id: string) => {
     try {
         const response = await adminAxiosInstance.delete(`${ADMIN}/delete-course/${id}`,);
         return response.data;
@@ -96,7 +96,7 @@ export const deleteCourse = async (id: string) => {
     }
 };
 
-export const togglePublish = async (id: string) => {
+const togglePublish = async (id: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/course/${id}/toggle-publish`,);
         return response.data;
@@ -104,3 +104,18 @@ export const togglePublish = async (id: string) => {
         handleAxiosError(error);
     }
 };
+
+const courseApi = {
+    getCategory,
+    addCategory,
+    deleteCategory,
+    editCategory,
+    getCourse,
+    getCourseByID,
+    addCourse,
+    editCourse,
+    deleteCourse,
+    togglePublish,
+};
+
+export default courseApi;

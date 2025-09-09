@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { ISubscriptionPlan } from '@/types/subscriptionTypes';
-import { SubscriptionData } from '@/app/service/user/userApi';
-import { SubscriptionPurchase } from '@/app/service/user/orderApi';
+import userApi from '@/app/service/user/userApi';
+import orderApi from '@/app/service/user/orderApi';
 
 
 
@@ -15,7 +15,7 @@ const SubscriptionPlansPage = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const response = await SubscriptionData();
+                const response = await userApi.SubscriptionData();
                 if (response.status) {
                     const activePlans = response.planData?.filter((plan: ISubscriptionPlan) => plan.isActive);
                     setPlans(activePlans || []);
@@ -33,7 +33,7 @@ const SubscriptionPlansPage = () => {
     const handlePurchase = async (planId: string) => {
         setPurchaseLoading(planId);
         try {
-            await SubscriptionPurchase(planId)
+            await orderApi.SubscriptionPurchase(planId)
         } catch (error) {
             console.error('Purchase error:', error);
             alert('Purchase failed. Please try again.');

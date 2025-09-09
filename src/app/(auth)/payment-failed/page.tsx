@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { AlertCircle, RefreshCw, ArrowLeft, CreditCard, Mail, Phone } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "react-toastify";
-import { createFailedOrder } from "@/app/service/user/orderApi";
+import orderApi from "@/app/service/user/orderApi";
 import { IOrder } from "@/types/types";
 
 
@@ -26,7 +26,7 @@ const PaymentFailedPage = () => {
                 try {
                     setLoading(true);
                     setError(null);
-                    const response = await createFailedOrder(sessionId);
+                    const response = await orderApi.createFailedOrder(sessionId);
                     if (response?.status) {
                         setOrder(response.order);
                         toast.info("Payment failed. No charges were made.");

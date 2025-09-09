@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Package } from 'lucide-react';
-import { checkSubscription } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import { useRouter } from 'next/navigation';
 
 const formatDate = (dateString: string) => {
@@ -22,7 +22,7 @@ const SubscriptionCard = () => {
     useEffect(() => {
         const fetchSubscription = async () => {
             try {
-                const response = await checkSubscription();
+                const response = await userApi.checkSubscription();
                 if (response.status && response.subscription) {
                     const { subscriptionPlan, paymentStatus, endDate } = response.subscription;
                     const isExpired = new Date() > new Date(endDate);

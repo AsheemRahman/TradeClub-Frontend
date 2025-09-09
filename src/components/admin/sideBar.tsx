@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { adminLogout } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 
 import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen } from 'react-icons/fa';
 import { Crown } from 'lucide-react';
@@ -23,7 +23,7 @@ export default function Sidebar() {
     const pathname = usePathname();
 
     const handleLogout = async () => {
-        const response = await adminLogout();
+        const response = await adminApi.adminLogout();
         if (response?.status) {
             router.replace('/admin/login');
         }

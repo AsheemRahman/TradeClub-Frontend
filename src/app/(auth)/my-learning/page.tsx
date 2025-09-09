@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, BookOpen, Search, Grid, List, Award, TrendingUp, PlayCircle } from 'lucide-react';
 import { ICourseContent, ICourseProgress, IPurchasedCourse } from '@/types/courseTypes';
-import { getPurchasedCourses } from '@/app/service/user/orderApi';
+import orderApi from '@/app/service/user/orderApi';
 
 
 const PurchasedCoursesPage = () => {
@@ -23,7 +23,7 @@ const PurchasedCoursesPage = () => {
         const fetchPurchasedCourses = async () => {
             try {
                 setLoading(true);
-                const response = await getPurchasedCourses();
+                const response = await orderApi.getPurchasedCourses();
                 if (response.status) {
                     setPurchasedCourses(response.data);
                     setFilteredCourses(response.data);

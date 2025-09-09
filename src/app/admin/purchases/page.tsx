@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Download, RefreshCw, Package, IndianRupee } from 'lucide-react';
 import { IOrder } from '@/types/types';
-import { getItem, getOrders, getUser } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 import { IItem, IOrderWithPopulated, IUser, OrderStats } from '@/types/orderTypes';
 // import { useRouter } from 'next/navigation';
 
@@ -30,13 +30,13 @@ const AdminOrdersPage: React.FC = () => {
             setLoading(true);
             setError(null);
             try {
-                const response = await getOrders()
+                const response = await adminApi.getOrders()
                 if (!response.status) {
                     throw new Error('Failed to fetch orders');
                 }
                 const ordersWithPopulatedData: IOrderWithPopulated[] = await Promise.all(
                     response.orders.map(async (order: IOrder) => {
-                        const [userResponse, itemResponse] = await Promise.all([getUser(order.userId), getItem(order.itemId, order.type)]);
+                        const [userResponse, itemResponse] = await Promise.all([adminApi.getUser(order.userId), adminApi.getItem(order.itemId, order.type)]);
                         const user: IUser = userResponse.user;
                         let item: IItem;
                         if (order.type === "Course") {

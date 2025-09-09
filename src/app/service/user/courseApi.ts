@@ -13,7 +13,7 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const courseData = async (params?: { search?: string; category?: string; minPrice?: number; maxPrice?: number; sort?: string; page?: number; limit?: number; }) => {
+const courseData = async (params?: { search?: string; category?: string; minPrice?: number; maxPrice?: number; sort?: string; page?: number; limit?: number; }) => {
     try {
         const response = await axiosInstance.get(`${USER}/courses`, { params });
         return response.data;
@@ -22,7 +22,7 @@ export const courseData = async (params?: { search?: string; category?: string; 
     }
 };
 
-export const categoryData = async () => {
+const categoryData = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/category`,);
         return response.data;
@@ -31,7 +31,7 @@ export const categoryData = async () => {
     }
 };
 
-export const getCourseById = async (id: string) => {
+const getCourseById = async (id: string) => {
     try {
         const response = await axiosInstance.get(`${USER}/course/${id}`,);
         return response.data;
@@ -40,7 +40,7 @@ export const getCourseById = async (id: string) => {
     }
 };
 
-export const checkEnrolled = async (id: string) => {
+const checkEnrolled = async (id: string) => {
     try {
         const response = await axiosInstance.get(`${USER}/check-enrolled/${id}`,);
         return response.data;
@@ -49,7 +49,7 @@ export const checkEnrolled = async (id: string) => {
     }
 };
 
-export const getProgress = async (courseId: string) => {
+const getProgress = async (courseId: string) => {
     try {
         const response = await axiosInstance.get(`${USER}/course/${courseId}/progress`,);
         return response.data;
@@ -58,7 +58,7 @@ export const getProgress = async (courseId: string) => {
     }
 };
 
-export const updateCourseProgress = async (courseId: string, contentId: string, watchedDuration: number, isCompleted: boolean) => {
+const updateCourseProgress = async (courseId: string, contentId: string, watchedDuration: number, isCompleted: boolean) => {
     try {
         const response = await axiosInstance.post(`${USER}/course/${courseId}/progress`, { contentId, watchedDuration, isCompleted, });
         return response.data;
@@ -66,3 +66,14 @@ export const updateCourseProgress = async (courseId: string, contentId: string, 
         handleAxiosError(error);
     }
 };
+
+const courseApi = {
+    courseData,
+    categoryData,
+    getCourseById,
+    checkEnrolled,
+    getProgress,
+    updateCourseProgress,
+};
+
+export default courseApi;

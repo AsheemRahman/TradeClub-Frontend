@@ -1,7 +1,6 @@
 import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
-import { SessionData } from "@/types/types";
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -14,7 +13,7 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-export const getChats = async (role: string) => {
+const getChats = async (role: string) => {
     try {
         const response = await axiosInstance.get(`/chat/getChats?role=${role}`);
         return response.data;
@@ -23,16 +22,7 @@ export const getChats = async (role: string) => {
     }
 }
 
-export const createChat = async (id: string) => {
-    try {
-        const response = await axiosInstance.post(`/chat/create-chat/${id}`);
-        return response.data
-    } catch (error: unknown) {
-        handleAxiosError(error)
-    }
-}
-
-export const sendMessage = async ( receiverId: string, message: string, role: string, imageUrl?: string) => {
+const sendMessage = async ( receiverId: string, message: string, role: string, imageUrl?: string) => {
     try {
         const response = await axiosInstance.post(`/chat/send/${receiverId}`, { message, imageUrl});
         return response.data;
@@ -42,7 +32,7 @@ export const sendMessage = async ( receiverId: string, message: string, role: st
     }
 };
 
-export const getMessages = async (reciverId: string,) => {
+const getMessages = async (reciverId: string,) => {
     try {
         const response = await axiosInstance.get(`/chat/get-messages/${reciverId}`);
         return response.data
@@ -51,7 +41,7 @@ export const getMessages = async (reciverId: string,) => {
     }
 }
 
-export const deleteMessages = async (receiverId: string, messageIds: string[]) => {
+const deleteMessages = async (receiverId: string, messageIds: string[]) => {
     try {
         const response = await axiosInstance.delete(`/chat/delete-message/${receiverId}`, { data: { messageIds } })
         return response.data;
@@ -60,7 +50,7 @@ export const deleteMessages = async (receiverId: string, messageIds: string[]) =
     }
 };
 
-export const markMessagesAsRead = async (receiverId: string) => {
+const markMessagesAsRead = async (receiverId: string) => {
     try {
         const response = await axiosInstance.post(`/chat/mark-read/${receiverId}`);
         return response.data;
@@ -69,12 +59,13 @@ export const markMessagesAsRead = async (receiverId: string) => {
     }
 }
 
-export const createSession = async (sessionData: SessionData) => {
-    try {
-        console.log("session data from api service", sessionData);
-        const response = await axiosInstance.post('/tutor/sessions', { sessionData });
-        return response.data;
-    } catch (error: unknown) {
-        handleAxiosError(error)
-    }
-}
+
+const chatApi = {
+    getChats,
+    sendMessage,
+    getMessages,
+    deleteMessages,
+    markMessagesAsRead
+};
+
+export default chatApi;

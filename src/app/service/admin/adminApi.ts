@@ -16,7 +16,7 @@ export const handleAxiosError = (error: unknown) => {
 };
 
 
-export const loginPost = async (userData: loginType) => {
+const loginPost = async (userData: loginType) => {
     try {
         const response = await adminAxiosInstance.post(`${ADMIN}/login`, { ...userData },)
         return response.data
@@ -25,7 +25,7 @@ export const loginPost = async (userData: loginType) => {
     }
 }
 
-export const adminLogout = async () => {
+const adminLogout = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/logout`,)
         return response
@@ -34,7 +34,7 @@ export const adminLogout = async () => {
     }
 }
 
-export const getUserDetails = async (params?: GetUserParams) => {
+const getUserDetails = async (params?: GetUserParams) => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/get-users`, { params });
         return response.data;
@@ -43,7 +43,7 @@ export const getUserDetails = async (params?: GetUserParams) => {
     }
 }
 
-export const userStatus = async (id: string, status: boolean) => {
+const userStatus = async (id: string, status: boolean) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/user-status/${id}`, { status },);
         return response.data;
@@ -52,7 +52,7 @@ export const userStatus = async (id: string, status: boolean) => {
     }
 };
 
-export const getExpertDetails = async (params?: { search?: string; page?: number; limit?: number; }) => {
+const getExpertDetails = async (params?: { search?: string; page?: number; limit?: number; }) => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/get-experts`, { params });
         return response.data;
@@ -61,7 +61,7 @@ export const getExpertDetails = async (params?: { search?: string; page?: number
     }
 };
 
-export const expertStatus = async (id: string, status: boolean) => {
+const expertStatus = async (id: string, status: boolean) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/expert-status/${id}`, { status },);
         return response.data;
@@ -70,7 +70,7 @@ export const expertStatus = async (id: string, status: boolean) => {
     }
 };
 
-export const getExpertById = async (id: string) => {
+const getExpertById = async (id: string) => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/getExpert/${id}`,);
         return response.data;
@@ -79,7 +79,7 @@ export const getExpertById = async (id: string) => {
     }
 };
 
-export const approveExpert = async (id: string) => {
+const approveExpert = async (id: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/approve-expert`, { id },);
         return response.data;
@@ -88,7 +88,7 @@ export const approveExpert = async (id: string) => {
     }
 };
 
-export const declineExpert = async (id: string, rejectionReason: string) => {
+const declineExpert = async (id: string, rejectionReason: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/decline-expert`, { id, rejectionReason },);
         return response.data;
@@ -97,7 +97,7 @@ export const declineExpert = async (id: string, rejectionReason: string) => {
     }
 };
 
-export const fetchCoupon = async () => {
+const fetchCoupon = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/coupons`);
         return response.data;
@@ -106,7 +106,7 @@ export const fetchCoupon = async () => {
     }
 };
 
-export const createCoupon = async (couponData: ICoupon) => {
+const createCoupon = async (couponData: ICoupon) => {
     try {
         const response = await adminAxiosInstance.post(`${ADMIN}/create-coupon`, couponData);
         return response.data;
@@ -115,7 +115,7 @@ export const createCoupon = async (couponData: ICoupon) => {
     }
 };
 
-export const updateCoupon = async (id: string, couponData: ICoupon) => {
+const updateCoupon = async (id: string, couponData: ICoupon) => {
     try {
         const response = await adminAxiosInstance.put(`${ADMIN}/update-coupon/${id}`, couponData);
         return response.data;
@@ -124,7 +124,7 @@ export const updateCoupon = async (id: string, couponData: ICoupon) => {
     }
 };
 
-export const deleteCoupon = async (id: string) => {
+const deleteCoupon = async (id: string) => {
     try {
         const response = await adminAxiosInstance.delete(`${ADMIN}/delete-coupon/${id}`);
         return response.data;
@@ -133,7 +133,7 @@ export const deleteCoupon = async (id: string) => {
     }
 };
 
-export const couponStatus = async (id: string) => {
+const couponStatus = async (id: string) => {
     try {
         const response = await adminAxiosInstance.patch(`${ADMIN}/coupon-status/${id}`,);
         return response.data;
@@ -142,7 +142,7 @@ export const couponStatus = async (id: string) => {
     }
 };
 
-export const getOrders = async () => {
+const getOrders = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/orders`);
         return response.data;
@@ -151,7 +151,7 @@ export const getOrders = async () => {
     }
 };
 
-export const getUser = async (userId: string) => {
+const getUser = async (userId: string) => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/user/${userId}`);
         return response.data;
@@ -160,7 +160,7 @@ export const getUser = async (userId: string) => {
     }
 };
 
-export const getItem = async (itemId: string, itemType: 'Course' | 'SubscriptionPlan') => {
+const getItem = async (itemId: string, itemType: 'Course' | 'SubscriptionPlan') => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/${itemType}/${itemId}`);
         return response.data;
@@ -169,7 +169,7 @@ export const getItem = async (itemId: string, itemType: 'Course' | 'Subscription
     }
 };
 
-export const getRevenue = async () => {
+const getRevenue = async () => {
     try {
         const response = await adminAxiosInstance.get(`${ADMIN}/revenue`);
         return response.data;
@@ -177,3 +177,26 @@ export const getRevenue = async () => {
         handleAxiosError(error);
     }
 };
+
+const adminApi = {
+    loginPost,
+    adminLogout,
+    getUserDetails,
+    userStatus,
+    getExpertDetails,
+    expertStatus,
+    getExpertById,
+    approveExpert,
+    declineExpert,
+    fetchCoupon,
+    createCoupon,
+    updateCoupon,
+    deleteCoupon,
+    couponStatus,
+    getOrders,
+    getUser,
+    getItem,
+    getRevenue,
+};
+
+export default adminApi;

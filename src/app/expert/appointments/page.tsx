@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Video, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, Search, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getSessions } from '@/app/service/expert/sessionApi';
+import sessionApi from '@/app/service/expert/sessionApi';
 import { IPaginationMeta, ISession, ISessionFilters } from '@/types/sessionTypes';
 import { useRouter } from 'next/navigation';
 
@@ -90,7 +90,7 @@ const ExpertSessionsDashboard: React.FC = () => {
                 }),
                 ...(searchTerm && { search: searchTerm })
             };
-            const response = await getSessions(page, 10, filterParams);
+            const response = await sessionApi.getSessions(page, 10, filterParams);
             if (response.status) {
                 // Sort sessions by time-based priority
                 const sortedSessions = sortSessionsByTime(response.sessions);

@@ -7,8 +7,8 @@ import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, Award, CheckCircle,
 import { ICourse, ICategory } from '@/types/courseTypes';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
-import { handlePurchase } from '@/app/service/user/orderApi';
-import { categoryData, checkEnrolled, getCourseById } from '@/app/service/user/courseApi';
+import orderApi from '@/app/service/user/orderApi';
+import courseApi from '@/app/service/user/courseApi';
 
 const CourseDetailsPage = () => {
     const params = useParams() as { id?: string };
@@ -27,10 +27,10 @@ const CourseDetailsPage = () => {
             if (!params?.id) return;
             try {
                 setLoading(true);
-                const courseRes = await getCourseById(params.id);
-                const categoriesRes = await categoryData();
+                const courseRes = await courseApi.getCourseById(params.id);
+                const categoriesRes = await courseApi.categoryData();
                 if (user) {
-                    const enrollmentRes = await checkEnrolled(params.id);
+                    const enrollmentRes = await courseApi.checkEnrolled(params.id);
                     if (enrollmentRes.status) {
                         setIsEnrolled(enrollmentRes.isEnrolled);
                     } else {
@@ -54,7 +54,7 @@ const CourseDetailsPage = () => {
             return;
         }
         if (user) {
-            handlePurchase(course)
+            orderApi.handlePurchase(course)
         } else {
             router.push('/login')
             toast.error("Login to buy course")

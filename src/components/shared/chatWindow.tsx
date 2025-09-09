@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Send, Image as ImageIcon, Trash2, CheckSquare, User } from 'lucide-react';
 import { UserMinimal } from '@/types/types';
-import { getMessages as fetchMessagesFromAPI, sendMessage, deleteMessages, markMessagesAsRead } from '@/app/service/shared/chatApi';
+import chatApi from '@/app/service/shared/chatApi';
 import useConversation from '@/store/conversationStore';
 import useListenMessages from '@/app/hooks/messageHook';
 import useListenDeleteMessages from '@/app/hooks/deletedHook';
@@ -167,7 +167,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                 receiverId: selectedUser._id,
                 message: newMessage || (imageUrl ? '[Image]' : ''),
             });
-            const response = await sendMessage(selectedUser._id, newMessage, role, imageUrl);
+            const response = await chatApi.sendMessage(selectedUser._id, newMessage, role, imageUrl);
             if (response?.success) {
                 const tempMessage: Message = {
                     _id: response.data?._id || Date.now().toString(),
@@ -202,7 +202,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
         if (selectedMessageIds.length === 0 || !selectedUser) return;
         try {
             setIsLoading(true);
-            const response = await deleteMessages(selectedUser._id, selectedMessageIds);
+            const response = await chatApi.deleteMessages(selectedUser._id, selectedMessageIds);
             if (response?.success) {
                 setSelectedMessageIds([]);
                 setIsSelecting(false);
@@ -225,10 +225,10 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
         if (!selectedUser) return;
         try {
             setIsLoading(true);
-            const response = await fetchMessagesFromAPI(selectedUser._id);
+            const response = await chatApi.getMessages(selectedUser._id);
             if (response.success && Array.isArray(response.data)) {
                 setMessages(selectedUser._id, response.data);
-                await markMessagesAsRead(selectedUser._id);
+                await chatApi.markMessagesAsRead(selectedUser._id);
                 resetUnreadCount(selectedUser._id);
             }
         } catch (error) {

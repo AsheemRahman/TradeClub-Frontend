@@ -7,10 +7,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { Calendar, Bell, Clock, MessageSquare, Settings, Users, BookOpen, ChevronUp, ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
-import { getExpertData } from '@/app/service/expert/expertApi';
+import expertApi from '@/app/service/expert/expertApi';
 import { IExpert, IExpertVerification } from '@/types/expertTypes';
 import { Button } from '@/components/ui/Button';
-import { getDashboardStats, getSessionAnalytics } from '@/app/service/expert/sessionApi';
+import sessionApi from '@/app/service/expert/sessionApi';
 import { IDashboardStats, ISessionData } from '@/types/sessionTypes';
 
 const ExpertDashboard = () => {
@@ -35,7 +35,7 @@ const ExpertDashboard = () => {
         try {
             setIsLoading(true);
             setError(null);
-            const expertData = await getExpertData();
+            const expertData = await expertApi.getExpertData();
             if (expertData?.status && expertData?.expertDetails) {
                 setExpert(expertData.expertDetails);
             } else {
@@ -57,8 +57,8 @@ const ExpertDashboard = () => {
     const loadDashboardData = useCallback(async () => {
         try {
             const [statsRes, analyticsRes] = await Promise.all([
-                getDashboardStats(),
-                getSessionAnalytics(analyticsPeriod),
+                sessionApi.getDashboardStats(),
+                sessionApi.getSessionAnalytics(analyticsPeriod),
             ]);
             setDashboardStats(statsRes.stats);
             setSessionData(analyticsRes.analytics);

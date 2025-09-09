@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Check, Eye, EyeOff, Loader2, Package } from 'lucide-react';
 import { ISubscriptionFormData, ISubscriptionPlan } from '@/types/subscriptionTypes';
 import SubscriptionPlanModal from '@/components/admin/SubscriptionPlanModal';
-import { fetchPlans, createPlan, updatePlan, deletePlan, planStatus } from '@/app/service/admin/subscriptionApi';
+import subscriptionApi from '@/app/service/admin/subscriptionApi';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 
@@ -23,7 +23,7 @@ const SubscriptionManagement: React.FC = () => {
     const loadPlans = async (): Promise<void> => {
         try {
             setLoading(true);
-            const response = await fetchPlans();
+            const response = await subscriptionApi.fetchPlans();
             if (response?.status && response?.planData) {
                 setPlans(response.planData);
             }
@@ -49,13 +49,13 @@ const SubscriptionManagement: React.FC = () => {
             setActionLoading('submit');
             if (editingPlan) {
                 // Update existing plan
-                const response = await updatePlan(editingPlan._id, formData);
+                const response = await subscriptionApi.updatePlan(editingPlan._id, formData);
                 if (response?.status) {
                     toast.success("Update plan Successfully")
                     await loadPlans();
                 }
             } else {
-                const response = await createPlan(formData);
+                const response = await subscriptionApi.createPlan(formData);
                 if (response?.status) {
                     toast.success("Create plan Successfully")
                     await loadPlans();
@@ -89,7 +89,7 @@ const SubscriptionManagement: React.FC = () => {
         if (result.isConfirmed) {
             try {
                 setActionLoading(planId);
-                const response = await deletePlan(planId);
+                const response = await subscriptionApi.deletePlan(planId);
                 if (response.status) {
                     toast.success('Plan deleted successfully');
                     await loadPlans();
@@ -116,7 +116,7 @@ const SubscriptionManagement: React.FC = () => {
         if (result.isConfirmed) {
             try {
                 setActionLoading(`status-${planId}`);
-                const response = await planStatus(planId);
+                const response = await subscriptionApi.planStatus(planId);
                 if (response?.status) {
                     toast.success('Plan Toogle successfully');
                     await loadPlans();

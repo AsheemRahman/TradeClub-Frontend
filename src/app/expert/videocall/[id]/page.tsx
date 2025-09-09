@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSocketContext } from '@/context/socketContext';
 import { useExpertStore } from '@/store/expertStore';
 import { toast } from 'react-toastify';
-import { getSessionDetails, updateSessionStatus } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import { debounce } from 'lodash';
 import VideoCallInterface from '@/components/shared/VideoCall/videoCallInterface';
 
@@ -69,7 +69,7 @@ const TutorVideoChat = () => {
 
         const fetchSessionDetails = async () => {
             try {
-                const response = await getSessionDetails(stableSessionId);
+                const response = await userApi.getSessionDetails(stableSessionId);
                 if (response.status) {
                     const session = response.session;
 
@@ -94,7 +94,7 @@ const TutorVideoChat = () => {
                     }
 
                     if (session.status === 'scheduled' && now >= startTime) {
-                        await updateSessionStatus(session._id, 'active');
+                        await userApi.updateSessionStatus(session._id, 'active');
                         session.status = 'active';
                     }
 

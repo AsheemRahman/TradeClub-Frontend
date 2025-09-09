@@ -10,7 +10,7 @@ import HeaderCard from '@/components/expert/HeaderCard';
 import { Calendar } from 'lucide-react';
 
 const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-import { addSlot, deleteSlot, editSlot, slotAvailability } from '@/app/service/expert/sessionApi';
+import sessionApi from '@/app/service/expert/sessionApi';
 
 
 const ExpertScheduleManager = () => {
@@ -23,7 +23,7 @@ const ExpertScheduleManager = () => {
 
     const fetchSlots = useCallback(async () => {
         try {
-            const data = await slotAvailability();
+            const data = await sessionApi.slotAvailability();
             const slots = data.slots || [];
             setAvailableSlots(slots);
             return slots;
@@ -159,16 +159,16 @@ const ExpertScheduleManager = () => {
             // Add new slots
             for (const slot of newSlots) {
                 const { ...slotData } = slot;
-                apiPromises.push(addSlot(slotData));
+                apiPromises.push(sessionApi.addSlot(slotData));
             }
             // Edit existing slots
             for (const slot of editedSlots) {
-                apiPromises.push(editSlot(slot));
+                apiPromises.push(sessionApi.editSlot(slot));
             }
             // Delete slots
             for (const slot of deletedSlots) {
                 if (slot._id) {
-                    apiPromises.push(deleteSlot(slot._id));
+                    apiPromises.push(sessionApi.deleteSlot(slot._id));
                 }
             }
             await Promise.all(apiPromises);

@@ -15,7 +15,7 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const verifyOtp = async (otp: number, email: string) => {
+const verifyOtp = async (otp: number, email: string) => {
     try {
         const response = await axiosInstance.post(`${USER}/verify-otp`, { otp, email });
         return response.data;
@@ -24,7 +24,7 @@ export const verifyOtp = async (otp: number, email: string) => {
     }
 };
 
-export const resendOtp = async (email: string) => {
+const resendOtp = async (email: string) => {
     try {
         const response = await axiosInstance.post(`${USER}/resend-otp`, { email })
         return response.data;
@@ -33,7 +33,7 @@ export const resendOtp = async (email: string) => {
     }
 };
 
-export const getUserProfile = async () => {
+const getUserProfile = async () => {
     try {
         const profile = await axiosInstance.get(`${USER}/get-profile`);
         return profile.data;
@@ -42,7 +42,7 @@ export const getUserProfile = async () => {
     }
 };
 
-export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
+const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     try {
         const updateProfile = await axiosInstance.post(`${USER}/update-profile`, updatedPayload);
         return updateProfile.data;
@@ -51,7 +51,7 @@ export const updateProfile = async (updatedPayload: UpdateProfilePayload) => {
     }
 };
 
-export const SubscriptionData = async () => {
+const SubscriptionData = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/fetch-plans`,);
         return response.data;
@@ -60,7 +60,7 @@ export const SubscriptionData = async () => {
     }
 };
 
-export const getAllExpert = async () => {
+const getAllExpert = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/experts`,);
         return response.data;
@@ -69,7 +69,7 @@ export const getAllExpert = async () => {
     }
 };
 
-export const getExpertById = async (expertId: string) => {
+const getExpertById = async (expertId: string) => {
     try {
         const response = await axiosInstance.get(`${USER}/expert/${expertId}`,);
         return response.data;
@@ -78,7 +78,7 @@ export const getExpertById = async (expertId: string) => {
     }
 };
 
-export const getExpertAvailability = async (expertId: string, startDate: Date, endDate: Date) => {
+const getExpertAvailability = async (expertId: string, startDate: Date, endDate: Date) => {
     try {
         const response = await axiosInstance.get(`${USER}/expert/${expertId}/availability?startDate=${startDate.toISOString().split('T')[0]}&endDate=${endDate.toISOString().split('T')[0]}`);
         return response.data;
@@ -87,7 +87,7 @@ export const getExpertAvailability = async (expertId: string, startDate: Date, e
     }
 };
 
-export const checkSubscription = async () => {
+const checkSubscription = async () => {
     try {
         const response = await axiosInstance.get(`${USER}/check-subscription`);
         return response.data;
@@ -104,7 +104,7 @@ interface ISessions {
     status?: SessionStatus;
 }
 
-export const getSessions = async (params: ISessions) => {
+const getSessions = async (params: ISessions) => {
     try {
         const response = await axiosInstance.get(`${USER}/sessions`, { params });
         return response.data;
@@ -113,7 +113,7 @@ export const getSessions = async (params: ISessions) => {
     }
 };
 
-export const getSessionDetails = async (id: string) => {
+const getSessionDetails = async (id: string) => {
     try {
         const response = await axiosInstance.get(`${USER}/session/${id}`);
         return response.data;
@@ -122,7 +122,7 @@ export const getSessionDetails = async (id: string) => {
     }
 };
 
-export const updateSessionStatus = async (id: string, status: string) => {
+const updateSessionStatus = async (id: string, status: string) => {
     try {
         const response = await axiosInstance.put(`${USER}/update-session/${id}`, status);
         return response.data;
@@ -130,3 +130,20 @@ export const updateSessionStatus = async (id: string, status: string) => {
         handleAxiosError(error);
     }
 };
+
+const userApi = {
+    verifyOtp,
+    resendOtp,
+    getUserProfile,
+    updateProfile,
+    SubscriptionData,
+    getAllExpert,
+    getExpertById,
+    getExpertAvailability,
+    checkSubscription,
+    getSessions,
+    getSessionDetails,
+    updateSessionStatus,
+};
+
+export default userApi;

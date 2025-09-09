@@ -8,7 +8,7 @@ import { useState, FormEvent } from 'react';
 import { loginType } from '@/types/types';
 import { toast } from 'react-toastify';
 
-import { loginPost } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 
 
 const AdminLogin: React.FC = () => {
@@ -26,7 +26,7 @@ const AdminLogin: React.FC = () => {
         e.preventDefault();
         setIsLoading(true);
         try {
-            const response = await loginPost(formData);
+            const response = await adminApi.loginPost(formData);
             if (response.success) {
                 toast.success(response.message);
                 router.replace('/admin/dashboard');

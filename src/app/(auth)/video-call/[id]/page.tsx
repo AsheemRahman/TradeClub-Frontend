@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSocketContext } from '@/context/socketContext';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
-import { getSessionDetails, updateSessionStatus } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import VideoCallInterface from '@/components/shared/VideoCall/videoCallInterface';
 
 export interface ISession {
@@ -43,7 +43,7 @@ const StudentVideoChat = () => {
         const fetchSessionDetails = async () => {
             try {
                 setIsLoading(true);
-                const response = await getSessionDetails(sessionId);
+                const response = await userApi.getSessionDetails(sessionId);
 
                 if (response.status) {
                     const session = response.session;
@@ -69,7 +69,7 @@ const StudentVideoChat = () => {
                     }
 
                     if (session.status === 'scheduled' && now >= startTime) {
-                        await updateSessionStatus(session._id, 'active');
+                        await userApi.updateSessionStatus(session._id, 'active');
                         session.status = 'active';
                     }
 

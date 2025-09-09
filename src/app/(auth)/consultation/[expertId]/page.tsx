@@ -7,8 +7,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User, Users } from 'lucide-react';
 import { BookingDetails, DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
 
-import { getExpertAvailability, getExpertById, getUserProfile } from '@/app/service/user/userApi';
-import { slotBooking } from '@/app/service/user/orderApi';
+import userApi from '@/app/service/user/userApi';
+import orderApi from '@/app/service/user/orderApi';
 
 import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
@@ -42,7 +42,7 @@ const BookingPage = () => {
         if (bookingFor === 'self') {
             try {
                 setLoadingUser(true);
-                const response = await getUserProfile();
+                const response = await userApi.getUserProfile();
                 if (response.status && response.userDetails) {
                     setUserProfile(response.userDetails);
                     setValue('name', response.userDetails.fullName);
@@ -83,7 +83,7 @@ const BookingPage = () => {
             startDate.setDate(today.getDate() + (currentWeek * 7));
             const endDate = new Date(startDate);
             endDate.setDate(startDate.getDate() + 7);
-            const response = await getExpertAvailability(expertId, startDate, endDate);
+            const response = await userApi.getExpertAvailability(expertId, startDate, endDate);
             if (!response.status) throw new Error('Failed to fetch availability');
             setAvailability(response.availability);
         } catch (error) {
@@ -99,7 +99,7 @@ const BookingPage = () => {
         const fetchExpertData = async () => {
             try {
                 setLoading(true);
-                const expertResponse = await getExpertById(expertId);
+                const expertResponse = await userApi.getExpertById(expertId);
                 if (!expertResponse.status) throw new Error('Expert not found');
                 setExpert(expertResponse.expert);
                 await fetchAvailability();
@@ -199,7 +199,7 @@ const BookingPage = () => {
                 clientDetails: data,
                 bookingFor: bookingFor,
             };
-            const response = await slotBooking(bookingData);
+            const response = await orderApi.slotBooking(bookingData);
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }

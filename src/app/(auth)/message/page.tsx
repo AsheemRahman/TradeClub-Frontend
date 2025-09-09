@@ -6,7 +6,7 @@ import ChatWindow from '@/components/shared/chatWindow';
 import { UserMinimal } from '@/types/types';
 import { useAuthStore } from '@/store/authStore';
 import { useSearchParams } from 'next/navigation';
-import { getExpertById } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 
 
 const Chat = () => {
@@ -21,7 +21,7 @@ const Chat = () => {
         if (expertId) {
             const fetchExpert = async () => {
                 try {
-                    const expertResponse = await getExpertById(expertId);
+                    const expertResponse = await userApi.getExpertById(expertId);
                     if (!expertResponse.status) throw new Error('Expert not found');
                     setSelectedUser(expertResponse.expert);
                 } catch (error) {
