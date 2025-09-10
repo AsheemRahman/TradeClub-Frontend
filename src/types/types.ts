@@ -92,6 +92,7 @@ export type UserMinimal = {
     role: "User" | "Expert";
     lastMessage?: string;
     unreadCount?: number;
+    lastSeen?: string | Date;
     updatedAt: string;
 };
 
@@ -103,6 +104,7 @@ export interface Message {
     receiverId: string;
     imageUrl?: string;
     isDeleted?: boolean;
+    isRead?: boolean;
 }
 
 export interface SessionData {

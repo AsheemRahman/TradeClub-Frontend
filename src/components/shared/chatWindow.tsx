@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Send, Image as ImageIcon, Trash2, CheckSquare, User } from 'lucide-react';
 import { UserMinimal } from '@/types/types';
@@ -6,11 +7,7 @@ import useConversation from '@/store/conversationStore';
 import useListenMessages from '@/app/hooks/messageHook';
 import useListenDeleteMessages from '@/app/hooks/deletedHook';
 import { useSocketContext } from '@/context/socketContext';
-import Image from 'next/image';
-
-interface ExtendedUserMinimal extends UserMinimal {
-    isOnline?: boolean;
-}
+import { toast } from 'react-toastify';
 
 interface Message {
     _id: string;
@@ -25,7 +22,7 @@ interface Message {
 
 interface ChatWindowProps {
     role: string;
-    selectedUser: ExtendedUserMinimal | null;
+    selectedUser: UserMinimal | null;
     currentUserId: string;
 }
 
@@ -41,6 +38,8 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
     const [isSelecting, setIsSelecting] = useState(false);
     const [visibleChars, setVisibleChars] = useState<{ [key: string]: number }>({});
     const { onlineUser = [] } = useSocketContext() || {};
+    const [isTyping, setIsTyping] = useState(false);
+    const { socket } = useSocketContext() || {};
     const MAX_MESSAGE_LENGTH = 3000;
     const INITIAL_CHARS = 1000;
     const CHARS_INCREMENT = 1000;
@@ -49,13 +48,45 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
     // eslint-disable-next-line react-hooks/exhaustive-deps
     const messages = conversationId ? getMessages(conversationId) : [];
 
-
     const inputRef = useRef<HTMLInputElement>(null);
     const messageContainerRef = useRef<HTMLDivElement>(null);
     const lastMessageCountRef = useRef(messages.length);
 
     useListenMessages();
     useListenDeleteMessages();
+
+    // Listen for typing events
+    useEffect(() => {
+        if (!socket || !selectedUser?._id) return;
+        const handleTypingEvent = ({ from }: { from: string }) => {
+            if (from === selectedUser._id) setIsTyping(true);
+        };
+        const handleStopTypingEvent = ({ from }: { from: string }) => {
+            if (from === selectedUser._id) setIsTyping(false);
+        };
+        socket.on("typing", handleTypingEvent);
+        socket.on("stop_typing", handleStopTypingEvent);
+        return () => {
+            socket.off("typing", handleTypingEvent);
+            socket.off("stop_typing", handleStopTypingEvent);
+        };
+    }, [socket, selectedUser]);
+
+    // Emit typing when user types
+    const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const handleTyping = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setNewMessage(value);
+        if (socket && selectedUser?._id) {
+            socket.emit("typing", { from: currentUserId, to: selectedUser._id });
+            if (typingTimeoutRef.current) {
+                clearTimeout(typingTimeoutRef.current);
+            }
+            typingTimeoutRef.current = setTimeout(() => {
+                socket.emit("stop_typing", { from: currentUserId, to: selectedUser._id });
+            }, 2000);
+        }
+    };
 
     const truncateMessage = (message: string, messageId: string) => {
         const totalLength = message.length;
@@ -146,7 +177,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
     const handlesendMessage = async () => {
         if ((!newMessage.trim() && !selectedImage) || !selectedUser) return;
         if (newMessage.length > MAX_MESSAGE_LENGTH) {
-            alert(`Message exceeds the maximum length of ${MAX_MESSAGE_LENGTH} characters.`);
+            toast.error(`Message exceeds the maximum length of ${MAX_MESSAGE_LENGTH} characters.`);
             return;
         }
 
@@ -157,7 +188,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                 const formData = new FormData();
                 formData.append('file', selectedImage);
                 formData.append('upload_preset', 'Chat_images');
-                const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${CloudName}/image/upload`,{ method: 'POST', body: formData,});
+                const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${CloudName}/image/upload`, { method: 'POST', body: formData, });
                 const uploadData = await uploadResponse.json();
                 if (!uploadData.secure_url) throw new Error('Image upload failed');
                 imageUrl = uploadData.secure_url;
@@ -183,6 +214,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                 setNewMessage('');
                 setSelectedImage(null);
                 setImagePreview(null);
+                socket?.emit("stop_typing", { from: currentUserId, to: selectedUser._id });
                 await handleGetMessages();
                 if (inputRef.current) {
                     inputRef.current.focus();
@@ -229,6 +261,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
             if (response.success && Array.isArray(response.data)) {
                 setMessages(selectedUser._id, response.data);
                 await chatApi.markMessagesAsRead(selectedUser._id);
+                socket?.emit("message_read", { from: currentUserId, to: selectedUser._id });
                 resetUnreadCount(selectedUser._id);
             }
         } catch (error) {
@@ -236,7 +269,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
         } finally {
             setIsLoading(false);
         }
-    }, [selectedUser, setMessages, resetUnreadCount]);
+    }, [selectedUser, setMessages, resetUnreadCount, currentUserId, socket]);
 
     const formatTime = (timestamp: string) => {
         try {
@@ -290,6 +323,16 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
         );
     }
 
+
+    const formatLastSeen = (lastSeen?: string | Date) => {
+        if (!lastSeen) return "a while ago";
+        const diff = Date.now() - new Date(lastSeen).getTime();
+        if (diff < 60000) return "just now";
+        if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)} hr ago`;
+        return new Date(lastSeen).toLocaleDateString();
+    };
+
     return (
         <div className="flex-1 flex flex-col h-full bg-white">
             <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
@@ -303,15 +346,21 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                     )}
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900">{selectedUser.fullName}</h3>
-                        <p className={`text-sm ${isUserOnline(selectedUser._id) ? 'text-green-500' : 'text-gray-500'}`}>
-                            {isUserOnline(selectedUser._id) ? 'Online' : 'Offline'}
+                        <p className="text-sm">
+                            {isTyping ? (
+                                <span className="text-green-500">Typing...</span>
+                            ) : isUserOnline(selectedUser._id) ? (
+                                <span className="text-green-500">Online</span>
+                            ) : (
+                                <span className="text-gray-500">Last seen {formatLastSeen(selectedUser.lastSeen)}</span>
+                            )}
                         </p>
                     </div>
                 </div>
                 <div className="flex items-center space-x-2">
                     {isSelecting ? (
                         <>
-                            <button  onClick={handleDeleteMessages} disabled={isLoading || selectedMessageIds.length === 0} title="Delete selected messages"
+                            <button onClick={handleDeleteMessages} disabled={isLoading || selectedMessageIds.length === 0} title="Delete selected messages"
                                 className="p-2 bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                             >
                                 <Trash2 className="w-5 h-5" />
@@ -319,7 +368,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                                     <span className="ml-2 text-sm">{selectedMessageIds.length}</span>
                                 )}
                             </button>
-                            <button onClick={() => { setIsSelecting(false); setSelectedMessageIds([]);}}
+                            <button onClick={() => { setIsSelecting(false); setSelectedMessageIds([]); }}
                                 className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg shadow-md hover:bg-gray-300 transition-colors duration-200"
                             >
                                 Cancel
@@ -333,7 +382,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                 </div>
             </div>
 
-            <div  id="message-container" ref={messageContainerRef}  className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-50" >
+            <div id="message-container" ref={messageContainerRef} className="flex-1 overflow-y-auto px-6 py-4 space-y-4 bg-gray-50" >
                 {isLoading && messages.length === 0 ? (
                     <div className="flex justify-center py-4">
                         <p className="text-gray-500">Loading messages...</p>
@@ -344,16 +393,17 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                     </div>
                 ) : (
                     messages.map((message) => {
-                        const isReceivedMessage = message.receiverId === currentUserId;
+                        // const isReceivedMessage = message.receiverId === currentUserId;
+                        const isReceivedMessage = message.senderId !== currentUserId;
                         const isDeleted = message.isDeleted || false;
                         const { truncated, needsReadMore, isFullyVisible } = truncateMessage(message.message, message._id);
 
                         return (
                             <div key={message._id} id={`message-${message._id}`} className={`flex ${isReceivedMessage ? 'justify-start' : 'justify-end'} items-center`}>
                                 {isSelecting && !isDeleted && message.senderId === currentUserId && (
-                                    <input  type="checkbox" checked={selectedMessageIds.includes(message._id)}  onChange={() => handleSelectMessage(message._id)}  className="mr-2"/>
+                                    <input type="checkbox" checked={selectedMessageIds.includes(message._id)} onChange={() => handleSelectMessage(message._id)} className="mr-2" />
                                 )}
-                                <div  className={`max-w-[70%] rounded-2xl px-4 py-2 ${isReceivedMessage ? 'bg-white border border-gray-200' : 'bg-indigo-600 text-white' } ${isDeleted ? 'opacity-50' : ''}`}
+                                <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${isReceivedMessage ? 'bg-white border border-gray-200' : 'bg-indigo-600 text-white'} ${isDeleted ? 'opacity-50' : ''}`}
                                     style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}
                                 >
                                     {isDeleted ? (
@@ -383,6 +433,11 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                                                 <p className={`text-xs mt-1 ${isReceivedMessage ? 'text-gray-500' : 'text-indigo-200'}`}>
                                                     {formatTime(message.createdAt)}
                                                 </p>
+                                                {message.senderId === currentUserId && !message.isDeleted && (
+                                                    <span className="ml-2 text-xs">
+                                                        {message.isRead ? "✓✓ Seen" : "✓✓ Delivered"}
+                                                    </span>
+                                                )}
                                             </div>
                                         </>
                                     )}
@@ -409,11 +464,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                     </label>
                     <div className="flex-1 relative">
                         <input ref={inputRef} type="text" value={newMessage}
-                            onChange={(e) => {
-                                if (e.target.value.length <= MAX_MESSAGE_LENGTH) {
-                                    setNewMessage(e.target.value);
-                                }
-                            }}
+                            onChange={handleTyping}
                             onKeyPress={(e) => e.key === 'Enter' && handlesendMessage()}
                             placeholder="Type your message..."
                             className="w-full px-4 py-2 border text-gray-700 border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -423,7 +474,7 @@ const ChatWindow: React.FC<ChatWindowProps> = ({ role, selectedUser, currentUser
                             {newMessage.length}/{MAX_MESSAGE_LENGTH} characters
                         </p>
                     </div>
-                    <button className={`p-2 bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center relative ${isLoading ? 'opacity-75 cursor-not-allowed' : '' }`}
+                    <button className={`p-2 bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 transition-colors duration-200 flex items-center justify-center relative ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
                         onClick={handlesendMessage} disabled={isLoading}
                     >
                         {isLoading && (
