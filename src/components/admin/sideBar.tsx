@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import adminApi from '@/app/service/admin/adminApi';
 
-import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen } from 'react-icons/fa';
+import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen, FaMoneyCheckAlt } from 'react-icons/fa';
 import { Crown } from 'lucide-react';
 
 
@@ -14,6 +14,7 @@ const menuItems = [
     { label: 'Course', icon: <FaGraduationCap />, href: '/admin/course' },
     { label: 'Subscription Plan', icon: <FaMoneyBillWave />, href: '/admin/subscription' },
     { label: 'Purchases', icon: <FaShoppingCart />, href: '/admin/purchases' },
+    { label: 'Payout', icon: <FaMoneyCheckAlt />, href: '/admin/payout' },
     { label: 'Coupons', icon: <FaTicketAlt />, href: '/admin/coupon' },
     { label: 'Logout', icon: <FaSignOutAlt /> },
 ];
@@ -56,7 +57,7 @@ export default function Sidebar() {
                             const isActive = pathname === item.href;
                             if (item.href) {
                                 return (
-                                    <Link key={item.label} href={item.href}>
+                                    <Link key={item.label} href={item.href} className='gap-10'>
                                         <div className={`w-full flex items-center gap-4 px-5 py-4 rounded-xl cursor-pointer transition-all duration-300 group relative overflow-hidden
                                             ${isActive ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold shadow-lg shadow-orange-500/25' : 'hover:bg-purple-900/30 text-gray-300 hover:text-white'}`}
                                         >

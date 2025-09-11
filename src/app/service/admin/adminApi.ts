@@ -178,6 +178,15 @@ const getRevenue = async () => {
     }
 };
 
+const payouts = async () => {
+    try {
+        const response = await adminAxiosInstance.post(`${ADMIN}/payouts/run-payouts`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 const adminApi = {
     loginPost,
     adminLogout,
@@ -197,6 +206,7 @@ const adminApi = {
     getUser,
     getItem,
     getRevenue,
+    payouts
 };
 
 export default adminApi;
