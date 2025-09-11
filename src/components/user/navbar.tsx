@@ -4,6 +4,7 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { Irish_Grover } from 'next/font/google';
 import { useAuthStore } from '@/store/authStore';
+import NotificationBell from "@/components/user/NotificationBell";
 
 const irishGrover = Irish_Grover({
     weight: '400',
@@ -65,9 +66,12 @@ export default function Navbar() {
                                 </Link>
                             </>
                         ) : (
-                            <Link href="/profile" className="px-6 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] transition-colors font-medium">
-                                Profile
-                            </Link>
+                            <>
+                                <NotificationBell />
+                                <Link href="/profile" className="px-6 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] transition-colors font-medium">
+                                    Profile
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>
@@ -98,9 +102,12 @@ export default function Navbar() {
                                 </Link>
                             </>
                         ) : (
-                            <Link href="/profile" className="px-6 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] transition-colors font-medium text-center">
-                                Profile
-                            </Link>
+                            <>
+                                <NotificationBell />
+                                <Link href="/profile" className="px-6 py-2 rounded-md bg-transparent border-2 border-orange-500 text-white hover:bg-[#E54B00] transition-colors font-medium text-center">
+                                    Profile
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>
