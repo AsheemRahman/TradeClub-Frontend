@@ -181,7 +181,7 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
         }
     }, []); // Empty dependencies since checkDevices is stable
 
-    const endCall = () => {
+    const endCall = useCallback(() => {
         console.log("Call ended. Triggered by:", new Error().stack);
         console.log("Ending call...");
         setIsConnected(false);
@@ -197,7 +197,7 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
         if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
         peerConnectionRef.current?.close();
         socketRef.current?.emit("end-session", { sessionId });
-    };
+    }, [setIsConnected, sessionId, durationIntervalRef, localStreamRef, remoteVideoRef, localVideoRef, peerConnectionRef, socketRef,]);
 
     const handleEndCallButton = () => {
         endCall();
@@ -286,12 +286,16 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
         socketRef.current.on("session-ended", () => {
             console.log("Session ended event received");
             endCall();
+            toast.info("The other participant ended the call.");
+            setTimeout(() => {
+                router.back();
+            }, 1000);
         });
 
         return () => {
             socketRef.current?.disconnect();
         };
-    }, [sessionId, userId, role]);
+    }, [sessionId, userId, role, endCall, router]);
 
     // 2. WebRTC and Media Setup
     useEffect(() => {
@@ -410,7 +414,7 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
                 endCall();
             }
         };
-    }, [sessionId, userId, role]);
+    }, [sessionId, userId, role, endCall]);
 
     const toggleMute = () => {
         setIsMuted((prev) => !prev);

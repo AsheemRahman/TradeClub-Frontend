@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSocketContext } from '@/context/socketContext';
 import { useExpertStore } from '@/store/expertStore';
@@ -23,7 +23,8 @@ export interface ISession {
     updatedAt: string;
 }
 
-const TutorVideoChat = () => {
+
+const ExpertVideoChat = () => {
     const params = useParams();
     const router = useRouter();
     const { socket } = useSocketContext() || {};
@@ -39,11 +40,11 @@ const TutorVideoChat = () => {
     const { expert } = useExpertStore();
     const sessionId = params?.id as string;
 
-    const stableUser = useMemo(() => expert, [expert?.id]);
+    const stableUser = useMemo(() => expert, [expert]);
     const stableSessionId = useMemo(() => sessionId, [sessionId]);
 
-    const handleSessionUpdate = useCallback(
-        debounce((data) => {
+    const handleSessionUpdate = useMemo(() => {
+        return debounce((data) => {
             if (data.sessionId === stableSessionId) {
                 setSessionState((prev) => ({
                     ...prev,
@@ -54,12 +55,11 @@ const TutorVideoChat = () => {
                     router.push("/expert/appoinments");
                 }
             }
-        }, 100),
-        [stableSessionId, router]
-    );
+        }, 100);
+    }, [stableSessionId, router]);
 
     useEffect(() => {
-        console.log('Socket instance in TutorVideoChat:', socket);
+        console.log('Socket instance in ExpertVideoChat:', socket);
         let isMounted = true;
 
         if (!stableSessionId || !stableUser) {
@@ -113,18 +113,18 @@ const TutorVideoChat = () => {
 
         if (socket) {
             socket.on('session-updated', handleSessionUpdate);
-            socket.on('call-ended', () => {
+            socket.on('end-session', () => {
                 toast.info('Call has been ended by the student');
                 router.push("/expert/appointments");
             });
 
             return () => {
                 socket.off('session-updated', handleSessionUpdate);
-                socket.off('call-ended');
+                socket.off('end-session');
                 isMounted = false;
             };
         }
-    }, [stableSessionId, stableUser, socket, handleSessionUpdate]);
+    }, [stableSessionId, stableUser, socket, handleSessionUpdate, router]);
 
     const { data: sessionData, isLoading, error } = sessionState;
 
@@ -162,4 +162,4 @@ const TutorVideoChat = () => {
     );
 };
 
-export default TutorVideoChat;
+export default ExpertVideoChat;

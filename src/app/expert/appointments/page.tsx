@@ -189,15 +189,6 @@ const ExpertSessionsDashboard: React.FC = () => {
         }
     };
 
-    // Utility functions
-    const formatTime = (dateString: string): string => {
-        return new Date(dateString).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-    };
-
     const formatDate = (dateString: string | Date): string => {
         return new Date(dateString).toLocaleDateString('en-US', {
             weekday: 'short',
@@ -453,7 +444,7 @@ const ExpertSessionsDashboard: React.FC = () => {
                                             <div>
                                                 <div className="text-sm font-medium text-gray-900">{session.userId.fullName}</div>
                                                 <div className="text-sm text-gray-600">
-                                                    {formatTime(session.availabilityId.startTime)} - {formatTime(session.availabilityId.endTime)}
+                                                    {session.availabilityId.startTime} - {session.availabilityId.endTime}
                                                 </div>
                                                 <div className={`text-xs font-medium ${timingStatus.color}`}>
                                                     {timingStatus.label}

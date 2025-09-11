@@ -93,19 +93,19 @@ const StudentVideoChat = () => {
                     setSessionData((prev) => (prev ? { ...prev, status: data.status } : null));
                     if (data.status === 'completed' || data.status === 'cancelled') {
                         toast.info('Session has ended');
-                        router.push(`/profile/${user?.id}`);
+                        router.push(`/profile`);
                     }
                 }
             });
 
-            socket.on('call-ended', () => {
+            socket.on('end-session', () => {
                 toast.info('Call has been ended by the tutor');
-                router.push(`/profile/${user?.id}`);
+                router.push(`/profile`);
             });
 
             return () => {
                 socket.off('session-updated');
-                socket.off('call-ended');
+                socket.off('end-session');
             };
         }
     }, [sessionId, user, socket, router]);
