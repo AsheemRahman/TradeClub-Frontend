@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DollarSign, Users, TrendingUp, Clock, CheckCircle, Calendar, AlertCircle } from "lucide-react";
 import { FaMoneyCheckAlt } from "react-icons/fa";
-import adminApi from "@/app/service/admin/adminApi";
+import payoutApi from "@/app/service/admin/payoutApi";
 
 interface ExpertPayout {
     expertId: string;
@@ -13,38 +13,29 @@ interface ExpertPayout {
 }
 
 export default function PayoutsPage() {
-    const [payouts, setPayouts] = useState<ExpertPayout[]>([
-        // Demo data for better visualization
-        { expertId: "1", name: "Dr. Sarah Johnson", email: "sarah.johnson@example.com", pendingAmount: 15420 },
-        { expertId: "2", name: "Prof. Michael Chen", email: "michael.chen@example.com", pendingAmount: 8750 },
-        { expertId: "3", name: "Dr. Emily Rodriguez", email: "emily.rodriguez@example.com", pendingAmount: 12300 },
-        { expertId: "4", name: "James Wilson", email: "james.wilson@example.com", pendingAmount: 6890 },
-        { expertId: "5", name: "Dr. Priya Sharma", email: "priya.sharma@example.com", pendingAmount: 9560 }
-    ]);
+    const [payouts, setPayouts] = useState<ExpertPayout[]>([]);
     const [loading, setLoading] = useState(false);
     const [processingComplete, setProcessingComplete] = useState(false);
     const [lastPayoutDate, setLastPayoutDate] = useState<string | null>(null);
 
-    // Check if today is the first day of the month
+    //  Check if today is the first day of the month
     const isFirstDayOfMonth = () => {
         const today = new Date();
         return today.getDate() === 1;
     };
 
-    // Check if payouts have been processed this month
+    //  Check if payouts have been processed this month
     const hasPayoutBeenProcessedThisMonth = () => {
         if (!lastPayoutDate) return false;
-
         const today = new Date();
         const lastPayout = new Date(lastPayoutDate);
-
         return lastPayout.getFullYear() === today.getFullYear() &&
             lastPayout.getMonth() === today.getMonth();
     };
 
-    // Determine if payout button should be shown
+    //  Determine if payout button should be shown
     const shouldShowPayoutButton = () => {
-        return  !hasPayoutBeenProcessedThisMonth() && payouts.length > 0;
+        return !hasPayoutBeenProcessedThisMonth() && payouts.length > 0;
     };
 
     const getCurrentMonthYear = () => {
@@ -58,52 +49,51 @@ export default function PayoutsPage() {
         return nextMonth.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
     };
 
+    //  Fetch data on mount
     useEffect(() => {
-        // Load last payout date from storage or API
-        const storedLastPayoutDate = localStorage.getItem('lastPayoutDate');
-        if (storedLastPayoutDate) {
-            setLastPayoutDate(storedLastPayoutDate);
-        }
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                // fetch pending payouts
+                const payoutsResponse = await payoutApi.getPendingPayouts();
+                setPayouts(payoutsResponse.data || []);
+                // fetch last payout date
+                const dateResponse = await payoutApi.getLastPayoutDate();
+                if (dateResponse?.data?.lastPayoutDate) {
+                    setLastPayoutDate(dateResponse.data.lastPayoutDate);
+                }
+            } catch (err) {
+                console.error("Error fetching payout data:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        // Uncomment for real API call
-        // fetch("/api/admin/payouts/pending")
-        //     .then(res => res.json())
-        //     .then(data => setPayouts(data));
-
-        // fetch("/api/admin/payouts/last-payout-date")
-        //     .then(res => res.json())
-        //     .then(data => setLastPayoutDate(data.lastPayoutDate));
+        fetchData();
     }, []);
 
     const totalPending = payouts.reduce((sum, payout) => sum + payout.pendingAmount, 0);
     const expertsCount = payouts.length;
 
+    //  Run payouts
     const handleRunPayouts = async () => {
         setLoading(true);
         setProcessingComplete(false);
-
-        // Simulate API call
-        setTimeout(() => {
-            setLoading(false);
+        try {
+            await payoutApi.payouts(); // run payouts API
             setProcessingComplete(true);
-
-            // Update last payout date
-            const today = new Date().toISOString();
-            setLastPayoutDate(today);
-            localStorage.setItem('lastPayoutDate', today);
-
-            // Clear payouts after processing
-            setTimeout(() => {
-                setPayouts([]);
-                setProcessingComplete(false);
-            }, 3000);
-        }, 2000);
-
-        // real API call
-        // await fetch("http:localhost:8080/api/admin/payouts/run-payouts", { method: "POST" });
-        await adminApi.payouts()
-        setLoading(false);
-        window.location.reload();
+            // refresh payouts
+            const payoutsResponse = await payoutApi.getPendingPayouts();
+            setPayouts(payoutsResponse.data || []);
+            const dateResponse = await payoutApi.getLastPayoutDate();
+            if (dateResponse?.data?.lastPayoutDate) {
+                setLastPayoutDate(dateResponse.data.lastPayoutDate);
+            }
+        } catch (err) {
+            console.error("Error running payouts:", err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
