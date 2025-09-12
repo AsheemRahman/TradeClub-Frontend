@@ -2,6 +2,7 @@ import axios from "axios";
 import { toast } from 'react-toastify'
 import axiosInstance from "../shared/AxiosInstance";
 import { AvailabilitySlot, ISessionFilters } from "@/types/sessionTypes";
+import { EXPERT } from "@/lib/constants";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -14,65 +15,77 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const slotAvailability = async () => {
+const slotAvailability = async () => {
     try {
-        const response = await axiosInstance.get(`/expert/slots`);
+        const response = await axiosInstance.get(`${EXPERT}/slots`);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const addSlot = async (updatedSlots: AvailabilitySlot) => {
+const addSlot = async (updatedSlots: AvailabilitySlot) => {
     try {
-        const response = await axiosInstance.post(`/expert/add-slot`, updatedSlots);
+        const response = await axiosInstance.post(`${EXPERT}/add-slot`, updatedSlots);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const editSlot = async (editedSlots: AvailabilitySlot) => {
+const editSlot = async (editedSlots: AvailabilitySlot) => {
     try {
-        const response = await axiosInstance.patch(`/expert/edit-slot`, editedSlots);
+        const response = await axiosInstance.patch(`${EXPERT}/edit-slot`, editedSlots);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const deleteSlot = async (id: string) => {
+const deleteSlot = async (id: string) => {
     try {
-        const response = await axiosInstance.delete(`/expert/delete-slot/${id}`,);
+        const response = await axiosInstance.delete(`${EXPERT}/delete-slot/${id}`,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const getDashboardStats = async () => {
+const getDashboardStats = async () => {
     try {
-        const response = await axiosInstance.get(`/expert/dashboard/stats`,);
+        const response = await axiosInstance.get(`${EXPERT}/dashboard/stats`,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const getSessionAnalytics = async (period: '7d' | '30d' | '90d' = '30d') => {
+const getSessionAnalytics = async (period: '7d' | '30d' | '90d' = '30d') => {
     try {
-        const response = await axiosInstance.get(`/expert/dashboard/analytics?period=${period}`,);
+        const response = await axiosInstance.get(`${EXPERT}/dashboard/analytics?period=${period}`,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const getSessions = async ( page : number, limit : number, filters :ISessionFilters) => {
+const getSessions = async (page: number, limit: number, filters: ISessionFilters) => {
     try {
-        const response = await axiosInstance.get(`/expert/sessions`, { params: { page, limit, ...filters } });
+        const response = await axiosInstance.get(`${EXPERT}/sessions`, { params: { page, limit, ...filters } });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error);
     }
 };
+
+const sessionApi = {
+    slotAvailability,
+    addSlot,
+    editSlot,
+    deleteSlot,
+    getDashboardStats,
+    getSessionAnalytics,
+    getSessions,
+};
+
+export default sessionApi;

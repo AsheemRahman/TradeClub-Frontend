@@ -16,7 +16,7 @@ import UpcomingConsultationsList from '@/components/user/profile/UpcomingConsult
 import SubscriptionCard from '@/components/user/profile/SubscriptionCard';
 import PurchaseHistory from '@/components/user/profile/PurchaseHistory';
 
-import { checkSubscription, getUserProfile, resendOtp, updateProfile, verifyOtp } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import { UpdateProfilePayload } from '@/types/types';
 import { logoutApi } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
@@ -39,7 +39,7 @@ const UserProfile = () => {
     const authStore = useAuthStore();
 
     const getProfileData = async () => {
-        const userData = await getUserProfile();
+        const userData = await userApi.getUserProfile();
         if (userData.status) {
             const transformedData = {
                 id: userData.userDetails._id,
@@ -55,7 +55,7 @@ const UserProfile = () => {
 
     const fetchSubscription = async () => {
         try {
-            const response = await checkSubscription();
+            const response = await userApi.checkSubscription();
             if (response.status && response.subscription) {
                 const { subscriptionPlan, paymentStatus, endDate, callsRemaining } = response.subscription;
                 const isExpired = new Date() > new Date(endDate);
@@ -112,10 +112,10 @@ const UserProfile = () => {
 
     const handleOtp = async () => {
         setOtpState(prev => ({ ...prev, isVerifying: true }));
-        const response = await verifyOtp(+(otpState.otpCode), userData.email)
+        const response = await userApi.verifyOtp(+(otpState.otpCode), userData.email)
         if (response.status) {
             if (pendingUpdate) {
-                const response = await updateProfile(pendingUpdate);
+                const response = await userApi.updateProfile(pendingUpdate);
                 if (response?.status) {
                     toast.success("Profile updated successfully!");
                     setIsEditing(false);
@@ -166,7 +166,7 @@ const UserProfile = () => {
                 otpSent: false,
                 countdown: 0
             }));
-            await resendOtp(userData.email)
+            await userApi.resendOtp(userData.email)
             setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60 }));
             const timer = setInterval(() => {
                 setOtpState(prev => {
@@ -178,7 +178,7 @@ const UserProfile = () => {
                 });
             }, 1000);
         } else {
-            const response = await updateProfile(updatedPayload);
+            const response = await userApi.updateProfile(updatedPayload);
             if (response?.status) {
                 toast.success("Profile updated successfully!");
                 setIsEditing(false);
@@ -191,7 +191,7 @@ const UserProfile = () => {
 
     const handleResendOTP = async () => {
         try {
-            await resendOtp(userData.email)
+            await userApi.resendOtp(userData.email)
             setOtpState(prev => ({ ...prev, otpSent: true, countdown: 60 }));
             const timer = setInterval(() => {
                 setOtpState(prev => {
@@ -202,7 +202,6 @@ const UserProfile = () => {
                     return { ...prev, countdown: prev.countdown - 1 };
                 });
             }, 1000);
-
         } catch (error) {
             console.error("error while resend otp", error)
             toast.error("Failed to resend OTP.");

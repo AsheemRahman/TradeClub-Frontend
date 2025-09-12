@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { Plus, Edit, Trash2, Eye, Search, BookOpen, Users, Loader2, IndianRupee, GraduationCap, } from 'lucide-react';
 
 import { ICourse, ICategory, ICourseFormData, } from '@/types/courseTypes';
-import { deleteCourse, getCategory, getCourse } from '@/app/service/admin/courseApi';
+import courseApi from '@/app/service/admin/courseApi';
 import CourseModal from '@/components/admin/CourseModal';
 
 
@@ -41,7 +41,7 @@ const AdminCoursesPage = () => {
     const fetchData = async (): Promise<void> => {
         try {
             setLoading(true);
-            const [coursesRes, categoriesRes] = await Promise.all([getCourse(), getCategory()]);
+            const [coursesRes, categoriesRes] = await Promise.all([courseApi.getCourse(), courseApi.getCategory()]);
             if (!coursesRes.status || !categoriesRes.status) {
                 throw new Error('Failed to fetch data');
             }
@@ -83,7 +83,7 @@ const AdminCoursesPage = () => {
 
         if (!result.isConfirmed) return;
         try {
-            const response = await deleteCourse(courseId)
+            const response = await courseApi.deleteCourse(courseId)
             if (!response.status) {
                 throw new Error('Failed to delete course');
             }

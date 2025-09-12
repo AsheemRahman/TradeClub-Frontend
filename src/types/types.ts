@@ -84,3 +84,68 @@ export interface IUserProfile {
     email: string;
     phoneNumber?: string;
 }
+
+export type UserMinimal = {
+    _id: string;
+    fullName: string;
+    profilePicture?: string;
+    role: "User" | "Expert";
+    lastMessage?: string;
+    unreadCount?: number;
+    lastSeen?: string | Date;
+    updatedAt: string;
+};
+
+export interface Message {
+    _id: string;
+    message: string;
+    createdAt: string;
+    senderId: string;
+    receiverId: string;
+    imageUrl?: string;
+    isDeleted?: boolean;
+    isRead?: boolean;
+}
+
+export interface SessionData {
+    tutorId: string;
+    studentId: string;
+    startTime: Date;
+    duration: number;
+    roomId: string;
+    status: 'scheduled' | 'active' | 'completed' | 'cancelled';
+}
+
+
+export interface SessionInfo {
+    _id: string
+    studentName?: string;
+    tutorName?: string;
+    startTime: Date;
+    duration: number;
+    status: string;
+    roomId?: string;
+}
+
+
+// export interface NotificationType {
+//     _id: string;
+//     content: string;
+//     createdAt: string;
+//     isRead: boolean;
+//     receiverId: string;
+//     updatedAt: string;
+//     __v: number;
+// }
+
+// export interface review {
+//     courseId: string;
+//     userId: string;
+//     rating: number;
+//     review: string;
+// }
+
+// export interface ReviewEdit {
+//     rating: number;
+//     review: string;
+// }

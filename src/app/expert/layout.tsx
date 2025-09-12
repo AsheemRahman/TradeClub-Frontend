@@ -8,8 +8,13 @@ import { usePathname } from "next/navigation";
 export default function ExpertLayout({ children }: { children: React.ReactNode }) {
 
     const pathname = usePathname();
-    const noSidebarRoutes = ['/expert/login', '/expert/register', '/expert/verification', '/expert/verification-pending', '/expert/verify-otp', '/expert/forgotPassword', '/expert/resetPassword'];
-    const showSidebar = !noSidebarRoutes.includes(pathname);
+    const noSidebarRoutes = ['/expert/login', '/expert/register', '/expert/verification', '/expert/verification-pending', '/expert/verify-otp', '/expert/forgotPassword', '/expert/resetPassword', '/expert/message'];
+    const noSidebarPrefixes = ['/expert/videocall'];
+
+    const showSidebar = !(
+        noSidebarRoutes.includes(pathname) ||
+        noSidebarPrefixes.some(prefix => pathname.startsWith(prefix))
+    );
 
     return (
         <div className="min-h-screen flex flex-col">

@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import { ArrowLeft, Edit, Trash2, Eye, EyeOff, Play, Users, Star, BarChart3, Activity, FileText, Video, Loader2, AlertCircle, IndianRupee, } from 'lucide-react';
 import { ICourse, ICategory, ICourseFormData } from '@/types/courseTypes';
-import { deleteCourse, getCategory, getCourseByID, togglePublish } from '@/app/service/admin/courseApi';
+import courseApi from '@/app/service/admin/courseApi';
 import CourseModal from '@/components/admin/CourseModal';
 
 const AdminCourseDetail = () => {
@@ -41,7 +41,7 @@ const AdminCourseDetail = () => {
     const fetchData = async (): Promise<void> => {
         try {
             setLoading(true);
-            const [courseRes, categoriesRes] = await Promise.all([getCourseByID(courseId), getCategory()]);
+            const [courseRes, categoriesRes] = await Promise.all([courseApi.getCourseByID(courseId), courseApi.getCategory()]);
             if (!courseRes.status || !categoriesRes.status) {
                 throw new Error('Failed to fetch data');
             }
@@ -87,7 +87,7 @@ const AdminCourseDetail = () => {
         });
         if (result.isConfirmed) {
             try {
-                const response = await togglePublish(courseId);
+                const response = await courseApi.togglePublish(courseId);
                 if (response.status) {
                     setCourse({ ...course, isPublished: !course.isPublished });
                     toast.success(`Course ${course.isPublished ? 'unpublished' : 'published'} successfully`);
@@ -112,7 +112,7 @@ const AdminCourseDetail = () => {
         });
         if (result.isConfirmed) {
             try {
-                const response = await deleteCourse(courseId);
+                const response = await courseApi.deleteCourse(courseId);
                 if (response.status) {
                     toast.success('Course deleted successfully');
                     router.push('/admin/course');

@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { BarChart3, Users, BookOpen, TrendingUp, Calendar, Bell, Settings, IndianRupee } from "lucide-react";
 
-import { getCourse } from "@/app/service/admin/courseApi";
-import { getRevenue } from "@/app/service/admin/adminApi";
+import courseApi from "@/app/service/admin/courseApi";
+import adminApi from "@/app/service/admin/adminApi";
 import { ICourse } from "@/types/courseTypes";
 
 const COLORS = ['#8b5cf6', '#06b6d4', '#f97316', '#22c55e', '#eab308'];
@@ -32,8 +32,8 @@ export default function Dashboard() {
         const fetchDashboardData = async () => {
             try {
                 const [revenueRes, coursesRes] = await Promise.all([
-                    getRevenue(),
-                    getCourse()
+                    adminApi.getRevenue(),
+                    courseApi.getCourse()
                 ]);
                 const coursesWithStats = coursesRes.courses.map((course: ICourse, index: number) => ({
                     ...course,

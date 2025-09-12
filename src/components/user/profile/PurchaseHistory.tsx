@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { CreditCard } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { IOrder } from '@/types/types';
-import { getPurchase } from '@/app/service/user/orderApi';
+import orderApi from '@/app/service/user/orderApi';
 
 const PurchaseHistory = () => {
     const [purchases, setPurchases] = useState<IOrder[]>([]);
@@ -14,7 +14,7 @@ const PurchaseHistory = () => {
     useEffect(() => {
         const fetchPurchases = async () => {
             try {
-                const response = await getPurchase();
+                const response = await orderApi.getPurchase();
                 if (response.status) {
                     setPurchases(response.purchases || []);
                 } else {

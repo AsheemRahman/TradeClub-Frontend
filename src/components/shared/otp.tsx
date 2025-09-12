@@ -5,11 +5,9 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef, KeyboardEvent, FormEvent } from 'react';
 
-import { verifyOtp } from '@/app/service/user/userApi';
-import { expertVerifyOtp } from '@/app/service/expert/expertApi';
+import userApi from '@/app/service/user/userApi';
+import expertApi from '@/app/service/expert/expertApi';
 
-import { resendOtp } from '@/app/service/user/userApi';
-import { resendExpertOtp } from '@/app/service/expert/expertApi';
 import { useAuthStore } from '@/store/authStore';
 import { useExpertStore } from '@/store/expertStore';
 
@@ -99,7 +97,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
         }
 
         try {
-            const response = await (role === 'user' ? verifyOtp(fullOtp, email) : expertVerifyOtp(fullOtp, email));
+            const response = await (role === 'user' ? userApi.verifyOtp(fullOtp, email) : expertApi.expertVerifyOtp(fullOtp, email));
             if (response.status) {
                 if (type === 'forgot-password') {
                     const otpPath = role === 'user' ? '/resetPassword' : '/expert/resetPassword';
@@ -137,7 +135,7 @@ const OTPVerification: React.FC<OTPProps> = ({ role }) => {
             }, 1000);
 
             // Call the resend OTP API based on the role
-            const response = await (role === 'user' ? resendOtp(email) : resendExpertOtp(email));
+            const response = await (role === 'user' ? userApi.resendOtp(email) : expertApi.resendExpertOtp(email));
             if (!response.status) {
                 setError(response.message || 'Failed to resend verification code');
             }

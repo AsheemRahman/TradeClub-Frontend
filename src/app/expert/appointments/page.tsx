@@ -4,8 +4,9 @@ import Image from 'next/image';
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, Video, User, CheckCircle, XCircle, AlertCircle, ChevronLeft, ChevronRight, Search, RefreshCw, Copy, ExternalLink } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { getSessions } from '@/app/service/expert/sessionApi';
+import sessionApi from '@/app/service/expert/sessionApi';
 import { IPaginationMeta, ISession, ISessionFilters } from '@/types/sessionTypes';
+import { useRouter } from 'next/navigation';
 
 
 const ExpertSessionsDashboard: React.FC = () => {
@@ -24,7 +25,59 @@ const ExpertSessionsDashboard: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [dateRange, setDateRange] = useState<{ start: string; end: string }>({ start: '', end: '' });
 
+    const router = useRouter()
+
     const today = new Date().toISOString().split('T')[0];
+
+    // Sort sessions by priority: upcoming/active first, then by start time
+    const sortSessionsByTime = (sessions: ISession[]): ISession[] => {
+        const now = new Date();
+        return [...sessions].sort((a, b) => {
+            const aStartTime = a.availabilityId?.startTime;
+            const aEndTime = a.availabilityId?.endTime;
+            const aDate = a.availabilityId?.date;
+            const bStartTime = b.availabilityId?.startTime;
+            const bEndTime = b.availabilityId?.endTime;
+            const bDate = b.availabilityId?.date;
+            if (!aStartTime || !aDate || !bStartTime || !bDate) return 0;
+            const aStart = new Date(`${aDate}T${aStartTime}:00`);
+            const aEnd = new Date(`${aDate}T${aEndTime}:00`);
+            const bStart = new Date(`${bDate}T${bStartTime}:00`);
+            const bEnd = new Date(`${bDate}T${bEndTime}:00`);
+            // Check if sessions are currently active (between start and end time)
+            const aIsActive = now >= aStart && now <= aEnd;
+            const bIsActive = now >= bStart && now <= bEnd;
+            // Check if sessions are upcoming (start time is in the future)
+            const aIsUpcoming = now < aStart;
+            const bIsUpcoming = now < bStart;
+            // Check if sessions are finished (end time has passed)
+            const aIsFinished = now > aEnd;
+            const bIsFinished = now > bEnd;
+            // Priority order:
+            // 1. Active sessions (currently happening) - sorted by start time (earliest first)
+            // 2. Upcoming sessions - sorted by start time (earliest first)
+            // 3. Finished sessions - sorted by end time (most recently finished first)
+            if (aIsActive && !bIsActive) return -1;
+            if (!aIsActive && bIsActive) return 1;
+            if (aIsActive && bIsActive) {
+                // Both active, sort by start time (earliest first)
+                return aStart.getTime() - bStart.getTime();
+            }
+            if (aIsUpcoming && !bIsUpcoming) return -1;
+            if (!aIsUpcoming && bIsUpcoming) return 1;
+            if (aIsUpcoming && bIsUpcoming) {
+                // Both upcoming, sort by start time (earliest first)
+                return aStart.getTime() - bStart.getTime();
+            }
+            if (aIsFinished && bIsFinished) {
+                // Both finished, sort by end time (most recently finished first)
+                return bEnd.getTime() - aEnd.getTime();
+            }
+            // Fallback to start time comparison
+            return aStart.getTime() - bStart.getTime();
+        });
+    };
+
     const fetchSessions = useCallback(async (page: number = 1) => {
         setLoading(true);
         try {
@@ -37,9 +90,11 @@ const ExpertSessionsDashboard: React.FC = () => {
                 }),
                 ...(searchTerm && { search: searchTerm })
             };
-            const response = await getSessions(page, 10, filterParams);
+            const response = await sessionApi.getSessions(page, 10, filterParams);
             if (response.status) {
-                setSessions(response.sessions);
+                // Sort sessions by time-based priority
+                const sortedSessions = sortSessionsByTime(response.sessions);
+                setSessions(sortedSessions);
                 setPagination(response.pagination);
             }
         } catch (err) {
@@ -53,6 +108,17 @@ const ExpertSessionsDashboard: React.FC = () => {
     useEffect(() => {
         fetchSessions(1);
     }, [fetchSessions]);
+
+    // Auto-refresh every minute to update session positions
+    useEffect(() => {
+        const interval = setInterval(() => {
+            if (sessions.length > 0) {
+                const sortedSessions = sortSessionsByTime(sessions);
+                setSessions(sortedSessions);
+            }
+        }, 60000); // Refresh every minute
+        return () => clearInterval(interval);
+    }, [sessions]);
 
     // Handlers
     const handlePageChange = (page: number) => {
@@ -111,16 +177,7 @@ const ExpertSessionsDashboard: React.FC = () => {
     };
 
     const handleJoinSession = async (session: ISession) => {
-        if (session.meetingLink) {
-            window.open(session.meetingLink, '_blank');
-            try {
-                // await SessionService.updateSessionStatus(session._id, 'started');
-                // Refresh the current page to show updated status
-                fetchSessions(pagination.currentPage);
-            } catch (err) {
-                console.error('Failed to update session status:', err);
-            }
-        }
+        router.push(`/expert/videocall/${session._id}`);
     };
 
     const copyToClipboard = async (text: string) => {
@@ -130,15 +187,6 @@ const ExpertSessionsDashboard: React.FC = () => {
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);
         }
-    };
-
-    // Utility functions
-    const formatTime = (dateString: string): string => {
-        return new Date(dateString).toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
     };
 
     const formatDate = (dateString: string | Date): string => {
@@ -163,14 +211,43 @@ const ExpertSessionsDashboard: React.FC = () => {
         }
     };
 
+    // Get session timing status for visual indicators
+    const getSessionTimingStatus = (session: ISession): { status: 'active' | 'upcoming' | 'finished'; label: string; color: string } => {
+        const now = new Date();
+        const startTime = session.availabilityId?.startTime;
+        const endTime = session.availabilityId?.endTime;
+        const sessionDate = session.availabilityId?.date;
+        if (!startTime || !endTime || !sessionDate) {
+            return { status: 'finished', label: 'Unknown', color: 'text-gray-500' };
+        }
+        const sessionStart = new Date(`${sessionDate}T${startTime}:00`);
+        const sessionEnd = new Date(`${sessionDate}T${endTime}:00`);
+        if (now >= sessionStart && now <= sessionEnd) {
+            return { status: 'active', label: 'Live Now', color: 'text-green-600 animate-pulse' };
+        } else if (now < sessionStart) {
+            const minutesUntil = Math.round((sessionStart.getTime() - now.getTime()) / (1000 * 60));
+            if (minutesUntil < 60) {
+                return { status: 'upcoming', label: `Starts in ${minutesUntil}m`, color: 'text-orange-600' };
+            } else {
+                return { status: 'upcoming', label: 'Upcoming', color: 'text-blue-600' };
+            }
+        } else {
+            const minutesAgo = Math.round((now.getTime() - sessionEnd.getTime()) / (1000 * 60));
+            if (minutesAgo < 60) {
+                return { status: 'finished', label: `Ended ${minutesAgo}m ago`, color: 'text-gray-500' };
+            } else {
+                return { status: 'finished', label: 'Ended', color: 'text-gray-500' };
+            }
+        }
+    };
+
     const getTodaySessions = (): ISession[] => {
-        return sessions.filter(session => {
-            const startTime = session.availabilityId?.startTime;
-            if (!startTime) return false;
-            const date = new Date(startTime);
-            if (isNaN(date.getTime())) return false;
-            return date.toISOString().split('T')[0] === today;
+        const todaySessions = sessions.filter(session => {
+            const sessionDate = session.availabilityId?.date;
+            if (!sessionDate) return false;
+            return new Date(sessionDate).toISOString().split('T')[0] === today;
         });
+        return sortSessionsByTime(todaySessions);
     };
 
     // Render pagination
@@ -354,36 +431,42 @@ const ExpertSessionsDashboard: React.FC = () => {
                     <div className="mb-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border border-blue-200">
                         <h3 className="text-lg font-semibold text-blue-900 mb-4">Today&apos;s Schedule</h3>
                         <div className="space-y-3">
-                            {getTodaySessions().sort((a, b) => new Date(a.availabilityId.startTime).getTime() - new Date(b.availabilityId.startTime).getTime()).map(session => (
-                                <div key={session._id} className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
-                                    <div className="flex items-center space-x-4">
-                                        <div className="flex-shrink-0">
-                                            <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                                <User className="h-5 w-5 text-blue-600" />
+                            {getTodaySessions().map(session => {
+                                const timingStatus = getSessionTimingStatus(session);
+                                return (
+                                    <div key={session._id} className="flex items-center justify-between bg-white rounded-lg p-4 shadow-sm">
+                                        <div className="flex items-center space-x-4">
+                                            <div className="flex-shrink-0">
+                                                <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                    <User className="h-5 w-5 text-blue-600" />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-sm font-medium text-gray-900">{session.userId.fullName}</div>
+                                                <div className="text-sm text-gray-600">
+                                                    {session.availabilityId.startTime} - {session.availabilityId.endTime}
+                                                </div>
+                                                <div className={`text-xs font-medium ${timingStatus.color}`}>
+                                                    {timingStatus.label}
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900">{session.userId.fullName}</div>
-                                            <div className="text-sm text-gray-600">
-                                                {formatTime(session.availabilityId.startTime)} - {formatTime(session.availabilityId.endTime)}
-                                            </div>
+                                        <div className="flex items-center space-x-2">
+                                            {canJoinSession(session) && (
+                                                <button onClick={() => handleJoinSession(session)} className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors" >
+                                                    <Video className="h-4 w-4 mr-1" />
+                                                    Join Now
+                                                </button>
+                                            )}
+                                            {session.meetingLink && (
+                                                <button onClick={() => copyToClipboard(session.meetingLink!)} className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Copy meeting link">
+                                                    <Copy className="h-4 w-4" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center space-x-2">
-                                        {canJoinSession(session) && session.meetingLink && (
-                                            <button onClick={() => handleJoinSession(session)} className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors" >
-                                                <Video className="h-4 w-4 mr-1" />
-                                                Join Now
-                                            </button>
-                                        )}
-                                        {session.meetingLink && (
-                                            <button onClick={() => copyToClipboard(session.meetingLink!)} className="p-2 text-gray-400 hover:text-gray-600 transition-colors" title="Copy meeting link">
-                                                <Copy className="h-4 w-4" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -408,9 +491,10 @@ const ExpertSessionsDashboard: React.FC = () => {
                                 const statusDisplay = getStatusDisplay(session.status);
                                 const StatusIcon = statusDisplay.icon;
                                 const joinable = canJoinSession(session);
+                                const timingStatus = getSessionTimingStatus(session);
 
                                 return (
-                                    <div key={session._id} className="p-6 hover:bg-gray-50 transition-colors">
+                                    <div key={session._id} className={`p-6 hover:bg-gray-50 transition-colors ${timingStatus.status === 'active' ? 'bg-green-50 border-l-4 border-green-500' : ''}`}>
                                         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                                             <div className="flex-1">
                                                 <div className="flex items-start justify-between mb-4">
@@ -431,6 +515,9 @@ const ExpertSessionsDashboard: React.FC = () => {
                                                                 {session.userId.fullName}
                                                             </h3>
                                                             <p className="text-sm text-gray-600">{session.userId.email}</p>
+                                                            <div className={`text-xs font-medium mt-1 ${timingStatus.color}`}>
+                                                                {timingStatus.label}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${statusDisplay.color}`}>

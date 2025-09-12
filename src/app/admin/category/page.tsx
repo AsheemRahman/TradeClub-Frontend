@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, Search, Filter, CheckCircle, XCircle, Tags } from 'lucide-react';
 
-import { addCategory, deleteCategory, editCategory, getCategory } from '@/app/service/admin/courseApi';
+import courseApi from '@/app/service/admin/courseApi';
 import { toast } from 'react-toastify';
 import { ICategory } from '@/types/courseTypes';
 
@@ -34,7 +34,7 @@ export default function CategoryManagement() {
     }, [categories, searchTerm, filterStatus]);
 
     const fetchCategories = async () => {
-        const response = await getCategory();
+        const response = await courseApi.getCategory();
         if (response?.status) {
             setCategories(response.categories);
         } else {
@@ -48,7 +48,7 @@ export default function CategoryManagement() {
             return;
         }
         try {
-            const response = await addCategory(formData.categoryName.trim());
+            const response = await courseApi.addCategory(formData.categoryName.trim());
             if (response?.status) {
                 const newCategory = {
                     _id: response?.newCategory?._id,
@@ -72,7 +72,7 @@ export default function CategoryManagement() {
             return;
         }
         try {
-            const response = await editCategory(formData._id, formData.categoryName.trim());
+            const response = await courseApi.editCategory(formData._id, formData.categoryName.trim());
             if (response?.status) {
                 const newCategory = {
                     _id: response?.newCategory?._id,
@@ -101,7 +101,7 @@ export default function CategoryManagement() {
             return
         };
         try {
-            const response = await deleteCategory(selectedCategory._id);
+            const response = await courseApi.deleteCategory(selectedCategory._id);
             if (response?.status) {
                 const updatedCategories = categories.filter(cat => cat._id !== selectedCategory._id);
                 setCategories(updatedCategories);

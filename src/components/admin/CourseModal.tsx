@@ -5,7 +5,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { toast } from 'react-toastify';
 import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 
-import { addCourse, editCourse } from '@/app/service/admin/courseApi';
+import courseApi from '@/app/service/admin/courseApi';
 import { ICategory, ICourse, ICourseFormData } from '@/types/courseTypes';
 import { courseValidation } from '@/app/utils/Validation';
 
@@ -116,7 +116,7 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
         }
         try {
             const cleanedData: ICourseFormData = { ...data, content: data.content.map(({ _id, ...rest }) => (_id ? { _id, ...rest } : rest)), };
-            const response = editingCourse ? await editCourse(editingCourse._id, cleanedData) : await addCourse(cleanedData);
+            const response = editingCourse ? await courseApi.editCourse(editingCourse._id, cleanedData) : await courseApi.addCourse(cleanedData);
             if (response.status) {
                 toast.success(editingCourse ? 'Course updated' : 'Course created');
                 await fetchData();

@@ -5,7 +5,7 @@ import { Upload, Calendar, MapPin, User, Briefcase, TrendingUp, Camera, FileText
 import { ExpertFormData } from '@/types/expertTypes';
 import { toast } from 'react-toastify';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { expertVerification } from '@/app/service/expert/expertApi';
+import expertApi from '@/app/service/expert/expertApi';
 
 interface FileUploadFieldProps {
     label: string;
@@ -170,7 +170,7 @@ const ExpertDetailsForm = () => {
 
     const handleSubmit = async () => {
         try {
-            const response = await expertVerification(formData);
+            const response = await expertApi.expertVerification(formData);
             if (response?.status) {
                 toast.success("Details submitted");
                 router.replace('/expert/verification-pending');

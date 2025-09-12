@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { BadgeCheck, Search } from 'lucide-react';
 import UserTable from '@/components/admin/TableComponent';
 
-import { getExpertDetails, expertStatus } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 
 
 const UserManagement = () => {
@@ -31,7 +31,7 @@ const UserManagement = () => {
 
     const fetchExperts = useCallback(async () => {
         try {
-            const response = await getExpertDetails({
+            const response = await adminApi.getExpertDetails({
                 search: debouncedSearch,
                 page,
                 limit,
@@ -50,7 +50,7 @@ const UserManagement = () => {
     }, [fetchExperts]);
 
     const changeStatus = async (id: string, status: boolean) => {
-        const response = await expertStatus(id, status);
+        const response = await adminApi.expertStatus(id, status);
         if (response.status) fetchExperts();
     };
 

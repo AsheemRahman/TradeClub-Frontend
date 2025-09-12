@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { Search, User } from 'lucide-react';
 import UserTable from '@/components/admin/TableComponent';
-import { getUserDetails, userStatus } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 import { UserType } from '@/types/types';
 
 const UserManagement = () => {
@@ -19,7 +19,7 @@ const UserManagement = () => {
     useEffect(() => {
         const timeout = setTimeout(async () => {
             try {
-                const response = await getUserDetails({
+                const response = await adminApi.getUserDetails({
                     search: searchQuery,
                     status: statusFilter,
                     sort: sortField,
@@ -41,7 +41,7 @@ const UserManagement = () => {
 
     const changeStatus = async (id: string, status: boolean) => {
         try {
-            const response = await userStatus(id, status);
+            const response = await adminApi.userStatus(id, status);
             if (response.success) {
                 toast.success("User status changed");
                 setUserData(prev => prev.map(user => user.id === id ? { ...user, isActive: status } : user));

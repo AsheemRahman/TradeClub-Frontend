@@ -2,13 +2,8 @@ import axios from "axios";
 import { toast } from 'react-toastify'
 import axiosInstance from "../shared/AxiosInstance";
 import { ExpertProfileFormData, ExpertFormData } from "@/types/expertTypes";
+import { EXPERT } from "@/lib/constants";
 
-
-interface userloginType {
-    email: string;
-    password: string;
-    role: 'user' | 'expert';
-}
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -20,65 +15,70 @@ export const handleAxiosError = (error: unknown) => {
     }
 };
 
-export const expertVerifyOtp = async (otp: number, email: string) => {
+
+const expertVerifyOtp = async (otp: number, email: string) => {
     try {
-        const response = await axiosInstance.post(`/expert/verify-otp`, { otp, email });
+        const response = await axiosInstance.post(`${EXPERT}/verify-otp`, { otp, email });
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const resendExpertOtp = async (email: string) => {
+const resendExpertOtp = async (email: string) => {
     try {
-        const response = await axiosInstance.post(`/expert/resend-otp`, { email })
+        const response = await axiosInstance.post(`${EXPERT}/resend-otp`, { email })
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 }
 
-export const expertLoginPost = async (formData: userloginType) => {
-    try {
-        const response = await axiosInstance.post(`/${formData.role}/login`, formData,);
-        return response.data;
-    } catch (error: unknown) {
-        handleAxiosError(error)
-    }
-};
 
-export const expertVerification = async (formData: ExpertFormData) => {
+const expertVerification = async (formData: ExpertFormData) => {
     try {
-        const response = await axiosInstance.post(`/expert/verification`, formData,);
+        const response = await axiosInstance.post(`${EXPERT}/verification`, formData,);
         return response;
     } catch (error: unknown) {
         handleAxiosError(error)
     }
 };
 
-export const getExpertData = async () => {
+const getExpertData = async () => {
     try {
-        const expertData = await axiosInstance.get(`/expert/get-expert`);
+        const expertData = await axiosInstance.get(`${EXPERT}/get-expert`);
         return expertData.data;
     } catch (error) {
         handleAxiosError(error)
     }
 };
 
-export const updateProfile = async (updatedPayload: ExpertProfileFormData) => {
+const updateProfile = async (updatedPayload: ExpertProfileFormData) => {
     try {
-        const updateProfile = await axiosInstance.post(`/expert/update-profile`, updatedPayload);
+        const updateProfile = await axiosInstance.post(`${EXPERT}/update-profile`, updatedPayload);
         return updateProfile.data;
     } catch (error) {
         handleAxiosError(error)
     }
 };
 
-export const fetchWallet = async () => {
+const fetchWallet = async () => {
     try {
-        const response = await axiosInstance.get(`/expert/wallet`);
+        const response = await axiosInstance.get(`${EXPERT}/wallet`);
         return response.data;
     } catch (error) {
         handleAxiosError(error)
     }
 };
+
+
+const expertApi = {
+    expertVerifyOtp,
+    resendExpertOtp,
+    expertVerification,
+    getExpertData,
+    updateProfile,
+    fetchWallet,
+};
+
+export default expertApi;

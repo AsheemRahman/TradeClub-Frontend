@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
@@ -13,78 +13,81 @@ import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
 import { useAuthStore } from '@/store/authStore';
 import { useExpertStore } from '@/store/expertStore';
 
-interface LoginPage {
+interface LoginPageProps {
     role: 'user' | 'expert';
 }
 
-const Login: React.FC<LoginPage> = ({ role }) => {
+const Login: React.FC<LoginPageProps> = ({ role }) => {
     const [formData, setFormData] = useState<loginType>({ email: '', password: '' });
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+
     const { data: session, status } = useSession();
-
     const router = useRouter();
-    const isUser = role === 'user';
-    const authStore = useAuthStore();
-    const expertStore = useExpertStore();
 
+    const isUser = role === 'user';
+    const { user, setUserAuth } = useAuthStore();
+    const { expert, setExpertAuth } = useExpertStore();
+
+    // Google login handler
     const handleGoogleLogin = async () => {
         try {
-            const result = await signIn("google", role === 'user' ? { callbackUrl: '/home' } : { callbackUrl: '/expert/dashboard' });
+            const result = await signIn('google', { callbackUrl: isUser ? '/home' : '/expert/dashboard', redirect: false, });
             if (result?.error) {
-                console.error("Sign-in failed", result.error);
-                toast.error("Sign in using Google failed");
+                console.error('Google sign-in failed:', result.error);
+                toast.error('Sign in using Google failed.');
             }
         } catch (error) {
-            console.error(error);
-            toast.error("Error during Google Sign-in");
+            console.error('Google Sign-in error:', error);
+            toast.error('Error during Google Sign-in.');
         }
     };
 
+    // Effect for redirecting or sending session data to backend
     useEffect(() => {
         if (status === 'loading') return;
-        const alreadyLoggedIn = authStore.user !== null;
-        const alreadyExpertIn = expertStore.expert !== null
-        if (alreadyLoggedIn && isUser) {
+        const alreadyLoggedIn = user !== null;
+        const alreadyExpertIn = expert !== null;
+
+        if (isUser && alreadyLoggedIn) {
             router.replace('/home');
             return;
         }
-        if (alreadyExpertIn && !isUser) {
+        if (!isUser && alreadyExpertIn) {
             router.replace('/expert/dashboard');
             return;
         }
         if (!alreadyLoggedIn && status === 'authenticated' && session?.user) {
             const sendUserToBackend = async () => {
                 const userData = {
-                    fullName: session.user.name ?? "",
-                    email: session.user.email ?? "",
-                    profilePicture: session.user.image ?? "",
+                    fullName: session.user.name ?? '',
+                    email: session.user.email ?? '',
+                    profilePicture: session.user.image ?? '',
                     role,
                 };
                 try {
                     const response = await googleSignup(userData);
                     if (response.status) {
                         const { user, expert, accessToken } = response.data;
-                        if (!isUser) {
-                            expertStore.setExpertAuth(expert, accessToken);
+                        if (isUser) {
+                            setUserAuth(user, accessToken);
+                            router.replace('/home');
                         } else {
-                            authStore.setUserAuth(user, accessToken);
+                            setExpertAuth(expert, accessToken);
+                            router.replace('/expert/dashboard');
                         }
-                        setTimeout(() => {
-                            router.replace(isUser ? '/home' : '/expert/dashboard');
-                        }, 0);
+                        toast.success(response.message);
                     } else {
                         toast.error(response?.message || 'Google Login failed. Please try again.');
                     }
                 } catch (error) {
-                    console.error("Backend signup error:", error);
-                    toast.error("Google authentication failed.");
+                    console.error('Backend signup error:', error);
+                    toast.error('Google authentication failed.');
                 }
             };
             sendUserToBackend();
         }
-    }, [session, status, role, authStore, expertStore, isUser, router]);
-
+    }, [session, status, isUser, role, router, user, expert, setUserAuth, setExpertAuth]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,18 +97,20 @@ const Login: React.FC<LoginPage> = ({ role }) => {
             const response = await LoginPost(payload);
             if (response.status) {
                 const { user, expert, accessToken } = response.data;
-                if (!isUser) {
-                    expertStore.setExpertAuth(expert, accessToken);
+                if (isUser) {
+                    setUserAuth(user, accessToken);
+                    router.replace('/home');
                 } else {
-                    authStore.setUserAuth(user, accessToken);
+                    setExpertAuth(expert, accessToken);
+                    router.replace('/expert/dashboard');
                 }
                 toast.success(response.message);
-                router.replace(isUser ? '/home' : '/expert/dashboard');
             } else {
                 toast.error(response?.message || 'Login failed. Please try again.');
             }
         } catch (error) {
-            console.error("Login error:", error);
+            console.error('Login error:', error);
+            toast.error('An error occurred during login.');
         } finally {
             setIsLoading(false);
         }
@@ -118,7 +123,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                 <ImageSlider />
                 {/* Form Section */}
                 <div className="w-full px-6 md:px-20 py-6">
-                    <form method="post" className="flex flex-col gap-4" onSubmit={handleLogin}>
+                    <form className="flex flex-col gap-4" onSubmit={handleLogin}>
                         <h1 className="text-4xl font-semibold mb-4">
                             {isUser ? 'Unlock Your Trading Potential' : 'Expert Login Dashboard'}
                         </h1>
@@ -132,13 +137,13 @@ const Login: React.FC<LoginPage> = ({ role }) => {
                                 className="bg-transparent border-b border-white py-3 w-full text-white placeholder-gray-300 focus:outline-none"
                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
                             <span onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-xl">
-                                <i className={`bi ${showPassword ? 'bi-eye' : 'bi-eye-slash'}`}></i>
+                                <i className={`bi ${showPassword ? 'bi-eye' : 'bi-eye-slash'}`} />
                             </span>
                         </div>
 
                         <div className="text-right text-sm">
-                            <Link href={role === 'expert' ? '/expert/forgotPassword' : '/forgotPassword'} className="text-[#db4437] hover:text-[#f55]">
-                                Forget Password?
+                            <Link href={isUser ? '/forgotPassword' : '/expert/forgotPassword'} className="text-[#db4437] hover:text-[#f55]">
+                                Forgot Password?
                             </Link>
                         </div>
 
@@ -169,7 +174,7 @@ const Login: React.FC<LoginPage> = ({ role }) => {
 
                     <div className="text-center text-sm mt-7">
                         Don&apos;t have an account?
-                        <Link href={role === 'expert' ? '/expert/register' : '/register'} className="text-[#db4437] hover:text-[#f55] ml-3 underline">
+                        <Link href={isUser ? '/register' : '/expert/register'} className="text-[#db4437] hover:text-[#f55] ml-3 underline">
                             Register
                         </Link>
                     </div>
@@ -178,6 +183,5 @@ const Login: React.FC<LoginPage> = ({ role }) => {
         </div>
     );
 };
-
 
 export default Login;

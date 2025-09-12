@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import { toast } from 'react-toastify';
 import { CouponModal } from '@/components/admin/CouponModal';
 import { ICoupon } from '@/types/types';
-import { couponStatus, createCoupon, deleteCoupon, fetchCoupon, updateCoupon } from '@/app/service/admin/adminApi';
+import adminApi from '@/app/service/admin/adminApi';
 import { Plus, Search, Edit2, Trash2, Copy, Calendar, Users, Percent, Tag, IndianRupee, Gift } from 'lucide-react';
 
 const CouponManagement: React.FC = () => {
@@ -19,7 +19,7 @@ const CouponManagement: React.FC = () => {
 
     useEffect(() => {
         const getCoupons = async () => {
-            const response = await fetchCoupon();
+            const response = await adminApi.fetchCoupon();
             if (response.status) {
                 setCoupons(response.coupons);
             }
@@ -48,7 +48,7 @@ const CouponManagement: React.FC = () => {
 
     const handleCreateCoupon = async (couponData: Omit<ICoupon, '_id' | 'usedCount' | 'createdAt'>) => {
         try {
-            const response = await createCoupon(couponData);
+            const response = await adminApi.createCoupon(couponData);
             if (response.status && response.coupon) {
                 const newCoupon: ICoupon = response.coupon;
                 setCoupons(prev => [newCoupon, ...prev]);
@@ -69,7 +69,7 @@ const CouponManagement: React.FC = () => {
             return;
         }
         try {
-            const response = await updateCoupon(couponData._id, couponData);
+            const response = await adminApi.updateCoupon(couponData._id, couponData);
             if (response.status) {
                 setCoupons(coupons.map(c => c._id === response.coupon._id ? response.coupon : c));
                 setEditingCoupon(null);
@@ -93,7 +93,7 @@ const CouponManagement: React.FC = () => {
         });
         if (result.isConfirmed) {
             try {
-                await deleteCoupon(id);
+                await adminApi.deleteCoupon(id);
                 setCoupons(coupons.filter(c => c._id !== id));
                 Swal.fire('Deleted!', 'The coupon has been deleted.', 'success');
             } catch (error) {
@@ -105,7 +105,7 @@ const CouponManagement: React.FC = () => {
 
     const handleToggleStatus = async (id: string) => {
         try {
-            const updated = await couponStatus(id);
+            const updated = await adminApi.couponStatus(id);
             setCoupons(coupons.map(c => c._id === id ? updated : c));
             Swal.fire({
                 icon: 'success',

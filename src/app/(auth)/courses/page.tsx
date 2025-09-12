@@ -5,7 +5,7 @@ import { CourseCard } from '@/components/user/CourseCard';
 import { CourseListItem } from '@/components/user/CourseListItem';
 import { Search, Filter, Grid, List, ChevronDown } from 'lucide-react';
 import { ICategory, ICourse } from '@/types/courseTypes';
-import { categoryData, courseData } from '@/app/service/user/courseApi';
+import courseApi from '@/app/service/user/courseApi';
 
 
 const CoursesPage = () => {
@@ -43,7 +43,7 @@ const CoursesPage = () => {
             setLoading(true);
             try {
                 const [coursesRes, categoriesRes] = await Promise.all([
-                    courseData({
+                    courseApi.courseData({
                         search: debouncedSearch,
                         category: selectedCategory,
                         minPrice: priceRange[0],
@@ -52,7 +52,7 @@ const CoursesPage = () => {
                         page: currentPage,
                         limit: coursesPerPage
                     }),
-                    categoryData(),
+                    courseApi.categoryData(),
                 ]);
                 if (!coursesRes.status || !categoriesRes.status) throw new Error('Failed to fetch data');
                 setCourses(coursesRes.courses || []);

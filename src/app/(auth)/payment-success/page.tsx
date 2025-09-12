@@ -5,7 +5,7 @@ import { CheckCircle, Download, Share2, ArrowRight, Sparkles, CreditCard, Mail, 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { IOrder } from '@/types/types';
-import { createOrder } from '@/app/service/user/orderApi';
+import orderApi from '@/app/service/user/orderApi';
 
 
 interface PaymentSuccessProps {
@@ -33,7 +33,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
                 try {
                     setLoading(true);
                     setError(null);
-                    const response = await createOrder(sessionId);
+                    const response = await orderApi.createOrder(sessionId);
                     if (response?.status) {
                         toast.success("Order placed successfully");
                         setOrder(response.order);

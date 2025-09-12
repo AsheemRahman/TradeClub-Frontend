@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { User, Search, CheckCircle, } from 'lucide-react';
 import { ExpertCard } from '@/components/user/ExpertCard';
 import { IExpert } from '@/types/bookingTypes';
-import { checkSubscription, getAllExpert } from '@/app/service/user/userApi';
+import userApi from '@/app/service/user/userApi';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
 
@@ -21,7 +21,7 @@ const TradingExpertBookingPage: React.FC = () => {
 
     const getExperts = async () => {
         try {
-            const response = await getAllExpert();
+            const response = await userApi.getAllExpert();
             if (response.status && response.data.experts?.length) {
                 setExperts(response.data.experts);
                 setFilteredExperts(response.data.experts);
@@ -38,7 +38,7 @@ const TradingExpertBookingPage: React.FC = () => {
     useEffect(() => {
         const fetchUser = async () => {
             try {
-                const response = await checkSubscription();
+                const response = await userApi.checkSubscription();
                 if (response.status && response.subscription) {
                     const { endDate, paymentStatus } = response.subscription;
                     const isExpired = new Date() > new Date(endDate);

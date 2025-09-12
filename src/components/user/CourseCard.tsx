@@ -4,7 +4,7 @@ import { Clock, Star, Users } from "lucide-react";
 import { useAuthStore } from '@/store/authStore';
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
-import { handlePurchase } from "@/app/service/user/orderApi";
+import orderApi from "@/app/service/user/orderApi";
 
 type Props = {
     course: ICourse;
@@ -27,7 +27,7 @@ export const CourseCard = ({ course, categories }: Props) => {
 
     const handleBuy = () => {
         if (user) {
-            handlePurchase(course)
+            orderApi.handlePurchase(course)
         } else {
             router.push('/login')
             toast.error("Login to buy course")

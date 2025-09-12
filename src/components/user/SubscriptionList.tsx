@@ -3,10 +3,10 @@
 import { useEffect, useState } from "react";
 import { Award, Shield, Star, Users } from "lucide-react";
 
-import { SubscriptionData } from "@/app/service/user/userApi";
+import userApi from "@/app/service/user/userApi";
 import { ISubscriptionPlan } from "@/types/subscriptionTypes";
 import { toast } from "react-toastify";
-import { SubscriptionPurchase } from "@/app/service/user/orderApi";
+import orderApi from "@/app/service/user/orderApi";
 
 
 export const SubscriptionPlans = () => {
@@ -17,7 +17,7 @@ export const SubscriptionPlans = () => {
     useEffect(() => {
         const fetchPlans = async () => {
             try {
-                const response = await SubscriptionData();
+                const response = await userApi.SubscriptionData();
                 if (response.status) {
                     const activePlans = response.planData?.filter((plan: ISubscriptionPlan) => plan.isActive);
                     setPlans(activePlans || []);
@@ -33,7 +33,7 @@ export const SubscriptionPlans = () => {
 
     const handlePurchase = async (planId: string) => {
         try {
-            await SubscriptionPurchase(planId)
+            await orderApi.SubscriptionPurchase(planId)
         } catch (error) {
             console.error('Purchase error:', error);
             toast.error('Purchase failed. Please try again.');

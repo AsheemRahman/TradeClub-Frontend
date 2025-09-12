@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Volume2, VolumeX, Maximize, Settings, FastForward, Rewind, List, X, Award, TrendingUp, AlertCircle } from 'lucide-react';
 
 import { ICourse, ICourseContent, ICourseProgress, IVideoProgress } from '@/types/courseTypes';
-import { getCourseById, getProgress,updateCourseProgress } from '@/app/service/user/courseApi';
+import courseApi from '@/app/service/user/courseApi';
 
 
 const EnhancedCoursePlayer = () => {
@@ -41,7 +41,7 @@ const EnhancedCoursePlayer = () => {
             try {
                 setLoading(true);
                 setError(null);
-                const [courseData, progressData] = await Promise.all([getCourseById(courseId), getProgress(courseId)]);
+                const [courseData, progressData] = await Promise.all([courseApi.getCourseById(courseId), courseApi.getProgress(courseId)]);
                 if (courseData.status) {
                     setCourse(courseData.course);
                 }
@@ -215,7 +215,7 @@ const EnhancedCoursePlayer = () => {
             const finalWatchedTime = forceComplete ? videoDurationInSeconds : watchedTime;
 
             // Update progress via API
-            const updatedProgress = await updateCourseProgress(courseId, currentVideo._id, finalWatchedTime, isCompleted);
+            const updatedProgress = await courseApi.updateCourseProgress(courseId, currentVideo._id, finalWatchedTime, isCompleted);
             if (updatedProgress?.status) {
                 setCourseProgress(updatedProgress.progress);
             } else {

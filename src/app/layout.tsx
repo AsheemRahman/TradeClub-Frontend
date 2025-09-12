@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { ToastContainer } from 'react-toastify'
 import { Providers } from './providers'
+import { SocketContextProvider } from "@/context/socketContext";
 
 
 const geistSans = Geist({
@@ -33,7 +34,9 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
-          {children}
+          <SocketContextProvider>
+            {children}
+          </SocketContextProvider>
           <ToastContainer position="top-right" autoClose={4000} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
         </Providers>
       </body>
