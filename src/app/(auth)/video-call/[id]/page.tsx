@@ -55,7 +55,7 @@ const StudentVideoChat = () => {
 
                     const now = new Date();
                     const startTime = new Date(session.startTime);
-                    const endTime = new Date(startTime.getTime() + session.duration * 60 * 1000);
+                    const endTime = new Date(session.endTime);
                     const fiveMinutesBefore = new Date(startTime.getTime() - 5 * 60 * 1000);
 
                     if (now < fiveMinutesBefore) {
@@ -63,14 +63,14 @@ const StudentVideoChat = () => {
                         return;
                     }
 
-                    if (now > endTime || session.status === 'completed' || session.status === 'cancelled') {
-                        setError('This session has already ended or been cancelled');
+                    if (now > endTime || session.status === 'completed' || session.status === 'missed') {
+                        setError('This session has already ended or been missed');
                         return;
                     }
 
-                    if (session.status === 'scheduled' && now >= startTime) {
-                        await userApi.updateSessionStatus(session._id, 'active');
-                        session.status = 'active';
+                    if (session.status === 'upcoming' && now >= endTime) {
+                        await userApi.updateSessionStatus(session._id, 'missed');
+                        session.status = 'missed';
                     }
 
                     setSessionData(session);
@@ -97,10 +97,17 @@ const StudentVideoChat = () => {
                     }
                 }
             });
-
-            socket.on('end-session', () => {
-                toast.info('Call has been ended by the tutor');
-                router.push(`/profile`);
+            socket.on('end-session', async () => {
+                console.log('end-session event received in user side');
+                try {
+                    await userApi.updateSessionStatus(sessionId, "completed");
+                    toast.info("Call has been ended by the Expert");
+                } catch (err) {
+                    console.error("Failed to update session:", err);
+                    toast.error("Could not update session status");
+                } finally {
+                    router.push("/profile");
+                }
             });
 
             return () => {
