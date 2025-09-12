@@ -80,7 +80,7 @@ const ExpertVideoChat = () => {
 
                     const now = new Date();
                     const startTime = new Date(session.startTime);
-                    const endTime = new Date(startTime.getTime() + session.duration * 60 * 1000);
+                    const endTime = new Date(session.endTime);
                     const tenMinutesBefore = new Date(startTime.getTime() - 10 * 60 * 1000);
 
                     if (now < tenMinutesBefore) {
@@ -88,14 +88,14 @@ const ExpertVideoChat = () => {
                         return;
                     }
 
-                    if (now > endTime || session.status === 'completed' || session.status === 'cancelled') {
-                        if (isMounted) setSessionState({ data: null, isLoading: false, error: 'This session has already ended or been cancelled' });
+                    if (now > endTime || session.status === 'completed' || session.status === 'missed') {
+                        if (isMounted) setSessionState({ data: null, isLoading: false, error: 'This session has already ended or been missed' });
                         return;
                     }
 
-                    if (session.status === 'scheduled' && now >= startTime) {
-                        await userApi.updateSessionStatus(session._id, 'active');
-                        session.status = 'active';
+                    if (session.status === 'upcoming' && now >= endTime) {
+                        await userApi.updateSessionStatus(session._id, 'missed');
+                        session.status = 'missed';
                     }
 
                     localStorage.setItem(`session_${stableSessionId}`, JSON.stringify(session));
@@ -113,9 +113,17 @@ const ExpertVideoChat = () => {
 
         if (socket) {
             socket.on('session-updated', handleSessionUpdate);
-            socket.on('end-session', () => {
-                toast.info('Call has been ended by the student');
-                router.push("/expert/appointments");
+            socket.on('end-session', async () => {
+                console.log('end-session event received in expert side');
+                try {
+                    await userApi.updateSessionStatus(stableSessionId, "completed");
+                    toast.info("Call has been ended by the student");
+                } catch (err) {
+                    console.error("Failed to update session:", err);
+                    toast.error("Could not update session status");
+                } finally {
+                    router.push("/expert/appointments");
+                }
             });
 
             return () => {
