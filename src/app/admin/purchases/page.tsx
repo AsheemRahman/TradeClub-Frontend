@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { Search, Download, RefreshCw, Package, IndianRupee } from 'lucide-react';
-import { IOrder } from '@/types/types';
+import { IOrderWithPopulated, OrderStats } from '@/types/orderTypes';
 import adminApi from '@/app/service/admin/adminApi';
-import { IItem, IOrderWithPopulated, IUser, OrderStats } from '@/types/orderTypes';
-// import { useRouter } from 'next/navigation';
 
 type FilterType = 'all' | 'paid' | 'unpaid' | 'pending' | 'failed';
 type TypeFilter = 'all' | 'Course' | 'SubscriptionPlan';
@@ -16,55 +14,57 @@ const AdminOrdersPage: React.FC = () => {
     const [orders, setOrders] = useState<IOrderWithPopulated[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [statusFilter, setStatusFilter] = useState<FilterType>('all');
     const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
     const [sortBy, setSortBy] = useState<SortField>('createdAt');
     const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [itemsPerPage] = useState<number>(10);
-    // const router = useRouter();
+
+    const [totalOrders, setTotalOrders] = useState<number>(0);
+    const [stats, setStats] = useState<OrderStats>({
+        total: 0,
+        paid: 0,
+        pending: 0,
+        failed: 0,
+        totalRevenue: 0,
+    });
+
+    const fetchOrders = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await adminApi.getOrders({
+                page: currentPage,
+                limit: itemsPerPage,
+                status: statusFilter,
+                type: typeFilter,
+                search: searchTerm,
+                sortBy,
+                sortOrder,
+            });
+            if (!response?.status) throw new Error('Failed to fetch orders');
+            setOrders(response.orders || []);
+            setTotalOrders(response.total || 0);
+            if (response.stats) {
+                setStats(response.stats);
+            }
+        } catch (err) {
+            console.error('Error fetching orders:', err);
+            setError('Failed to load orders. Please try again.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchOrders = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await adminApi.getOrders()
-                if (!response.status) {
-                    throw new Error('Failed to fetch orders');
-                }
-                const ordersWithPopulatedData: IOrderWithPopulated[] = await Promise.all(
-                    response.orders.map(async (order: IOrder) => {
-                        const [userResponse, itemResponse] = await Promise.all([adminApi.getUser(order.userId), adminApi.getItem(order.itemId, order.type)]);
-                        const user: IUser = userResponse.user;
-                        let item: IItem;
-                        if (order.type === "Course") {
-                            item = itemResponse.course;
-                        } else {
-                            item = itemResponse.subscription;
-                        }
-                        return {
-                            ...order,
-                            userId: user,
-                            itemId: item,
-                            createdAt: new Date(order.createdAt),
-                            updatedAt: new Date(order.updatedAt)
-                        };
-                    })
-                );
-                setOrders(ordersWithPopulatedData);
-            } catch (error) {
-                console.error('Error fetching orders:', error);
-                setError('Failed to load orders. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        };
         fetchOrders();
-    }, []);
+    }, [currentPage, statusFilter, typeFilter, searchTerm, sortBy, sortOrder]);
 
-    const getStatusColor = (status: IOrder['paymentStatus']): string => {
+    const getStatusColor = (status: IOrderWithPopulated['paymentStatus']): string => {
         switch (status) {
             case 'paid': return 'bg-green-100 text-green-800';
             case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -74,7 +74,7 @@ const AdminOrdersPage: React.FC = () => {
         }
     };
 
-    const getTypeColor = (type: IOrder['type']): string => {
+    const getTypeColor = (type: IOrderWithPopulated['type']): string => {
         return type === 'Course'
             ? 'bg-blue-100 text-blue-800'
             : 'bg-purple-100 text-purple-800';
@@ -87,63 +87,20 @@ const AdminOrdersPage: React.FC = () => {
         }).format(amount);
     };
 
-    const formatDate = (date: Date): string => {
+    const formatDate = (date: Date | string): string => {
         return new Date(date).toLocaleDateString('en-IN', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
-            minute: '2-digit'
+            minute: '2-digit',
         });
-    };
-
-    const filteredOrders = orders.filter((order: IOrderWithPopulated) => {
-        const matchesSearch = order.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.userId.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            order.userId.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesStatus = statusFilter === 'all' || order.paymentStatus === statusFilter;
-        const matchesType = typeFilter === 'all' || order.type === typeFilter;
-
-        return matchesSearch && matchesStatus && matchesType;
-    });
-
-    const sortedOrders = [...filteredOrders].sort((a: IOrderWithPopulated, b: IOrderWithPopulated) => {
-        let aValue: string | number | Date;
-        let bValue: string | number | Date;
-        const valueA = a[sortBy as keyof IOrderWithPopulated];
-        const valueB = b[sortBy as keyof IOrderWithPopulated];
-        if (sortBy === 'createdAt' || sortBy === 'updatedAt') {
-            aValue = new Date(valueA as string);
-            bValue = new Date(valueB as string);
-        } else {
-            aValue = valueA as string | number;
-            bValue = valueB as string | number;
-        }
-        if (sortOrder === 'asc') {
-            return aValue > bValue ? 1 : -1;
-        } else {
-            return aValue < bValue ? 1 : -1;
-        }
-    });
-
-    const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedOrders = sortedOrders.slice(startIndex, startIndex + itemsPerPage);
-
-    const stats: OrderStats = {
-        total: orders.length,
-        paid: orders.filter(o => o.paymentStatus === 'paid').length,
-        pending: orders.filter(o => o.paymentStatus === 'pending').length,
-        failed: orders.filter(o => o.paymentStatus === 'failed').length,
-        totalRevenue: orders.filter(o => o.paymentStatus === 'paid')
-            .reduce((sum, o) => sum + o.amount, 0)
     };
 
     const exportOrders = (): void => {
         const csv = [
             ['ID', 'User', 'Email', 'Item', 'Type', 'Amount', 'Currency', 'Status', 'Date'].join(','),
-            ...filteredOrders.map(order => [
+            ...orders.map(order => [
                 order._id,
                 order.userId.fullName,
                 order.userId.email,
@@ -152,8 +109,8 @@ const AdminOrdersPage: React.FC = () => {
                 order.amount,
                 order.currency,
                 order.paymentStatus,
-                formatDate(order.createdAt)
-            ].join(','))
+                formatDate(order.createdAt),
+            ].join(',')),
         ].join('\n');
 
         const blob = new Blob([csv], { type: 'text/csv' });
@@ -171,6 +128,8 @@ const AdminOrdersPage: React.FC = () => {
         setSortOrder(order);
     };
 
+    const totalPages = Math.ceil(totalOrders / itemsPerPage);
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center rounded-lg">
@@ -180,25 +139,28 @@ const AdminOrdersPage: React.FC = () => {
                 </div>
             </div>
         );
-    };
+    }
 
     if (error) {
         return (
             <div className="min-h-screen bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 flex items-center justify-center rounded-lg">
                 <div className="text-center">
-                    <div className="text-red-700 px-4 py-3 rounded mb-4">
-                        {error}
-                    </div>
-                    <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-700" >
+                    <div className="text-red-700 px-4 py-3 rounded mb-4">{error}</div>
+                    <button
+                        onClick={() => fetchOrders()}
+                        className="px-4 py-2 bg-blue-400 text-white rounded hover:bg-blue-700"
+                    >
                         Retry
                     </button>
                 </div>
             </div>
         );
-    };
+    }
 
     return (
         <div className="min-h-screen">
+            {/* Just replaced data with server response (orders, totalOrders, stats) */}
+
             {/* Header */}
             <div className="relative overflow-hidden bg-gradient-to-r from-purple-600 via-purple-700 to-indigo-800 rounded-lg shadow-2xl p-4 mb-4">
                 <div className="absolute inset-0 bg-black/20"></div>
@@ -253,9 +215,7 @@ const AdminOrdersPage: React.FC = () => {
                         </div>
                         <div className="ml-4">
                             <p className="text-sm font-medium text-black">Failed</p>
-                            <p className="text-2xl font-bold text-white">
-                                {stats.failed}
-                            </p>
+                            <p className="text-2xl font-bold text-white">{stats.failed}</p>
                         </div>
                     </div>
                 </div>
@@ -286,7 +246,6 @@ const AdminOrdersPage: React.FC = () => {
                             />
                         </div>
                     </div>
-
                     <select className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent h-10"
                         value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as FilterType)}
                     >
@@ -327,79 +286,43 @@ const AdminOrdersPage: React.FC = () => {
                     <table className="w-full table-fixed">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Order
-                                </th>
-                                <th className="w-64 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Customer
-                                </th>
-                                <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Item
-                                </th>
-                                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Amount
-                                </th>
-                                <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="w-36 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Date
-                                </th>
-                                {/* <th className="w-20 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th> */}
+                                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                                <th className="w-64 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th className="w-48 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Item</th>
+                                <th className="w-32 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                <th className="w-24 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="w-36 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {paginatedOrders.map((order) => (
+                            {orders.map((order) => (
                                 <tr key={order._id} className="hover:bg-gray-50 h-20">
-                                    <td className="px-6 py-4 whitespace-nowrap overflow-hidden">
-                                        <div className="truncate">
-                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                # {order._id.slice(-8)}
-                                            </div>
-                                        </div>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900 truncate"># {order._id.slice(-8)}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap overflow-hidden">
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="ml-4 min-w-0 flex-1">
-                                            <div className="text-sm font-medium text-gray-900 truncate">
-                                                {order.userId.fullName}
-                                            </div>
-                                            <div className="text-sm text-gray-500 truncate">
-                                                {order.userId.email}
-                                            </div>
+                                            <div className="text-sm font-medium text-gray-900 truncate">{order.userId.fullName}</div>
+                                            <div className="text-sm text-gray-500 truncate">{order.userId.email}</div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap overflow-hidden">
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="min-w-0">
-                                            <div className="text-sm font-medium text-gray-900 truncate mb-1">
-                                                {order.title}
-                                            </div>
+                                            <div className="text-sm font-medium text-gray-900 truncate mb-1">{order.title}</div>
                                             <span className={`inline-flex px-2.5 py-1.5 text-xs font-semibold rounded-lg ${getTypeColor(order.type)}`}>
                                                 {order.type}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap overflow-hidden">
-                                        <div className="text-sm font-medium text-gray-900 truncate">
-                                            {formatCurrency(order.amount, order.currency)}
-                                        </div>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-medium text-gray-900 truncate">{formatCurrency(order.amount, order.currency)}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap overflow-hidden">
+                                    <td className="px-6 py-4 whitespace-nowrap">
                                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.paymentStatus)}`}>
                                             {order.paymentStatus}
                                         </span>
                                     </td>
-                                    <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900 overflow-hidden">
-                                        {/* <div className="truncate"> */}
-                                            {formatDate(order.createdAt)}
-                                        {/* </div> */}
-                                    </td>
-                                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button onClick={() => router.push(`/admin/orders/${order._id}`) } className="text-blue-600 hover:text-blue-900 p-2 rounded-full hover:bg-blue-50">
-                                            <Eye className="w-4 h-4" />
-                                        </button>
-                                    </td> */}
+                                    <td className="px-2 py-4 whitespace-nowrap text-sm text-gray-900">{formatDate(order.createdAt)}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -409,7 +332,8 @@ const AdminOrdersPage: React.FC = () => {
                 {/* Pagination */}
                 <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                     <div className="text-sm text-gray-700">
-                        Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedOrders.length)} of {sortedOrders.length} results
+                        Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+                        {Math.min(currentPage * itemsPerPage, totalOrders)} of {totalOrders} results
                     </div>
                     <div className="flex items-center space-x-2">
                         <button
@@ -444,7 +368,6 @@ const AdminOrdersPage: React.FC = () => {
                     </div>
                 </div>
             </div>
-            {/* </div> */}
         </div>
     );
 };

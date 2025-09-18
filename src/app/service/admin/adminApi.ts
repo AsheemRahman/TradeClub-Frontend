@@ -142,14 +142,17 @@ const couponStatus = async (id: string) => {
     }
 };
 
-const getOrders = async () => {
+const getOrders = async ({ page, limit, status, type, search, sortBy, sortOrder, }: {
+    page: number; limit: number; status: string; type: string; search: string; sortBy: string; sortOrder: string;
+}) => {
     try {
-        const response = await adminAxiosInstance.get(`${ADMIN}/orders`);
+        const response = await adminAxiosInstance.get(`${ADMIN}/orders`, { params: { page,  limit, status, type, search, sortBy, sortOrder,},});
         return response.data;
     } catch (error) {
         handleAxiosError(error);
     }
 };
+
 
 const getUser = async (userId: string) => {
     try {
