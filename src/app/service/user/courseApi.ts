@@ -87,7 +87,7 @@ const addReview = async (courseId: string, { rating, comment }: { rating: number
 
 const updateReview = async (courseId: string, { rating, comment }: { rating: number; comment: string }) => {
     try {
-        const response = await axiosInstance.post(`${USER}/${courseId}/edit-review`, { rating, comment });
+        const response = await axiosInstance.post(`${USER}/${courseId}/update-review`, { rating, comment });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
