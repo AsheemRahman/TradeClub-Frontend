@@ -1,21 +1,28 @@
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { Star, MessageCircle, ThumbsUp, Calendar, Award, Users } from 'lucide-react';
+import { Star, MessageCircle, ThumbsUp, Calendar, Award, Users, Plus, X } from 'lucide-react';
 import courseApi from '@/app/service/user/courseApi';
 import Image from 'next/image';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'react-toastify';
 
-const EnhancedReviewSection = () => {
+interface EnhancedReviewSectionProps {
+  percentage?: number;
+}
+
+const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentage = 0 }) => {
     const { courseId } = useParams() as { courseId: string };
+    const { user } = useAuthStore();
 
     const [userRating, setUserRating] = useState(0);
     const [hoverRating, setHoverRating] = useState(0);
     const [userComment, setUserComment] = useState('');
     const [submittingReview, setSubmittingReview] = useState(false);
-    const [courseProgress] = useState({ totalCompletedPercent: 95 });
+    const [showAddReview, setShowAddReview] = useState(false);
 
-    // const [reviews, setReviews] = useState<any[]>([]);
-    const [reviews, setReviews] = useState<{ user: { fullName: string, profilePicture: string }; rating: number; comment: string; createdAt: string }[]>([]);
+    const [reviews, setReviews] = useState<{ user: { _id: string, fullName: string, profilePicture: string }; rating: number; comment: string; createdAt: string }[]>([]);
     const [loadingReviews, setLoadingReviews] = useState(false);
+    const [userReview, setUserReview] = useState<{ user: { _id: string, fullName: string, profilePicture: string }; rating: number; comment: string; createdAt: string } | null>(null);
 
     useEffect(() => {
         const loadReviews = async () => {
@@ -30,13 +37,20 @@ const EnhancedReviewSection = () => {
                 setLoadingReviews(false);
             }
         };
-
         loadReviews();
     }, [courseId]);
 
+    // Check if user already reviewed
+    useEffect(() => {
+        if (reviews.length > 0 && user?.id) {
+            const found = reviews.find((r) => r.user._id === user.id);
+            setUserReview(found || null);
+        }
+    }, [reviews, user]);
+
     const handleAddReview = async () => {
         if (!userRating || !userComment.trim()) {
-            alert('Please provide a rating and comment.');
+            toast.error('Please provide a rating and comment.');
             return;
         }
         try {
@@ -47,11 +61,41 @@ const EnhancedReviewSection = () => {
             setReviews(response.reviews || []);
             setUserRating(0);
             setUserComment('');
+            setShowAddReview(false);
         } catch (err) {
             console.error('Failed to add review:', err);
         } finally {
             setSubmittingReview(false);
         }
+    };
+
+    // Update Review
+    const handleUpdateReview = async () => {
+        if (!userRating || !userComment.trim()) {
+            toast.error('Please provide a rating and comment.');
+            return;
+        }
+        try {
+            setSubmittingReview(true);
+            await courseApi.updateReview(courseId, {
+                rating: userRating,
+                comment: userComment,
+            });
+            const response = await courseApi.getReviews(courseId);
+            setReviews(response.reviews || []);
+            resetForm();
+        } catch (err) {
+            console.error('Failed to update review:', err);
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
+    const resetForm = () => {
+        setUserRating(0);
+        setUserComment('');
+        setHoverRating(0);
+        setShowAddReview(false);
     };
 
     const formatDate = (dateString: Date | string) => {
@@ -127,8 +171,7 @@ const EnhancedReviewSection = () => {
                                             {rating}★
                                         </span>
                                         <div className="flex-1 bg-gray-700 rounded-full h-2">
-                                            <div
-                                                className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full transition-all duration-500"
+                                            <div className="bg-gradient-to-r from-yellow-400 to-yellow-500 h-2 rounded-full transition-all duration-500"
                                                 style={{ width: `${percentage}%` }}
                                             />
                                         </div>
@@ -141,34 +184,52 @@ const EnhancedReviewSection = () => {
                         </div>
                     </div>
 
-                    {/* Add Review Form */}
-                    {courseProgress?.totalCompletedPercent >= 90 ? (
+                    {/* Write Review Button - Only show if eligible and not already showing form */}
+                    {percentage >= 90 && !showAddReview && (
+                        <div className="p-4 bg-gradient-to-br from-gray-800/30 to-gray-900/30 border-b border-white/10">
+                            <button onClick={() => {
+                                setShowAddReview(true);
+                                if (userReview) {
+                                    setUserRating(userReview.rating);
+                                    setUserComment(userReview.comment);
+                                }
+                            }}
+                                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg flex items-center justify-center sm:justify-start"
+                            >
+                                <Plus className="h-5 w-5 mr-2" />
+                                {userReview ? 'Edit Your Review' : 'Write a Review'}
+                            </button>
+                        </div>
+                    )}
+
+                    {percentage >= 90 && showAddReview && (
                         <div className="p-6 bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-b border-white/10">
-                            <div className="flex items-center mb-4">
-                                <Award className="h-5 w-5 text-yellow-400 mr-2" />
-                                <h4 className="text-lg font-semibold text-white">Share Your Experience</h4>
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center">
+                                    <Award className="h-5 w-5 text-yellow-400 mr-2" />
+                                    <h4 className="text-lg font-semibold text-white">
+                                        {userReview ? 'Edit Your Review' : 'Share Your Experience'}
+                                    </h4>
+                                </div>
+                                <button onClick={resetForm} className="text-gray-400 hover:text-white transition-colors duration-200" title="Close review form">
+                                    <X className="h-5 w-5" />
+                                </button>
                             </div>
 
-                            {/* Star Rating Input */}
+                            {/* Rating Input */}
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-300 mb-2">
                                     Your Rating
                                 </label>
                                 <div className="flex items-center space-x-1">
                                     {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
+                                        <button key={star} type="button"
                                             className="focus:outline-none transition-all duration-200 transform hover:scale-110"
                                             onMouseEnter={() => setHoverRating(star)}
                                             onMouseLeave={() => setHoverRating(0)}
                                             onClick={() => setUserRating(star)}
                                         >
-                                            <Star
-                                                className={`h-8 w-8 transition-colors duration-200 ${star <= (hoverRating || userRating)
-                                                    ? 'text-yellow-400 fill-current drop-shadow-lg'
-                                                    : 'text-gray-500 hover:text-yellow-300'
-                                                    }`}
+                                            <Star className={`h-8 w-8 transition-colors duration-200 ${star <= (hoverRating || userRating) ? 'text-yellow-400 fill-current drop-shadow-lg' : 'text-gray-500 hover:text-yellow-300'}`}
                                             />
                                         </button>
                                     ))}
@@ -191,7 +252,7 @@ const EnhancedReviewSection = () => {
                                 <textarea
                                     value={userComment}
                                     onChange={(e) => setUserComment(e.target.value)}
-                                    placeholder="Share your thoughts about this course. What did you like most? What could be improved?"
+                                    placeholder="Share your thoughts about this course..."
                                     rows={4}
                                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/25 focus:outline-none transition-all duration-200 resize-none"
                                 />
@@ -205,29 +266,37 @@ const EnhancedReviewSection = () => {
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
-                            <button
-                                onClick={handleAddReview}
-                                disabled={submittingReview || !userRating || userComment.length < 10}
-                                className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 shadow-lg disabled:shadow-none"
-                            >
-                                {submittingReview ? (
-                                    <div className="flex items-center justify-center">
-                                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
-                                        Submitting Review...
-                                    </div>
-                                ) : (
-                                    'Submit Review'
-                                )}
-                            </button>
+                            {/* Submit Buttons */}
+                            <div className="flex items-center space-x-3">
+                                <button onClick={userReview ? handleUpdateReview : handleAddReview} disabled={submittingReview || !userRating || userComment.length < 10}
+                                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-200 transform hover:scale-105 disabled:scale-100 shadow-lg disabled:shadow-none"
+                                >
+                                    {submittingReview ? (
+                                        <div className="flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2" />
+                                            {userReview ? 'Updating Review...' : 'Submitting Review...'}
+                                        </div>
+                                    ) : userReview ? (
+                                        'Update Review'
+                                    ) : (
+                                        'Submit Review'
+                                    )}
+                                </button>
+                                <button onClick={resetForm} className="px-4 py-3 text-gray-400 hover:text-white transition-colors duration-200">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
-                    ) : (
+                    )}
+
+                    {/* Progress Warning - Only show when not eligible and form is not showing */}
+                    { percentage < 90 && !showAddReview && (
                         <div className="p-6 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20">
                             <div className="flex items-center text-orange-300">
                                 <Award className="h-5 w-5 mr-2" />
                                 <p className="text-sm">
                                     Complete at least 90% of the course to leave a review.
-                                    Current progress: {courseProgress?.totalCompletedPercent || 0}%
+                                    Current progress: {percentage || 0}%
                                 </p>
                             </div>
                         </div>
@@ -311,10 +380,24 @@ const EnhancedReviewSection = () => {
                     )}
                 </div>
             ) : (
-                <div className="p-8 text-center">
-                    <MessageCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
-                    <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
-                </div>
+                <>
+                    <div className="p-8 text-center">
+                        <MessageCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+                        <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
+                    </div>
+                    {/* Progress Warning - Only show when not eligible and form is not showing */}
+                    {percentage < 90 && (
+                        <div className="p-6 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20 rounded-2xl ">
+                            <div className="flex items-center justify-center text-orange-300">
+                                <Award className="h-5 w-5 mr-2" />
+                                <p className="text-sm">
+                                    Complete at least 90% of the course to leave a review.
+                                    Current progress: {percentage || 0}%
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </>
     );

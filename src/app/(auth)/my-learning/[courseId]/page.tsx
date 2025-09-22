@@ -594,7 +594,7 @@ const EnhancedCoursePlayer = () => {
                                 </div>
                             </div>
                         </div>
-                        <EnhancedReviewSection />
+                        <EnhancedReviewSection percentage={courseProgress?.totalCompletedPercent} />
                     </div>
 
                     {/* Sidebar */}
