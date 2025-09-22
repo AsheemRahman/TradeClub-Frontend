@@ -30,6 +30,13 @@ const EnhancedCoursePlayer = () => {
     const [savingProgress, setSavingProgress] = useState(false);
     const [videoLoaded, setVideoLoaded] = useState(false);
 
+    const [reviews, setReviews] = useState<{ user: { fullName: string }; rating: number; comment: string; createdAt: string }[]>([]);
+    const [userRating, setUserRating] = useState(0);
+    const [userComment, setUserComment] = useState('');
+    const [loadingReviews, setLoadingReviews] = useState(false);
+    const [submittingReview, setSubmittingReview] = useState(false);
+
+
     const progressRef = useRef<HTMLDivElement | null>(null);
     const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -68,6 +75,23 @@ const EnhancedCoursePlayer = () => {
         if (courseId) {
             loadCourseData();
         }
+    }, [courseId]);
+
+    useEffect(() => {
+        const loadReviews = async () => {
+            if (!courseId) return;
+            try {
+                setLoadingReviews(true);
+                const response = await courseApi.getReviews(courseId);
+                setReviews(response.reviews || []);
+            } catch (err) {
+                console.error('Failed to fetch reviews:', err);
+            } finally {
+                setLoadingReviews(false);
+            }
+        };
+
+        if (courseId) loadReviews();
     }, [courseId]);
 
     // Video event handlers
@@ -369,6 +393,32 @@ const EnhancedCoursePlayer = () => {
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showSpeedMenu]);
+
+    const handleAddReview = async () => {
+        if (!courseProgress || (courseProgress.totalCompletedPercent || 0) < 100) {
+            alert('You must complete the course to submit a review.');
+            return;
+        }
+        if (!userRating || !userComment.trim()) {
+            alert('Please provide a rating and comment.');
+            return;
+        }
+        try {
+            setSubmittingReview(true);
+            const response = await courseApi.addReview(courseId, { rating: userRating, comment: userComment });
+            if (response.status) {
+                setReviews(prev => [...prev, response.review]);
+                setUserRating(0);
+                setUserComment('');
+            }
+        } catch (err) {
+            console.error('Failed to submit review:', err);
+            alert('Failed to submit review. Please try again.');
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+
 
     // Loading state
     if (loading) {
@@ -702,6 +752,52 @@ const EnhancedCoursePlayer = () => {
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                            <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl p-6 border border-white/10 mt-6">
+                                <h3 className="font-semibold text-white mb-4">Reviews</h3>
+                                {/* Add Review Form */}
+                                {courseProgress?.totalCompletedPercent && courseProgress?.totalCompletedPercent >= 90 ? (
+                                    <div className="mb-4">
+                                        <div className="flex items-center mb-2">
+                                            <label className="text-white mr-2">Your Rating:</label>
+                                            {[1, 2, 3, 4, 5].map(n => (
+                                                <span key={n} onClick={() => setUserRating(n)} className={`cursor-pointer text-yellow-400 text-xl ${userRating >= n ? 'opacity-100' : 'opacity-50'}`}>
+                                                    ★
+                                                </span>
+                                            ))}
+                                        </div>
+                                        <textarea value={userComment}
+                                            onChange={(e) => setUserComment(e.target.value)}
+                                            placeholder="Write your review..."
+                                            className="w-full p-2 rounded-lg bg-gray-700 text-white mb-2"
+                                        />
+                                        <button
+                                            onClick={handleAddReview}
+                                            disabled={submittingReview}
+                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                                        >
+                                            {submittingReview ? 'Submitting...' : 'Submit Review'}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-gray-400">Complete the course to leave a review.</p>
+                                )}
+
+                                {/* Reviews List */}
+                                {loadingReviews ? (
+                                    <p className="text-gray-400">Loading reviews...</p>
+                                ) : (
+                                    reviews.map((review, index) => (
+                                        <div key={index} className="mb-3 p-3 bg-gray-800 rounded-lg">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="font-medium text-white">{review.user.fullName}</span>
+                                                <span className="text-yellow-400">{'★'.repeat(review.rating)}</span>
+                                            </div>
+                                            <p className="text-gray-300 text-sm">{review.comment}</p>
+                                            <span className="text-gray-500 text-xs">{new Date(review.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     )}

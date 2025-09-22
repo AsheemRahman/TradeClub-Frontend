@@ -67,6 +67,16 @@ const updateCourseProgress = async (courseId: string, contentId: string, watched
     }
 };
 
+const getReviews = async (courseId: string) => {
+    const response = await axiosInstance.get(`${USER}/${courseId}/reviews`);
+    return response.data;
+};
+
+const addReview = async (courseId: string, { rating, comment }: { rating: number; comment: string }) => {
+    const response = await axiosInstance.post(`${USER}/${courseId}/review`, { rating, comment });
+    return response.data;
+};
+
 const courseApi = {
     courseData,
     categoryData,
@@ -74,6 +84,8 @@ const courseApi = {
     checkEnrolled,
     getProgress,
     updateCourseProgress,
+    getReviews,
+    addReview,
 };
 
 export default courseApi;
