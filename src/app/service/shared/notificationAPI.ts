@@ -49,6 +49,51 @@ export const createNotification = async (data: unknown) => {
     }
 };
 
+export const notifyCourseEnrollment = async (data: unknown) => {
+    try {
+        const response = await axiosInstance.post('/notifications/enrollment', data);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const notifySubscriptionPurchase = async (data: unknown) => {
+    try {
+        const response = await axiosInstance.post('/notifications/subscription-purchase', data);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const notifyConsultationScheduled = async (consultationId: string, consultationDate: Date) => {
+    try {
+        const response = await axiosInstance.post('/notifications/consultation', { consultationId, consultationDate });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const notifySubscriptionExpiring = async (data: unknown) => {
+    try {
+        const response = await axiosInstance.post('/notifications/subscription', data);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
+export const notifyNewCourseAvailable = async (courseId: string, courseName: string) => {
+    try {
+        const response = await axiosInstance.post('/notifications/new-course', { courseId, courseName });
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 
 const notificationAPI = {
     getNotifications,

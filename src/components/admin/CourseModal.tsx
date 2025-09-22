@@ -8,6 +8,7 @@ import { Loader2, Upload, Plus, Trash2 } from 'lucide-react';
 import courseApi from '@/app/service/admin/courseApi';
 import { ICategory, ICourse, ICourseFormData } from '@/types/courseTypes';
 import { courseValidation } from '@/app/utils/Validation';
+import { notifyNewCourseAvailable } from '@/app/service/shared/notificationAPI';
 
 interface Props {
     setShowModal: (value: boolean) => void;
@@ -119,6 +120,9 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
             const response = editingCourse ? await courseApi.editCourse(editingCourse._id, cleanedData) : await courseApi.addCourse(cleanedData);
             if (response.status) {
                 toast.success(editingCourse ? 'Course updated' : 'Course created');
+                if (!editingCourse) {
+                    await notifyNewCourseAvailable(response?.course._id, response.course.title)
+                }
                 await fetchData();
                 setShowModal(false);
                 setEditingCourse(null);

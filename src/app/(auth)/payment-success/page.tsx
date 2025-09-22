@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
 import { IOrder } from '@/types/types';
 import orderApi from '@/app/service/user/orderApi';
+import { notifyCourseEnrollment, notifySubscriptionPurchase } from '@/app/service/shared/notificationAPI';
 
 
 interface PaymentSuccessProps {
@@ -35,6 +36,7 @@ const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "custom
                     setError(null);
                     const response = await orderApi.createOrder(sessionId);
                     if (response?.status) {
+                        await (isCourse ? notifyCourseEnrollment(response.order.title) : notifySubscriptionPurchase(response.order.title));
                         toast.success("Order placed successfully");
                         setOrder(response.order);
                     } else {

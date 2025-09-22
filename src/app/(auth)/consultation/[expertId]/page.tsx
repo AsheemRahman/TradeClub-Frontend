@@ -15,6 +15,7 @@ import { useForm } from 'react-hook-form';
 import { sloBookingValidation } from '@/app/utils/Validation';
 import { showBookingConfirmation } from '@/app/utils/showBooking';
 import { IUserProfile } from '@/types/types';
+import { notifyConsultationScheduled } from '@/app/service/shared/notificationAPI';
 
 
 const BookingPage = () => {
@@ -203,6 +204,7 @@ const BookingPage = () => {
             if (!response.status) {
                 throw new Error('Failed to create booking');
             }
+            await notifyConsultationScheduled(response.session._id, response.session.bookedAt)
             // Show success Swal
             showBookingConfirmation({
                 expertName: expert.fullName,
@@ -423,8 +425,8 @@ const BookingPage = () => {
                                         <div className="flex gap-4">
                                             <button type="button" onClick={() => handleBookingForChange('self')}
                                                 className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${bookingFor === 'self'
-                                                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                                                        : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
+                                                    ? 'border-blue-600 bg-blue-50 text-blue-700'
+                                                    : 'border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 <User className="w-5 h-5" />
