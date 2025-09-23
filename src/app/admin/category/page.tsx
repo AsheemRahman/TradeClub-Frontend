@@ -44,7 +44,11 @@ export default function CategoryManagement() {
 
     const handleAddCategory = async () => {
         if (!formData.categoryName.trim() || formData.categoryName.length < 5) {
-            toast.error("Charactor must be more than 4")
+            toast.error("Category name must be more than 4")
+            return;
+        }
+        if (formData.categoryName.length > 20) {
+            toast.error("Category name must be less than 20")
             return;
         }
         try {
@@ -68,20 +72,25 @@ export default function CategoryManagement() {
 
     const handleEditCategory = async () => {
         if (!formData.categoryName.trim() || formData.categoryName.length < 5) {
-            toast.error("Charactor must be more than 4")
+            toast.error("Category name must be more than 4")
+            return;
+        }
+        if (formData.categoryName.length > 20) {
+            toast.error("Category name must be less than 20")
             return;
         }
         try {
             const response = await courseApi.editCategory(formData._id, formData.categoryName.trim());
             if (response?.status) {
-                const newCategory = {
+                const updatedCategory = {
                     _id: response?.newCategory?._id,
                     categoryName: response.newCategory.categoryName,
                     isActive: response.newCategory.isActive,
                     createdAt: new Date(response.newCategory.createdAt || new Date()),
                     updatedAt: new Date(response.newCategory.updatedAt || new Date())
                 };
-                setCategories(prev => [...prev, newCategory]);
+                setCategories(prev => prev.map(cat => cat._id === updatedCategory._id ? updatedCategory : cat)
+                );
                 toast.success("Category edited successfully");
                 setFormData({ _id: '', categoryName: '', isActive: true });
                 setShowAddModal(false);
