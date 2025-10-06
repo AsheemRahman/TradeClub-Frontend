@@ -1,6 +1,7 @@
 import axios from "axios";
 import axiosInstance from "./AxiosInstance";
 import { toast } from 'react-toastify'
+import { NOTIFICATIONS } from "@/lib/constants";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -15,7 +16,7 @@ export const handleAxiosError = (error: unknown) => {
 
 export const getNotifications = async (params: unknown) => {
     try {
-        const response = await axiosInstance.get(`/notifications`, { params });
+        const response = await axiosInstance.get(`${NOTIFICATIONS}`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -24,7 +25,7 @@ export const getNotifications = async (params: unknown) => {
 
 export const markAsRead = async (notificationId: string) => {
     try {
-        const response = await axiosInstance.patch(`/notifications/${notificationId}/read`);
+        const response = await axiosInstance.patch(`${NOTIFICATIONS}/${notificationId}/read`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -33,7 +34,7 @@ export const markAsRead = async (notificationId: string) => {
 
 export const markAllAsRead = async () => {
     try {
-        const response = await axiosInstance.patch('/notifications/mark-all-read');
+        const response = await axiosInstance.patch(`${NOTIFICATIONS}/mark-all-read`);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -42,7 +43,7 @@ export const markAllAsRead = async () => {
 
 export const createNotification = async (data: unknown) => {
     try {
-        const response = await axiosInstance.post('/notifications', data);
+        const response = await axiosInstance.post(`${NOTIFICATIONS}`, data);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -51,7 +52,7 @@ export const createNotification = async (data: unknown) => {
 
 export const notifyCourseEnrollment = async (data: unknown) => {
     try {
-        const response = await axiosInstance.post('/notifications/enrollment', data);
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/enrollment`, data);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -60,7 +61,7 @@ export const notifyCourseEnrollment = async (data: unknown) => {
 
 export const notifySubscriptionPurchase = async (data: unknown) => {
     try {
-        const response = await axiosInstance.post('/notifications/subscription-purchase', data);
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/subscription-purchase`, data);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -69,7 +70,7 @@ export const notifySubscriptionPurchase = async (data: unknown) => {
 
 export const notifyConsultationScheduled = async (consultationId: string, consultationDate: Date) => {
     try {
-        const response = await axiosInstance.post('/notifications/consultation', { consultationId, consultationDate });
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/consultation`, { consultationId, consultationDate });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -78,7 +79,7 @@ export const notifyConsultationScheduled = async (consultationId: string, consul
 
 export const notifySubscriptionExpiring = async (data: unknown) => {
     try {
-        const response = await axiosInstance.post('/notifications/subscription', data);
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/subscription`, data);
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -87,7 +88,7 @@ export const notifySubscriptionExpiring = async (data: unknown) => {
 
 export const notifyNewCourseAvailable = async (courseId: string, courseName: string) => {
     try {
-        const response = await axiosInstance.post('/notifications/new-course', { courseId, courseName });
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/new-course`, { courseId, courseName });
         return response.data;
     } catch (error) {
         handleAxiosError(error);

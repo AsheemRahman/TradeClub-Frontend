@@ -4,4 +4,8 @@ const EXPERT = '/expert'
 
 const ADMIN = '/admin'
 
-export { USER, EXPERT, ADMIN };
+const NOTIFICATIONS = '/notifications'
+
+const CHAT = '/chat'
+
+export { USER, EXPERT, ADMIN, NOTIFICATIONS, CHAT };
