@@ -134,6 +134,22 @@ export interface IGoogleLogin {
     role: 'user' | 'expert';
 }
 
+
+export interface IRegister {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+}
+
+export interface RegisterPayload {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    role: 'user' | 'expert';
+}
+
 // export interface NotificationType {
 //     _id: string;
 //     content: string;

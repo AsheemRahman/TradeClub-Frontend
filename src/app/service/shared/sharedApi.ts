@@ -2,14 +2,9 @@ import axios from "axios";
 import axiosInstance from "./AxiosInstance";
 
 import { toast } from 'react-toastify'
+import { RegisterPayload } from "@/types/types";
 
-interface RegisterPayload {
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-    role: 'user' | 'expert';
-}
+
 
 interface loginType {
     email: string;
