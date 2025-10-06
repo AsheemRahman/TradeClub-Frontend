@@ -1,119 +1,57 @@
 'use client';
 
-import Link from 'next/link';
-import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { toast } from 'react-toastify';
-
-import ImageSlider from './ImageSlider';
-import { loginType } from '@/types/types';
-import { googleSignup, LoginPost } from '@/app/service/shared/sharedApi';
-
-import { useAuthStore } from '@/store/authStore';
-import { useExpertStore } from '@/store/expertStore';
+import Link from "next/link";
+import { signIn, useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
+import ImageSlider from "./ImageSlider";
+import { IGoogleLogin } from "@/types/types";
 
 interface LoginPageProps {
-    role: 'user' | 'expert';
+    role: "user" | "expert";
+    onSubmit: (formData: { email: string; password: string; role: "user" | "expert" }) => void;
+    onGoogleSignup: (userData: IGoogleLogin, role: "user" | "expert") => void;
 }
 
-const Login: React.FC<LoginPageProps> = ({ role }) => {
-    const [formData, setFormData] = useState<loginType>({ email: '', password: '' });
+const Login: React.FC<LoginPageProps> = ({ role, onSubmit, onGoogleSignup }) => {
+    const [formData, setFormData] = useState({ email: "", password: "" });
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
     const { data: session, status } = useSession();
-    const router = useRouter();
 
-    const isUser = role === 'user';
-    const { user, setUserAuth } = useAuthStore();
-    const { expert, setExpertAuth } = useExpertStore();
+    const isUser = role === "user";
 
-    // Google login handler
+    // Google sign-in (NextAuth only)
     const handleGoogleLogin = async () => {
         try {
-            const result = await signIn('google', { callbackUrl: isUser ? '/home' : '/expert/dashboard', redirect: false, });
+            const result = await signIn("google", { redirect: false });
             if (result?.error) {
-                console.error('Google sign-in failed:', result.error);
-                toast.error('Sign in using Google failed.');
+                toast.error("Sign in with Google failed.");
             }
         } catch (error) {
-            console.error('Google Sign-in error:', error);
-            toast.error('Error during Google Sign-in.');
+            console.error(error);
+            toast.error("Error during Google Sign-in.");
         }
     };
 
-    // Effect for redirecting or sending session data to backend
+    // When Google session becomes available, notify parent to handle backend
     useEffect(() => {
-        if (status === 'loading') return;
-        const alreadyLoggedIn = user !== null;
-        const alreadyExpertIn = expert !== null;
-
-        if (isUser && alreadyLoggedIn) {
-            router.replace('/home');
-            return;
-        }
-        if (!isUser && alreadyExpertIn) {
-            router.replace('/expert/dashboard');
-            return;
-        }
-        if (!alreadyLoggedIn && status === 'authenticated' && session?.user) {
-            const sendUserToBackend = async () => {
-                const userData = {
-                    fullName: session.user.name ?? '',
-                    email: session.user.email ?? '',
-                    profilePicture: session.user.image ?? '',
-                    role,
-                };
-                try {
-                    const response = await googleSignup(userData);
-                    if (response.status) {
-                        const { user, expert, accessToken } = response.data;
-                        if (isUser) {
-                            setUserAuth(user, accessToken);
-                            router.replace('/home');
-                        } else {
-                            setExpertAuth(expert, accessToken);
-                            router.replace('/expert/dashboard');
-                        }
-                        toast.success(response.message);
-                    } else {
-                        toast.error(response?.message || 'Google Login failed. Please try again.');
-                    }
-                } catch (error) {
-                    console.error('Backend signup error:', error);
-                    toast.error('Google authentication failed.');
-                }
+        if (status === "authenticated" && session?.user) {
+            const userData = {
+                fullName: session.user.name ?? "",
+                email: session.user.email ?? "",
+                profilePicture: session.user.image ?? "",
+                role,
             };
-            sendUserToBackend();
+            onGoogleSignup(userData, role);
         }
-    }, [session, status, isUser, role, router, user, expert, setUserAuth, setExpertAuth]);
+    }, [session, status, onGoogleSignup, role]);
 
-    const handleLogin = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        try {
-            const payload = { ...formData, role };
-            const response = await LoginPost(payload);
-            if (response.status) {
-                const { user, expert, accessToken } = response.data;
-                if (isUser) {
-                    setUserAuth(user, accessToken);
-                    router.replace('/home');
-                } else {
-                    setExpertAuth(expert, accessToken);
-                    router.replace('/expert/dashboard');
-                }
-                toast.success(response.message);
-            } else {
-                toast.error(response?.message || 'Login failed. Please try again.');
-            }
-        } catch (error) {
-            console.error('Login error:', error);
-            toast.error('An error occurred during login.');
-        } finally {
-            setIsLoading(false);
-        }
+        await onSubmit({ ...formData, role });
+        setIsLoading(false);
     };
 
     return (
@@ -123,32 +61,34 @@ const Login: React.FC<LoginPageProps> = ({ role }) => {
                 <ImageSlider />
                 {/* Form Section */}
                 <div className="w-full px-6 md:px-20 py-6">
-                    <form className="flex flex-col gap-4" onSubmit={handleLogin}>
+                    <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                         <h1 className="text-4xl font-semibold mb-4">
-                            {isUser ? 'Unlock Your Trading Potential' : 'Expert Login Dashboard'}
+                            {isUser ? "Unlock Your Trading Potential" : "Expert Login Dashboard"}
                         </h1>
 
-                        <input type="text" name="email" placeholder={isUser ? 'Email or Phone Number' : 'Expert Email'} required value={formData.email} disabled={isLoading}
+                        <input type="text" name="email" placeholder={isUser ? "Email or Phone Number" : "Expert Email"} required value={formData.email} disabled={isLoading}
+                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             className="bg-transparent border-b border-white py-3 text-white placeholder-gray-300 focus:outline-none"
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })} />
+                        />
 
                         <div className="relative">
-                            <input type={showPassword ? 'text' : 'password'} name="password" placeholder="Password" required value={formData.password} disabled={isLoading}
+                            <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" required value={formData.password} disabled={isLoading}
                                 className="bg-transparent border-b border-white py-3 w-full text-white placeholder-gray-300 focus:outline-none"
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                            />
                             <span onClick={() => setShowPassword(!showPassword)} className="absolute right-2 top-1/2 -translate-y-1/2 cursor-pointer text-xl">
-                                <i className={`bi ${showPassword ? 'bi-eye' : 'bi-eye-slash'}`} />
+                                <i className={`bi ${showPassword ? "bi-eye" : "bi-eye-slash"}`} />
                             </span>
                         </div>
 
                         <div className="text-right text-sm">
-                            <Link href={isUser ? '/forgotPassword' : '/expert/forgotPassword'} className="text-[#db4437] hover:text-[#f55]">
+                            <Link href={isUser ? "/forgotPassword" : "/expert/forgotPassword"} className="text-[#db4437] hover:text-[#f55]">
                                 Forgot Password?
                             </Link>
                         </div>
 
                         <button type="submit" className="bg-[#db4437] hover:bg-[#f55] text-white py-2 rounded-lg transition-all disabled:opacity-60" disabled={isLoading}>
-                            {isLoading ? 'Logging in...' : isUser ? 'Log In' : 'Login as Expert'}
+                            {isLoading ? "Logging in..." : isUser ? "Log In" : "Login as Expert"}
                         </button>
                     </form>
 
@@ -174,7 +114,7 @@ const Login: React.FC<LoginPageProps> = ({ role }) => {
 
                     <div className="text-center text-sm mt-7">
                         Don&apos;t have an account?
-                        <Link href={isUser ? '/register' : '/expert/register'} className="text-[#db4437] hover:text-[#f55] ml-3 underline">
+                        <Link href={isUser ? "/register" : "/expert/register"} className="text-[#db4437] hover:text-[#f55] ml-3 underline">
                             Register
                         </Link>
                     </div>
