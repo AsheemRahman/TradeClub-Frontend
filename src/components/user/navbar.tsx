@@ -46,10 +46,10 @@ export default function Navbar() {
                             <>
                                 <Link href="/my-learning" className="font-['Allura'] text-lg hover:text-gray-400">My-learning</Link>
                                 <Link href="/consultation" className="font-['Allura'] text-lg hover:text-gray-400">Consultation</Link>
+                                <Link href="/sessions" className="font-['Allura'] text-lg hover:text-gray-400">Sessions</Link>
                             </>
                         }
                         <Link href="/subscription" className="font-['Allura'] text-lg hover:text-gray-400">Subscription</Link>
-                        <Link href="/contact" className="font-['Allura'] text-lg hover:text-gray-400">Contact</Link>
                     </div>
 
                     <div className="flex items-center space-x-4 ml-20">
