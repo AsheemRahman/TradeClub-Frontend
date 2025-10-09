@@ -107,7 +107,7 @@ export interface typeSession {
     expertId: Expert;
     availabilityId: ExpertAvailability;
     meetingLink?: string;
-    status: 'upcoming' | 'completed' | 'missed';
+    status: 'upcoming' | 'completed' | 'missed' | 'canceled';
     bookedAt: string;
     startedAt?: string;
     endedAt?: string;
