@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useExpertStore } from "@/store/expertStore";
 import { useAuthStore } from "@/store/authStore";
 import { IGoogleLogin } from "@/types/types";
+import { useCallback } from "react";
 
 const ExpertLogin = () => {
     const router = useRouter();
@@ -36,7 +37,7 @@ const ExpertLogin = () => {
     };
 
     // Google signup handler
-    const handleGoogleSignup = async (userData: IGoogleLogin, role: "user" | "expert") => {
+    const handleGoogleSignup = useCallback(async (userData: IGoogleLogin, role: "user" | "expert") => {
         try {
             const response = await googleSignup(userData);
             if (response.status) {
@@ -56,7 +57,7 @@ const ExpertLogin = () => {
             console.error("Google signup error:", error);
             toast.error("Error during Google authentication.");
         }
-    };
+    }, [setUserAuth, setExpertAuth, router]);
 
     return <Login role="expert" onSubmit={handleLogin} onGoogleSignup={handleGoogleSignup} />;
 };

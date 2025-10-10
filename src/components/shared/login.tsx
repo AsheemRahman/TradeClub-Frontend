@@ -18,6 +18,7 @@ const Login: React.FC<LoginPageProps> = ({ role, onSubmit, onGoogleSignup }) => 
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const { data: session, status } = useSession();
+    const [hasCalledGoogleSignup, setHasCalledGoogleSignup] = useState(false);
 
     const isUser = role === "user";
 
@@ -37,6 +38,7 @@ const Login: React.FC<LoginPageProps> = ({ role, onSubmit, onGoogleSignup }) => 
     // When Google session becomes available, notify parent to handle backend
     useEffect(() => {
         if (status === "authenticated" && session?.user) {
+            setHasCalledGoogleSignup(true);
             const userData = {
                 fullName: session.user.name ?? "",
                 email: session.user.email ?? "",
@@ -45,7 +47,7 @@ const Login: React.FC<LoginPageProps> = ({ role, onSubmit, onGoogleSignup }) => 
             };
             onGoogleSignup(userData, role);
         }
-    }, [session, status, onGoogleSignup, role]);
+    }, [session, status, onGoogleSignup, role, hasCalledGoogleSignup]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
