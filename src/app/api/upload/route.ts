@@ -16,10 +16,7 @@ export async function POST(request: NextRequest) {
 
         // Validate file size (10MB limit)
         if (file.size > 10 * 1024 * 1024) {
-            return NextResponse.json(
-                { error: 'File size exceeds 10MB limit' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'File size exceeds 10MB limit' }, { status: 400 });
         }
 
         // Validate file type
@@ -36,10 +33,7 @@ export async function POST(request: NextRequest) {
         ];
 
         if (!allowedTypes.includes(file.type)) {
-            return NextResponse.json(
-                { error: 'File type not allowed' },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: 'File type not allowed' }, { status: 400 });
         }
 
         const result = await uploadFileToS3(file, folder);
@@ -51,13 +45,10 @@ export async function POST(request: NextRequest) {
                 key: result.key,
             });
         } else {
-            return NextResponse.json(
-                { error: result.error },
-                { status: 500 }
-            );
+            return NextResponse.json({ error: result.error }, { status: 500 });
         }
     } catch (error) {
         console.error('Upload error:', error);
-        return NextResponse.json( { error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 }
