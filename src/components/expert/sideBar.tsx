@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { signOut } from 'next-auth/react';
 import { usePathname, useRouter } from 'next/navigation';
 import { logoutApi } from '@/app/service/shared/sharedApi';
-import { FaChartPie, FaUserFriends, FaShoppingCart, FaSignOutAlt, FaWallet, FaCalendarAlt, FaComments, } from 'react-icons/fa';
+import { FaChartPie, FaUserFriends, FaSignOutAlt, FaWallet, FaCalendarAlt, FaComments, } from 'react-icons/fa';
 import { useExpertStore } from '@/store/expertStore';
 
 const menuItems = [
@@ -14,8 +14,8 @@ const menuItems = [
     { label: 'Session', icon: <FaCalendarAlt />, href: '/expert/session' },
     { label: 'Message', icon: <FaComments />, href: '/expert/message' },
     { label: 'Wallet', icon: <FaWallet />, href: '/expert/wallet' },
-    { label: 'Purchases', icon: <FaShoppingCart />, href: '/expert/purchase' },
-    { label: 'Rating', icon: <FaShoppingCart />, href: '/expert/rating' },
+    // { label: 'Purchases', icon: <FaShoppingCart />, href: '/expert/purchase' },
+    // { label: 'Rating', icon: <FaShoppingCart />, href: '/expert/rating' },
     { label: 'Logout', icon: <FaSignOutAlt /> },
 ];
 
@@ -32,8 +32,8 @@ export default function Sidebar() {
         '/expert/session',
         '/expert/chat',
         '/expert/wallet',
-        '/expert/purchase',
-        '/expert/rating',
+        // '/expert/purchase',
+        // '/expert/rating',
     ];
 
     const handleMenuClick = (href: string | undefined) => {
