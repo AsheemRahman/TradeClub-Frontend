@@ -21,19 +21,26 @@ interface IRevenue {
     customers: number;
 }
 
+interface IStats {
+    totalCustomers: number;
+    totalExperts: number;
+}
+
 
 export default function Dashboard() {
     const [activeTab, setActiveTab] = useState('overview');
     const [revenueData, setRevenueData] = useState<IRevenue[]>([]);
     const [courseData, setCourseData] = useState<ICourseWithStats[]>([]);
+    const [stats, setStats] = useState<IStats>({ totalCustomers: 0, totalExperts: 0 });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
-                const [revenueRes, coursesRes] = await Promise.all([
+                const [revenueRes, coursesRes, statsRes] = await Promise.all([
                     adminApi.getRevenue(),
-                    courseApi.getCourse()
+                    courseApi.getCourse(),
+                    adminApi.getStats(),
                 ]);
                 const coursesWithStats = coursesRes.courses.map((course: ICourse, index: number) => ({
                     ...course,
@@ -42,6 +49,10 @@ export default function Dashboard() {
                 }));
                 setRevenueData(revenueRes.revenue);
                 setCourseData(coursesWithStats);
+                setStats({
+                    totalCustomers: statsRes.totalCustomers,
+                    totalExperts: statsRes.totalExperts,
+                });
             } catch (error) {
                 console.error("Error fetching dashboard data", error);
             } finally {
@@ -95,7 +106,9 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-1">1,234</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">
+                                {stats.totalCustomers.toLocaleString()}
+                                </p>
                             <div className="flex items-center mt-2">
                                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                                 <span className="text-sm text-green-600">+12% last month</span>
@@ -111,7 +124,9 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between">
                         <div>
                             <p className="text-sm font-medium text-gray-600">Total Experts</p>
-                            <p className="text-3xl font-bold text-gray-900 mt-1">872</p>
+                            <p className="text-3xl font-bold text-gray-900 mt-1">
+                                {stats.totalExperts.toLocaleString()}
+                            </p>
                             <div className="flex items-center mt-2">
                                 <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
                                 <span className="text-sm text-green-600">+8% last month</span>
