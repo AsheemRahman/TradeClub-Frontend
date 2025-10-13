@@ -112,6 +112,16 @@ const UserSessionsPage = () => {
         };
     };
 
+    // Sort sessions so upcoming/available are on top
+    const sortedSessions = [...sessions].sort((a, b) => {
+        const statusOrder = { upcoming: 1, completed: 2, missed: 3, canceled: 4 };
+        // Prioritize upcoming sessions that can be joined now
+        const canJoinA = canJoinMeeting(a) ? 0 : 1;
+        const canJoinB = canJoinMeeting(b) ? 0 : 1;
+        if (canJoinA !== canJoinB) return canJoinA - canJoinB;
+        return (statusOrder[a.status] || 5) - (statusOrder[b.status] || 5);
+    });
+
     if (loading && sessions.length === 0) {
         return (
             <div className="min-h-screen bg-[#151231] py-8 mx-5 rounded-lg">
@@ -208,7 +218,7 @@ const UserSessionsPage = () => {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {sessions.map((session) => {
+                        {sortedSessions.map((session) => {
                             const timeInfo = formatSessionTime(session);
                             const canJoin = canJoinMeeting(session);
 
@@ -280,7 +290,7 @@ const UserSessionsPage = () => {
                                                             <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                                             </svg>
-                                                            <span>Booked on {format(new Date(session.bookedAt), 'MMM dd, yyyy')}</span>
+                                                            <span>Booked on {format(new Date(session.createdAt), 'MMM dd, yyyy')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -314,7 +324,7 @@ const UserSessionsPage = () => {
                                                 >
                                                     View Details
                                                 </button> */}
-                                                {session.status === 'upcoming' && (
+                                                {session.status === 'upcoming' && new Date(timeInfo.date).getTime() > new Date().getTime() && (
                                                     <button onClick={() => handleCancelSession(session._id)}
                                                         className="inline-flex items-center px-4 py-2 border border-red-500 text-sm font-medium rounded-md text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                                                     >
