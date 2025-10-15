@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import ImageSlider from "./ImageSlider";
 import { IGoogleLogin } from "@/types/types";
+import { useExpertStore } from "@/store/expertStore";
+import { useAuthStore } from "@/store/authStore";
+import { useRouter } from "next/navigation";
 
 interface LoginPageProps {
     role: "user" | "expert";
@@ -21,6 +24,19 @@ const Login: React.FC<LoginPageProps> = ({ role, onSubmit, onGoogleSignup }) => 
     const [hasCalledGoogleSignup, setHasCalledGoogleSignup] = useState(false);
 
     const isUser = role === "user";
+    const router = useRouter();
+    const authStore = useAuthStore();
+    const expertStore = useExpertStore();
+
+    useEffect(() => {
+        if (isUser) {
+            const alreadyLoggedIn = authStore.user !== null;
+            if (alreadyLoggedIn) router.replace('/home');
+        } else {
+            const alreadyLoggedIn = expertStore.expert !== null;
+            if (alreadyLoggedIn) router.replace('/expert/dashboard');
+        }
+    }, [authStore.user, expertStore.expert, isUser, router]);
 
     // Google sign-in (NextAuth only)
     const handleGoogleLogin = async () => {
