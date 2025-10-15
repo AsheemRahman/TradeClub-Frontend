@@ -7,12 +7,21 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/authStore";
 import { useExpertStore } from "@/store/expertStore";
 import { IGoogleLogin } from "@/types/types";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 const UserLogin = () => {
     const router = useRouter();
-    const { setUserAuth } = useAuthStore();
-    const { setExpertAuth } = useExpertStore();
+    const { setUserAuth, user, token: userToken } = useAuthStore();
+    const { setExpertAuth, expert, token: expertToken } = useExpertStore();
+
+    // Redirect logic
+    useEffect(() => {
+        if (user && userToken) {
+            router.replace("/home");
+        } else if (expert && expertToken) {
+            router.replace("/expert/dashboard");
+        }
+    }, [user, userToken, expert, expertToken, router]);
 
     // handle normal login
     const handleLogin = async (formData: { email: string; password: string; role: "user" | "expert" }) => {
@@ -59,6 +68,8 @@ const UserLogin = () => {
             toast.error("Error during Google authentication.");
         }
     }, [setUserAuth, setExpertAuth, router]);
+
+    if (userToken || expertToken) return null;
 
     return <Login role="user" onSubmit={handleLogin} onGoogleSignup={handleGoogleSignup} />;
 };

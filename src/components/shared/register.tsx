@@ -4,10 +4,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { RegisterFormData } from '@/types/types';
 import { toast } from 'react-toastify';
-import { useRouter } from 'next/navigation';
 
 import { Eye, EyeOff } from 'lucide-react';
 import { FcGoogle } from 'react-icons/fc';
@@ -15,10 +14,8 @@ import { FaFacebook } from 'react-icons/fa';
 
 import { useForm } from 'react-hook-form';
 import { registerValidation } from '@/app/utils/Validation';
-import { useAuthStore } from '@/store/authStore';
 import { TermsModal } from './TermsModal';
 import { PrivacyModal } from './PolicyModal';
-import { useExpertStore } from '@/store/expertStore';
 
 interface RegisterPageProps {
     role: 'user' | 'expert';
@@ -32,20 +29,6 @@ const RegisterPage: React.FC<RegisterPageProps> = ({ role, onRegister }) => {
     const [isTermsOpen, setIsTermsOpen] = useState(false);
     const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
     const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterFormData>();
-
-    const router = useRouter();
-    const authStore = useAuthStore();
-    const expertStore = useExpertStore();
-
-    useEffect(() => {
-        if (role === "user") {
-            const alreadyLoggedIn = authStore.user !== null;
-            if (alreadyLoggedIn) router.replace('/home');
-        } else {
-            const alreadyLoggedIn = expertStore.expert !== null;
-            if (alreadyLoggedIn) router.replace('/expert/dashboard');
-        }
-    }, [authStore.user, expertStore.expert, role, router]);
 
     const onSubmit = async (data: RegisterFormData) => {
         if (data.password !== data.confirmPassword) {
