@@ -1,4 +1,5 @@
 "use client"
+export const dynamic = 'force-dynamic';
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { Upload, Calendar, MapPin, User, Briefcase, TrendingUp, Camera, FileText, CreditCard, Image } from 'lucide-react';
