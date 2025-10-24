@@ -1,8 +1,10 @@
+"use client"
+
 import { registerPost } from "@/app/service/shared/sharedApi";
 import Register from "@/components/shared/register";
 import { useExpertStore } from "@/store/expertStore";
 import { IRegister, RegisterPayload } from "@/types/types";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 
