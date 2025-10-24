@@ -8,13 +8,9 @@ import { IOrder } from '@/types/types';
 import orderApi from '@/app/service/user/orderApi';
 import { notifyCourseEnrollment, notifySubscriptionPurchase } from '@/app/service/shared/notificationAPI';
 
-
-interface PaymentSuccessProps {
-    customerEmail?: string;
-    customerName?: string;
-}
-
-const PaymentSuccess: React.FC<PaymentSuccessProps> = ({ customerEmail = "customer@example.com", customerName = "John Doe", }) => {
+const PaymentSuccess = () => {
+    const customerEmail = "customer@example.com"
+    const customerName = "John Doe"
     const [order, setOrder] = useState<IOrder | null>(null);
     const [isVisible, setIsVisible] = useState(false);
     const [detailsAnimated, setDetailsAnimated] = useState(false);
