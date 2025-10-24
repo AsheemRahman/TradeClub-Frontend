@@ -1,9 +1,9 @@
-import { Coupon } from "@/types/types";
+import { ICoupon } from "@/types/types";
 import React, { useState } from "react";
 
 type CouponModalProps = {
-    coupon?: Coupon | null;
-    onSave: (couponData: Coupon) => void;
+    coupon?: ICoupon | null;
+    onSave: (couponData: ICoupon) => void;
     onClose: () => void;
 };
 
@@ -23,7 +23,7 @@ export const CouponModal: React.FC<CouponModalProps> = ({ coupon, onSave, onClos
     });
 
     const handleSubmit = () => {
-        const couponData:Coupon = {
+        const couponData:ICoupon = {
             ...formData,
             expiresAt: new Date(formData.expiresAt),
             discountValue: Number(formData.discountValue),
