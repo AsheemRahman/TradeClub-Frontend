@@ -87,10 +87,7 @@ export const SubscriptionPlans = () => {
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 {plans.map((plan, index) => (
-                    <div key={index}
-                        className={`relative bg-white rounded-3xl p-8 shadow-lg border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 
-                            ${plan.popular ? 'border-purple-200 shadow-purple-100' : 'border-gray-100 hover:border-gray-200'}`}
-                    >
+                    <div key={index}  className={`relative bg-white rounded-3xl p-8 shadow-lg border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2  'border-gray-100 hover:border-gray-200'`}>
                         {/* {plan.popular && (
                             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                                 <div className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-semibold">
@@ -133,10 +130,8 @@ export const SubscriptionPlans = () => {
                             ))}
                         </ul>
 
-                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300
-                            ${plan.popular ? 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-xl hover:shadow-purple-500/25'
-                                : 'bg-gray-900 text-white hover:bg-gray-800'
-                            }`} onClick={() => handlePurchase(plan._id)} >
+                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-xl hover:shadow-purple-500/25' `} 
+                                onClick={() => handlePurchase(plan._id)} >
                             Get Started
                         </button>
                     </div>
