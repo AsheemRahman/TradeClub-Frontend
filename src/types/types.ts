@@ -1,3 +1,4 @@
+import { ISubscriptionPlan } from "./subscriptionTypes";
 
 export interface TokenPayload {
     email: string;
@@ -150,24 +151,14 @@ export interface RegisterPayload {
     role: 'user' | 'expert';
 }
 
-// export interface NotificationType {
-//     _id: string;
-//     content: string;
-//     createdAt: string;
-//     isRead: boolean;
-//     receiverId: string;
-//     updatedAt: string;
-//     __v: number;
-// }
-
-// export interface review {
-//     courseId: string;
-//     userId: string;
-//     rating: number;
-//     review: string;
-// }
-
-// export interface ReviewEdit {
-//     rating: number;
-//     review: string;
-// }
+export interface IUserSubscription  {
+    user: string;
+    subscriptionPlan: ISubscriptionPlan;
+    startDate: Date;
+    endDate: Date;
+    isActive: boolean;
+    callsRemaining: number;
+    paymentId?: string;
+    paymentStatus?: 'paid' | 'pending' | 'failed';
+    autoRenew?: boolean;
+}

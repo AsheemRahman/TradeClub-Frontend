@@ -5,12 +5,16 @@ import { ISubscriptionPlan } from '@/types/subscriptionTypes';
 import userApi from '@/app/service/user/userApi';
 import orderApi from '@/app/service/user/orderApi';
 import Swal from 'sweetalert2';
+import { useAuthStore } from '@/store/authStore';
+import { IUserSubscription } from '@/types/types';
 
 const SubscriptionPlansPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(false);
     const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
-    const [currentUserPlan, setCurrentUserPlan] = useState<any>(null);
+    const [currentUserPlan, setCurrentUserPlan] = useState<IUserSubscription>();
+
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -31,6 +35,7 @@ const SubscriptionPlansPage = () => {
             try {
                 const response = await userApi.checkSubscription();
                 if (response.status && response.subscription) {
+                    console.log("asheem rahman", response.subscription)
                     setCurrentUserPlan(response.subscription);
                 }
             } catch (error) {
@@ -39,15 +44,17 @@ const SubscriptionPlansPage = () => {
         };
 
         fetchPlans();
-        fetchCurrentPlan();
-    }, []);
+        if (user) {
+            fetchCurrentPlan();
+        }
+    }, [user]);
 
     // Function to handle purchase
     const handlePurchase = async (planId: string) => {
         const selectedPlan = plans.find(plan => plan._id === planId);
 
         // Check if user already has this exact plan
-        if (currentUserPlan && currentUserPlan.planId === planId) {
+        if (currentUserPlan && currentUserPlan.subscriptionPlan._id === planId) {
             Swal.fire({
                 icon: 'info',
                 title: 'Plan Active',
@@ -60,8 +67,8 @@ const SubscriptionPlansPage = () => {
         }
 
         // Check if user has an existing plan and trying to buy a new one
-        if (currentUserPlan && currentUserPlan.planId !== planId) {
-            const currentPlan = plans.find(plan => plan._id === currentUserPlan.planId);
+        if (currentUserPlan && currentUserPlan.subscriptionPlan._id !== planId) {
+            const currentPlan = plans.find(plan => plan._id === currentUserPlan.subscriptionPlan._id);
             const callsRemaining = currentUserPlan.callsRemaining || 0;
             const result = await Swal.fire({
                 title: `Upgrade to ${selectedPlan?.name}?`,
@@ -136,7 +143,7 @@ const SubscriptionPlansPage = () => {
                     </p>
                     {currentUserPlan && (
                         <div className="mt-4 mb-4 inline-block bg-blue-500 text-white px-6 py-2 rounded-lg text-sm">
-                            Current Plan: {plans.find(p => p._id === currentUserPlan.planId)?.name || 'Active'}
+                            Current Plan: {plans.find(p => p._id === currentUserPlan.subscriptionPlan._id)?.name || 'Active'}
                             {currentUserPlan.callsRemaining !== undefined && ` • ${currentUserPlan.callsRemaining} calls remaining`}
                         </div>
                     )}
@@ -159,7 +166,7 @@ const SubscriptionPlansPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-6">
                             {plans.map((plan) => {
                                 const isPopular = mostPopular?._id === plan._id;
-                                const isCurrentPlan = currentUserPlan?.planId === plan._id;
+                                const isCurrentPlan = currentUserPlan?.subscriptionPlan._id === plan._id;
                                 const monthlyPrice = getMonthlyPrice(plan.price, plan.duration);
 
                                 return (
