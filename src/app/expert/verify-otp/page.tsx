@@ -1,3 +1,5 @@
+'use client';
+
 import OTPVerification from "@/components/shared/otp";
 
 
