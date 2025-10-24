@@ -59,18 +59,18 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ role }) => {
                         alt="Mail Animation" width={112} height={112} className="mx-auto mb-6" />
                 </div>
 
-                <h2 className="text-3xl font-bold text-center text-white0 mb-4">Forgot Password</h2>
-                <p className="text-center text-gray-600 mb-8">
+                <h2 className="text-3xl font-bold text-center text-white mb-4">Forgot Password</h2>
+                <p className="text-center text-gray-400 mb-8">
                     Enter your email and we&apos;ll send you a link to reset your password.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
                             Email Address
                         </label>
                         <input type="email" id="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com"
-                            className="w-full p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                            className="w-full p-3 border text-white border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400" />
                     </div>
 
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit"
