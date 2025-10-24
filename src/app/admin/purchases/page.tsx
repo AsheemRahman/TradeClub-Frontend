@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Search, Download, RefreshCw, Package, IndianRupee } from 'lucide-react';
 import { IOrderWithPopulated, OrderStats } from '@/types/orderTypes';
 import adminApi from '@/app/service/admin/adminApi';
@@ -33,7 +33,7 @@ const AdminOrdersPage: React.FC = () => {
         totalRevenue: 0,
     });
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         setLoading(true);
         setError(null);
         try {
@@ -58,11 +58,11 @@ const AdminOrdersPage: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentPage, itemsPerPage, statusFilter, typeFilter, searchTerm, sortBy, sortOrder]);
 
     useEffect(() => {
         fetchOrders();
-    }, [currentPage, statusFilter, typeFilter, searchTerm, sortBy, sortOrder]);
+    }, [fetchOrders]);
 
     const getStatusColor = (status: IOrderWithPopulated['paymentStatus']): string => {
         switch (status) {

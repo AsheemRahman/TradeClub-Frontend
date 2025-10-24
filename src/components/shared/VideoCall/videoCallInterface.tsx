@@ -302,7 +302,8 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
         const configuration: RTCConfiguration = {
             iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
         };
-        peerConnectionRef.current = new RTCPeerConnection(configuration);
+        const pc = new RTCPeerConnection(configuration);
+        peerConnectionRef.current = pc;
 
         peerConnectionRef.current.onicecandidate = (event) => {
             if (event.candidate && socketRef.current) {
@@ -342,12 +343,15 @@ const VideoCallInterface: React.FC<VideoCallInterfaceProps> = ({ role }) => {
 
         startMedia();
 
+        // Capture ref values for cleanup
+        const localVideoEl = localVideoRef.current;
+        const localStream = localStreamRef.current;
+
         return () => {
-            const localStream = localStreamRef.current;
             localStream?.getTracks().forEach((track) => track.stop());
             localStreamRef.current = null;
-            if (localVideoRef.current) localVideoRef.current.srcObject = null;
-            peerConnectionRef.current?.close();
+            if (localVideoEl) localVideoEl.srcObject = null;
+            pc.close();
             peerConnectionRef.current = null;
         };
     }, [sessionId, userId, startMedia]);

@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import notificationAPI from '@/app/service/shared/notificationAPI';
 import { useSocketContext } from "@/context/socketContext";
 import { NotificationType } from '@/types/notificationTypes';
+import { AxiosError } from 'axios';
 
 
 export const useNotifications = () => {
@@ -37,8 +38,8 @@ export const useNotifications = () => {
             if (err instanceof Error) {
                 setError(err.message);
             } else if (typeof err === "object" && err !== null && "response" in err) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                setError((err as any).response?.data?.message || "Failed to fetch notifications");
+                const axiosErr = err as AxiosError<{ message: string }>;
+                setError(axiosErr.response?.data?.message || "Failed to fetch notifications");
             } else {
                 setError("Failed to fetch notifications");
             }
