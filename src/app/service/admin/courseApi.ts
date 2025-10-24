@@ -3,6 +3,7 @@ import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
 import { ICourseFormData } from "@/types/courseTypes";
 import { ADMIN } from "@/lib/constants";
+import { CATEGORY } from "@/lib/routeConstants";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -17,7 +18,7 @@ export const handleAxiosError = (error: unknown) => {
 
 const getCategory = async () => {
     try {
-        const response = await adminAxiosInstance.get(`${ADMIN}/category`,);
+        const response = await adminAxiosInstance.get(`${ADMIN}/${CATEGORY}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

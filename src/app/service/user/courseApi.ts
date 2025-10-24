@@ -2,6 +2,7 @@ import axios from "axios";
 import axiosInstance from "../shared/AxiosInstance";
 import { toast } from 'react-toastify';
 import { USER } from "@/lib/constants";
+import { CATEGORY, COURSES } from "@/lib/routeConstants";
 
 export const handleAxiosError = (error: unknown) => {
     if (axios.isAxiosError(error)) {
@@ -15,7 +16,7 @@ export const handleAxiosError = (error: unknown) => {
 
 const courseData = async (params?: { search?: string; category?: string; minPrice?: number; maxPrice?: number; sort?: string; page?: number; limit?: number; }) => {
     try {
-        const response = await axiosInstance.get(`${USER}/courses`, { params });
+        const response = await axiosInstance.get(`${USER}/${COURSES}`, { params });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
@@ -24,7 +25,7 @@ const courseData = async (params?: { search?: string; category?: string; minPric
 
 const categoryData = async () => {
     try {
-        const response = await axiosInstance.get(`${USER}/category`,);
+        const response = await axiosInstance.get(`${USER}/${CATEGORY}`,);
         return response.data;
     } catch (error) {
         handleAxiosError(error);

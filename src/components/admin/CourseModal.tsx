@@ -71,27 +71,35 @@ const CourseModal: React.FC<Props> = ({ setShowModal, formData, categories, edit
     };
 
     const handleVideoUpload = async (index: number) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'video/*';
+        const input = document.createElement("input");
+        input.type = "file";
+        input.accept = "video/*";
         input.onchange = async (e: Event) => {
             const target = e.target as HTMLInputElement;
             const file = target.files?.[0];
             if (!file) return;
-            if (file.size > 100 * 1024 * 1024) return toast.error('Max size 100MB');
+            if (file.size > 100 * 1024 * 1024) return toast.error("Max size  100MB");
             setUploadingVideo(index);
-            const data = new FormData();
-            data.append('file', file);
-            data.append('folder', 'CourseVideos');
             try {
-                const res = await fetch('/api/upload', { method: 'POST', body: data });
-                const result = await res.json();
-                if (result.success && result.url) {
-                    setValue(`content.${index}.videoUrl`, result.url);
-                    toast.success('Video uploaded');
-                } else throw new Error();
-            } catch {
-                toast.error('Video upload failed');
+                // Request signed URL and get S3 key
+                const res = await fetch("/api/signed-url", { method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        fileName: file.name,
+                        fileType: file.type,
+                        folder: "CourseVideos",
+                    }),
+                });
+                const { uploadUrl, key, error } = await res.json();
+                if (error) throw new Error(error);
+                // Upload file to S3
+                const upload = await fetch(uploadUrl, {  method: "PUT", headers: { "Content-Type": file.type }, body: file,});
+                if (!upload.ok) throw new Error("Upload failed");
+                // Save the S3 key in form (not full public URL)
+                setValue(`content.${index}.videoUrl`, key);
+                toast.success("Video uploaded successfully");
+            } catch (err) {
+                console.error("eroor while upload to s3",err);
+                toast.error("Video upload failed");
             } finally {
                 setUploadingVideo(null);
             }

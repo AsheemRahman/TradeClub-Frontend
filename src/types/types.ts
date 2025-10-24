@@ -127,6 +127,28 @@ export interface SessionInfo {
     roomId?: string;
 }
 
+export interface IGoogleLogin {
+    fullName: string | null | undefined,
+    email: string | null | undefined;
+    profilePicture?: string,
+    role: 'user' | 'expert';
+}
+
+
+export interface IRegister {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+}
+
+export interface RegisterPayload {
+    fullName: string;
+    email: string;
+    phoneNumber: string;
+    password: string;
+    role: 'user' | 'expert';
+}
 
 // export interface NotificationType {
 //     _id: string;

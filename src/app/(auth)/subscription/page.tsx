@@ -4,13 +4,13 @@ import { useEffect, useState } from 'react';
 import { ISubscriptionPlan } from '@/types/subscriptionTypes';
 import userApi from '@/app/service/user/userApi';
 import orderApi from '@/app/service/user/orderApi';
-
-
+import Swal from 'sweetalert2';
 
 const SubscriptionPlansPage = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
     const [loading, setLoading] = useState(false);
     const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+    const [currentUserPlan, setCurrentUserPlan] = useState<any>(null);
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -26,11 +26,67 @@ const SubscriptionPlansPage = () => {
                 setLoading(false);
             }
         };
+
+        const fetchCurrentPlan = async () => {
+            try {
+                const response = await userApi.checkSubscription();
+                if (response.status && response.subscription) {
+                    setCurrentUserPlan(response.subscription);
+                }
+            } catch (error) {
+                console.error("error while fetching current plan", error)
+            }
+        };
+
         fetchPlans();
+        fetchCurrentPlan();
     }, []);
 
     // Function to handle purchase
     const handlePurchase = async (planId: string) => {
+        const selectedPlan = plans.find(plan => plan._id === planId);
+
+        // Check if user already has this exact plan
+        if (currentUserPlan && currentUserPlan.planId === planId) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Plan Active',
+                text: `You already have the ${selectedPlan?.name || 'this'} plan active. Your current plan will continue until it expires.`,
+                confirmButtonText: 'OK',
+                background: '#1F2937',
+                color: '#fff',
+            });
+            return;
+        }
+
+        // Check if user has an existing plan and trying to buy a new one
+        if (currentUserPlan && currentUserPlan.planId !== planId) {
+            const currentPlan = plans.find(plan => plan._id === currentUserPlan.planId);
+            const callsRemaining = currentUserPlan.callsRemaining || 0;
+            const result = await Swal.fire({
+                title: `Upgrade to ${selectedPlan?.name}?`,
+                html: `
+                You currently have the <b>${currentPlan?.name || 'existing'}</b> plan with <b>${callsRemaining}</b> expert call${callsRemaining !== 1 ? 's' : ''} remaining.<br><br>
+                Purchasing the <b>${selectedPlan?.name}</b> plan will:<br>
+                - Add <b>${selectedPlan?.accessLevel?.expertCallsPerMonth || 0}</b> new expert calls to your account<br>
+                - Your remaining <b>${callsRemaining}</b> call${callsRemaining !== 1 ? 's' : ''} will be carried forward<br>
+                - Total calls after purchase: <b>${callsRemaining + (selectedPlan?.accessLevel?.expertCallsPerMonth || 0)}</b>
+            `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Continue',
+                cancelButtonText: 'Cancel',
+                background: '#1F2937',
+                color: '#fff',
+                customClass: {
+                    confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white',
+                    cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white',
+                }
+            });
+            if (!result.isConfirmed) {
+                return;
+            }
+        }
         setPurchaseLoading(planId);
         try {
             await orderApi.SubscriptionPurchase(planId)
@@ -62,7 +118,6 @@ const SubscriptionPlansPage = () => {
     };
 
     const getMostPopularPlan = () => {
-        // Logic to determine most popular plan (could be based on duration, price, etc.)
         return plans.find(plan => plan.duration === 12) || plans[1] || null;
     };
 
@@ -79,6 +134,12 @@ const SubscriptionPlansPage = () => {
                     <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-4">
                         Unlock premium features and take your experience to the next level with our flexible subscription plans.
                     </p>
+                    {currentUserPlan && (
+                        <div className="mt-4 mb-4 inline-block bg-blue-500 text-white px-6 py-2 rounded-lg text-sm">
+                            Current Plan: {plans.find(p => p._id === currentUserPlan.planId)?.name || 'Active'}
+                            {currentUserPlan.callsRemaining !== undefined && ` • ${currentUserPlan.callsRemaining} calls remaining`}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -98,18 +159,30 @@ const SubscriptionPlansPage = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-6">
                             {plans.map((plan) => {
                                 const isPopular = mostPopular?._id === plan._id;
+                                const isCurrentPlan = currentUserPlan?.planId === plan._id;
                                 const monthlyPrice = getMonthlyPrice(plan.price, plan.duration);
 
                                 return (
                                     <div
                                         key={plan._id}
-                                        className={`relative bg-white rounded-2xl shadow-xl border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isPopular
-                                            ? 'border-purple-500 ring-4 ring-purple-100 scale-105'
-                                            : 'border-gray-200 hover:border-blue-300'
+                                        className={`relative bg-white rounded-2xl shadow-xl border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isCurrentPlan
+                                            ? 'border-green-500 ring-4 ring-green-100'
+                                            : isPopular
+                                                ? 'border-purple-500 ring-4 ring-purple-100 scale-105'
+                                                : 'border-gray-200 hover:border-blue-300'
                                             }`}
                                     >
+                                        {/* Current Plan Badge */}
+                                        {isCurrentPlan && (
+                                            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                                                <span className="bg-gradient-to-r from-green-600 to-emerald-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                                                    Current Plan
+                                                </span>
+                                            </div>
+                                        )}
+
                                         {/* Popular Badge */}
-                                        {isPopular && (
+                                        {isPopular && !isCurrentPlan && (
                                             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                                                 <span className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
                                                     Most Popular
@@ -212,10 +285,14 @@ const SubscriptionPlansPage = () => {
                                             )}
 
                                             {/* Purchase Button */}
-                                            <button onClick={() => handlePurchase(plan._id)} disabled={purchaseLoading === plan._id}
-                                                className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${isPopular
-                                                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl'
-                                                    : 'bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg'
+                                            <button
+                                                onClick={() => handlePurchase(plan._id)}
+                                                disabled={purchaseLoading === plan._id}
+                                                className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all duration-200 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none ${isCurrentPlan
+                                                    ? 'bg-gray-400 text-white cursor-default'
+                                                    : isPopular
+                                                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl'
+                                                        : 'bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg'
                                                     }`}
                                             >
                                                 {purchaseLoading === plan._id ? (
@@ -223,6 +300,8 @@ const SubscriptionPlansPage = () => {
                                                         <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                                                         Processing...
                                                     </div>
+                                                ) : isCurrentPlan ? (
+                                                    'Current Active Plan'
                                                 ) : (
                                                     `Get Started with ${plan.name}`
                                                 )}
@@ -236,7 +315,7 @@ const SubscriptionPlansPage = () => {
                 </div>
             </div>
 
-            {/* FAQ or Additional Info Section */}
+            {/* FAQ Section */}
             <div className="bg-gray-50 rounded-lg py-16 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto text-center">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8">
@@ -281,6 +360,5 @@ const SubscriptionPlansPage = () => {
         </div>
     );
 };
-
 
 export default SubscriptionPlansPage;

@@ -2,14 +2,10 @@ import axios from "axios";
 import axiosInstance from "./AxiosInstance";
 
 import { toast } from 'react-toastify'
+import { RegisterPayload } from "@/types/types";
+import { LOGIN, LOGOUT } from "@/lib/routeConstants";
 
-interface RegisterPayload {
-    fullName: string;
-    email: string;
-    phoneNumber: string;
-    password: string;
-    role: 'user' | 'expert';
-}
+
 
 interface loginType {
     email: string;
@@ -47,7 +43,7 @@ export const registerPost = async (userData: RegisterPayload) => {
 
 export const LoginPost = async (formData: loginType) => {
     try {
-        const response = await axiosInstance.post(`/${formData.role}/login`, formData,);
+        const response = await axiosInstance.post(`/${formData.role}/${LOGIN}`, formData,);
         return response.data;
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -95,7 +91,7 @@ export const googleSignup = async (userData: googleLogin) => {
 
 export const logoutApi = async (role: string) => {
     try {
-        const response = await axiosInstance.get(`/${role}/logout`,)
+        const response = await axiosInstance.get(`/${role}/${LOGOUT}`,)
         return response
     } catch (error: unknown) {
         handleAxiosError(error)

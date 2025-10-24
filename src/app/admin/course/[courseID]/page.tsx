@@ -19,6 +19,7 @@ const AdminCourseDetail = () => {
     const [activeTab, setActiveTab] = useState<'overview' | 'content' | 'analytics' | 'users'>('overview');
     const [expandedContent, setExpandedContent] = useState<string | null>(null);
     const [playingVideo, setPlayingVideo] = useState<string | null>(null);
+    const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
     // Modal states
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -37,6 +38,28 @@ const AdminCourseDetail = () => {
         fetchData()
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [courseId]);
+
+    //---------------- Fetch Signed URL for Playing Video ----------------
+
+    useEffect(() => {
+        const fetchSignedUrl = async () => {
+            if (playingVideo === null || !course?.content?.[parseInt(playingVideo)]?.videoUrl) return;
+            try {
+                const videoUrl = course.content[parseInt(playingVideo)].videoUrl;
+                const res = await fetch(`/api/video/${encodeURIComponent(videoUrl)}`);
+                const data = await res.json();
+                if (data.signedUrl) {
+                    setVideoSrc(data.signedUrl);
+                } else {
+                    toast.error('Failed to load video');
+                }
+            } catch (err) {
+                console.error('Error fetching signed URL:', err);
+                toast.error('Failed to load video');
+            }
+        };
+        fetchSignedUrl();
+    }, [playingVideo, course]);
 
     const fetchData = async (): Promise<void> => {
         try {
@@ -64,7 +87,7 @@ const AdminCourseDetail = () => {
             imageUrl: course.imageUrl,
             category: course.category,
             content: course.content.map(item => ({
-                _id:item._id,
+                _id: item._id,
                 title: item.title,
                 videoUrl: item.videoUrl,
                 duration: item.duration
@@ -409,11 +432,7 @@ const AdminCourseDetail = () => {
                                                         <h4 className="font-medium text-white mb-2">Preview</h4>
                                                         <div className="bg-black rounded-lg aspect-video flex items-center justify-center">
                                                             {item.videoUrl ? (
-                                                                <video
-                                                                    controls
-                                                                    className="w-full h-full rounded-lg"
-                                                                    src={item.videoUrl}
-                                                                >
+                                                                <video controls className="w-full h-full rounded-lg" src={videoSrc || undefined} >
                                                                     Your browser does not support the video tag.
                                                                 </video>
                                                             ) : (

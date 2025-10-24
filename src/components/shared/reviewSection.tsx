@@ -1,13 +1,13 @@
 import { useParams } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
-import { Star, MessageCircle, ThumbsUp, Calendar, Award, Users, Plus, X } from 'lucide-react';
+import { Star, MessageCircle, Calendar, Award, Users, Plus, X } from 'lucide-react';
 import courseApi from '@/app/service/user/courseApi';
 import Image from 'next/image';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
 
 interface EnhancedReviewSectionProps {
-  percentage?: number;
+    percentage?: number;
 }
 
 const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentage = 0 }) => {
@@ -106,10 +106,7 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
         });
     };
 
-    const averageRating =
-        reviews.length > 0
-            ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
-            : 0;
+    const averageRating = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
 
     const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => {
         const count = reviews.filter((r) => r.rating === rating).length;
@@ -124,7 +121,7 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
         <>
             {loadingReviews ? (
                 <div className="text-center text-gray-400 py-8">Loading reviews...</div>
-            ) : reviews.length > 0 ? (
+            ) : (
                 <div className="mt-3 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-purple-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 overflow-hidden">
                     {/* Header with Rating Summary */}
                     <div className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 p-6 border-b border-white/10">
@@ -149,11 +146,9 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
                                     </span>
                                     <div className="flex items-center">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star
-                                                key={i}
+                                            <Star key={i}
                                                 className={`h-6 w-6 ${i < Math.floor(averageRating)
-                                                    ? 'text-yellow-400 fill-current'
-                                                    : 'text-gray-400'}`}
+                                                    ? 'text-yellow-400 fill-current' : 'text-gray-400'}`}
                                             />
                                         ))}
                                     </div>
@@ -290,7 +285,7 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
                     )}
 
                     {/* Progress Warning - Only show when not eligible and form is not showing */}
-                    { percentage < 90 && !showAddReview && (
+                    {percentage < 90 && !showAddReview && (
                         <div className="p-6 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20">
                             <div className="flex items-center text-orange-300">
                                 <Award className="h-5 w-5 mr-2" />
@@ -349,10 +344,10 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
 
                                                 {/* Footer */}
                                                 <div className="flex items-center justify-between">
-                                                    <button className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm">
-                                                        <ThumbsUp className="h-4 w-4" />
-                                                        {/* <span>Helpful ({review.helpful})</span> */}
-                                                    </button>
+                                                    {/* <button className="flex items-center space-x-1 text-gray-400 hover:text-blue-400 transition-colors duration-200 text-sm"> */}
+                                                    {/* <ThumbsUp className="h-4 w-4" /> */}
+                                                    {/* <span>Helpful ({review.helpful})</span> */}
+                                                    {/* </button> */}
                                                     <div className="text-xs text-gray-500">
                                                         {review.rating} out of 5 stars
                                                     </div>
@@ -379,25 +374,6 @@ const EnhancedReviewSection: React.FC<EnhancedReviewSectionProps> = ({ percentag
                         </div>
                     )}
                 </div>
-            ) : (
-                <>
-                    <div className="p-8 text-center">
-                        <MessageCircle className="h-12 w-12 text-gray-500 mx-auto mb-3" />
-                        <p className="text-gray-400">No reviews yet. Be the first to share your experience!</p>
-                    </div>
-                    {/* Progress Warning - Only show when not eligible and form is not showing */}
-                    {percentage < 90 && (
-                        <div className="p-6 bg-gradient-to-r from-orange-500/10 to-yellow-500/10 border-b border-orange-500/20 rounded-2xl ">
-                            <div className="flex items-center justify-center text-orange-300">
-                                <Award className="h-5 w-5 mr-2" />
-                                <p className="text-sm">
-                                    Complete at least 90% of the course to leave a review.
-                                    Current progress: {percentage || 0}%
-                                </p>
-                            </div>
-                        </div>
-                    )}
-                </>
             )}
         </>
     );

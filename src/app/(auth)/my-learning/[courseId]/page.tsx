@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useParams } from 'next/navigation';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Pause, ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Volume2, VolumeX, Maximize, Settings, FastForward, Rewind, List, X, Award, TrendingUp, AlertCircle } from 'lucide-react';
+import { useParams } from "next/navigation";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Play, Pause, ChevronLeft, ChevronRight, CheckCircle, Clock, BookOpen, Volume2, VolumeX, Maximize, Settings, FastForward, Rewind, List, X, Award, TrendingUp, AlertCircle, } from "lucide-react";
 
-import { ICourse, ICourseContent, ICourseProgress, IVideoProgress } from '@/types/courseTypes';
-import courseApi from '@/app/service/user/courseApi';
-import EnhancedReviewSection from '@/components/shared/reviewSection';
+import { ICourse, ICourseContent, ICourseProgress, IVideoProgress, } from "@/types/courseTypes";
+import courseApi from "@/app/service/user/courseApi";
+import EnhancedReviewSection from "@/components/shared/reviewSection";
 
 
 const EnhancedCoursePlayer = () => {
@@ -30,329 +30,215 @@ const EnhancedCoursePlayer = () => {
     const [showNotes, setShowNotes] = useState(false);
     const [savingProgress, setSavingProgress] = useState(false);
     const [videoLoaded, setVideoLoaded] = useState(false);
+    const [videoSrc, setVideoSrc] = useState<string | null>(null);
 
     const progressRef = useRef<HTMLDivElement | null>(null);
     const progressUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const fullscreenRef = useRef<HTMLDivElement>(null);
 
-    // Load course data
+    const currentVideo = course?.content[currentVideoIndex];
+
+    /** ---------------- Load Course & Progress ---------------- */
     useEffect(() => {
         const loadCourseData = async () => {
             try {
                 setLoading(true);
                 setError(null);
                 const [courseData, progressData] = await Promise.all([courseApi.getCourseById(courseId), courseApi.getProgress(courseId)]);
-                if (courseData.status) {
-                    setCourse(courseData.course);
-                }
+                if (courseData.status) setCourse(courseData.course);
                 if (progressData.status) {
                     setCourseProgress(progressData.progress);
-                    // Find the last watched video if progress exists
-                    if (progressData.progress && progressData.progress.length > 0) {
-                        const lastWatched = progressData.progress.filter((p: IVideoProgress) => p.lastWatchedAt).sort((a: IVideoProgress, b: IVideoProgress) => new Date(b.lastWatchedAt!).getTime() - new Date(a.lastWatchedAt!).getTime())[0];
+                    // Set last watched video index
+                    if (progressData.progress?.progress?.length) {
+                        const lastWatched = progressData.progress.progress
+                            .filter((p: IVideoProgress) => p.lastWatchedAt)
+                            .sort(
+                                (a: IVideoProgress, b: IVideoProgress) =>
+                                    new Date(b.lastWatchedAt!).getTime() -
+                                    new Date(a.lastWatchedAt!).getTime()
+                            )[0];
                         if (courseData.course && lastWatched) {
-                            const videoIndex = courseData.course.content.findIndex((content: ICourseContent) => content._id === lastWatched.contentId);
-                            if (videoIndex !== -1) {
-                                setCurrentVideoIndex(videoIndex);
-                            }
+                            const videoIndex = courseData.course.content.findIndex( (content: ICourseContent) => content._id === lastWatched.contentId );
+                            if (videoIndex !== -1) setCurrentVideoIndex(videoIndex);
                         }
                     }
                 }
             } catch (err) {
-                setError('Failed to load course data. Please try again.');
-                console.error('Error loading course data:', err);
+                setError("Failed to load course data. Please try again.");
+                console.error("Error loading course data:", err);
             } finally {
                 setLoading(false);
             }
         };
-        if (courseId) {
-            loadCourseData();
-        }
+        if (courseId) loadCourseData();
     }, [courseId]);
 
-
-
-    // Video event handlers
-    const handleVideoLoadedMetadata = useCallback(() => {
-        const video = videoRef.current;
-        if (!video) return;
-        setDuration(video.duration);
-        setVideoLoaded(true);
-        // Set initial time from progress if available
-        if (courseProgress && course) {
-            const currentVideo = course.content[currentVideoIndex];
-            if (!currentVideo || !currentVideo._id) return;
-            const progress = getVideoProgress(currentVideo._id);
-            if (progress && progress.watchedDuration > 0) {
-                video.currentTime = progress.watchedDuration;
-                setCurrentTime(progress.watchedDuration);
-            }
-        }
-    }, [courseProgress, course, currentVideoIndex]);
-
-    const handleVideoTimeUpdate = useCallback(() => {
-        const video = videoRef.current;
-        if (!video) return;
-        setCurrentTime(video.currentTime);
-    }, []);
-
-    const handleVideoEnded = useCallback(() => {
-        setIsPlaying(false);
-        handleVideoComplete();
-    }, []);
-
-    const handleVideoPlay = useCallback(() => {
-        setIsPlaying(true);
-    }, []);
-
-    const handleVideoPause = useCallback(() => {
-        setIsPlaying(false);
-    }, []);
-
-    // Set up video event listeners
+    /** ---------------- Fetch Signed URL ---------------- */
     useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-        video.addEventListener('loadedmetadata', handleVideoLoadedMetadata);
-        video.addEventListener('timeupdate', handleVideoTimeUpdate);
-        video.addEventListener('ended', handleVideoEnded);
-        video.addEventListener('play', handleVideoPlay);
-        video.addEventListener('pause', handleVideoPause);
-        return () => {
-            video.removeEventListener('loadedmetadata', handleVideoLoadedMetadata);
-            video.removeEventListener('timeupdate', handleVideoTimeUpdate);
-            video.removeEventListener('ended', handleVideoEnded);
-            video.removeEventListener('play', handleVideoPlay);
-            video.removeEventListener('pause', handleVideoPause);
-        };
-    }, [handleVideoLoadedMetadata, handleVideoTimeUpdate, handleVideoEnded, handleVideoPlay, handleVideoPause]);
-
-    // Reset video when changing videos
-    useEffect(() => {
-        if (course && course.content[currentVideoIndex]) {
-            setVideoLoaded(false);
-            setCurrentTime(0);
-            setIsPlaying(false);
-            const video = videoRef.current;
-            if (video) {
-                video.currentTime = 0;
-                video.load();
-            }
-        }
-    }, [currentVideoIndex, course]);
-
-    // Debounced progress update
-    useEffect(() => {
-        if (course && currentTime > 0 && videoLoaded) {
-            // Clear existing timeout
-            if (progressUpdateTimeoutRef.current) {
-                clearTimeout(progressUpdateTimeoutRef.current);
-            }
-            // Set new timeout to update progress after 3 seconds of inactivity
-            progressUpdateTimeoutRef.current = setTimeout(() => {
-                updateVideoProgress(currentTime);
-            }, 3000);
-        }
-        return () => {
-            if (progressUpdateTimeoutRef.current) {
-                clearTimeout(progressUpdateTimeoutRef.current);
+        if (!currentVideo?.videoUrl) return;
+        const fetchSignedUrl = async () => {
+            try {
+                setVideoLoaded(false);
+                setIsPlaying(false);
+                const res = await fetch(`/api/video/${encodeURIComponent(currentVideo.videoUrl)}`);
+                const data = await res.json();
+                if (data.signedUrl) setVideoSrc(data.signedUrl);
+                else setError("Failed to load video");
+            } catch (err) {
+                console.error("Error fetching signed URL:", err);
+                setError("Failed to load video");
             }
         };
-    }, [currentTime, course, videoLoaded]);
+        fetchSignedUrl();
+    }, [currentVideo]);
 
-    const handleVideoComplete = useCallback(() => {
-        markVideoComplete();
-        if (course && currentVideoIndex < course.content.length - 1) {
-            setTimeout(() => {
-                goToNextVideo();
-            }, 2000);
-        }
-    }, [course, currentVideoIndex]);
+    const getVideoProgress = useCallback(
+        (contentId: string) =>
+            courseProgress?.progress.find((p) => p.contentId === contentId) || null,
+        [courseProgress]
+    );
 
-    const togglePlayPause = useCallback(() => {
-        const video = videoRef.current;
-        if (!video) return;
-        if (isPlaying) {
-            video.pause();
-        } else {
-            video.play().catch(console.error);
-        }
-    }, [isPlaying]);
-
-    const goToNextVideo = useCallback(() => {
-        if (course && currentVideoIndex < course.content.length - 1) {
-            updateVideoProgress(currentTime);
-            setCurrentVideoIndex(currentVideoIndex + 1);
-        }
-    }, [course, currentVideoIndex, currentTime]);
-
-    const goToPreviousVideo = useCallback(() => {
-        if (currentVideoIndex > 0) {
-            updateVideoProgress(currentTime);
-            setCurrentVideoIndex(currentVideoIndex - 1);
-        }
-    }, [currentVideoIndex, currentTime]);
-
-    const selectVideo = useCallback((index: number) => {
-        if (index !== currentVideoIndex) {
-            updateVideoProgress(currentTime);
-            setCurrentVideoIndex(index);
-        }
-    }, [currentVideoIndex, currentTime]);
-
-    const updateVideoProgress = useCallback(async (watchedTime: number, forceComplete: boolean = false) => {
-        if (!course || !videoLoaded) return;
+    /** ---------------- Update Video Progress ---------------- */
+    const updateVideoProgress = useCallback(async (watchedTime: number, forceComplete = false) => {
+        if (!course || !currentVideo || !videoLoaded) return;
         try {
             setSavingProgress(true);
-            const currentVideo = course.content[currentVideoIndex];
-            if (!currentVideo || !currentVideo._id) return;
-
-            // Fix: Use the actual video duration from the video element, not the course content duration
-            const videoDurationInSeconds = duration; // This is already in seconds from video element
-
-            // Determine if completed - either forced or watched 90% of actual video duration
-            const isCompleted = forceComplete || (videoDurationInSeconds > 0 && watchedTime >= videoDurationInSeconds * 0.9);
-
-            // If forcing complete, use the full duration as watched time
+            const videoDurationInSeconds = videoRef.current?.duration || duration;
+            const isCompleted = forceComplete || watchedTime >= videoDurationInSeconds * 0.9;
             const finalWatchedTime = forceComplete ? videoDurationInSeconds : watchedTime;
-
-            // Update progress via API
-            const updatedProgress = await courseApi.updateCourseProgress(courseId, currentVideo._id, finalWatchedTime, isCompleted);
-            if (updatedProgress?.status) {
-                setCourseProgress(updatedProgress.progress);
-            } else {
-                setCourseProgress((prevProgress) => {
-                    const safeContentId = currentVideo._id!;
-                    if (!prevProgress) {
-                        return {
-                            _id: '',
-                            user: '',
-                            course: courseId,
-                            progress: [
-                                {
-                                    contentId: safeContentId,
-                                    watchedDuration: finalWatchedTime,
-                                    isCompleted,
-                                    lastWatchedAt: new Date().toISOString(),
-                                },
-                            ],
-                            totalCompletedPercent: isCompleted
-                                ? (1 / course.content.length) * 100
-                                : 0,
-                            lastWatchedAt: new Date().toISOString(),
-                        };
-                    }
-                    const newProgress = { ...prevProgress };
-                    const existingIndex = newProgress.progress.findIndex(
-                        (p) => p.contentId === safeContentId
-                    );
-                    const videoProgress = {
-                        contentId: safeContentId,
-                        watchedDuration: finalWatchedTime,
-                        isCompleted,
-                        lastWatchedAt: new Date().toISOString(),
-                    };
-                    if (existingIndex >= 0) {
-                        newProgress.progress[existingIndex] = videoProgress;
-                    } else {
-                        newProgress.progress.push(videoProgress);
-                    }
-                    const completedCount = newProgress.progress.filter((p) => p.isCompleted).length;
-                    newProgress.totalCompletedPercent =
-                        (completedCount / course.content.length) * 100;
-                    newProgress.lastWatchedAt = new Date().toISOString();
-                    return newProgress;
-                });
-            }
-        } catch (error) {
-            console.error('Failed to update progress:', error);
-            setError('Failed to save progress. Please try again.');
+            const updatedProgress = await courseApi.updateCourseProgress(
+                courseId,
+                currentVideo._id!,
+                finalWatchedTime,
+                isCompleted
+            );
+            if (updatedProgress?.status) setCourseProgress(updatedProgress.progress);
+        } catch (err) {
+            console.error("Failed to update progress:", err);
+            setError("Failed to save progress. Please try again.");
         } finally {
             setSavingProgress(false);
         }
-    }, [course, currentVideoIndex, courseId, duration, videoLoaded]);
+    }, [course, currentVideo, courseId, duration, videoLoaded]);
 
-    // Fixed: Mark video as complete using force complete flag
-    const markVideoComplete = useCallback(async () => {
-        if (!course || !videoLoaded) return;
-        const currentVideo = course.content[currentVideoIndex];
-        if (!currentVideo || !currentVideo._id) return;
+    const goToNextVideo = useCallback(() => {
+        if (!course) return;
+        if (currentVideoIndex < course.content.length - 1) setCurrentVideoIndex(currentVideoIndex + 1);
+    }, [currentVideoIndex, course]);
 
-        // Force complete the video regardless of current time
-        await updateVideoProgress(duration || currentTime, true);
-    }, [course, currentVideoIndex, duration, currentTime, updateVideoProgress, videoLoaded]);
+    const handleVideoComplete = useCallback(() => {
+        updateVideoProgress(duration || currentTime, true)
+        if (course && currentVideoIndex < course.content.length - 1) {
+            setTimeout(() => {
+                goToNextVideo();
+            }, 1500);
+        }
+    }, [course, currentVideoIndex, updateVideoProgress, duration, currentTime, goToNextVideo]);
 
-    const getVideoProgress = useCallback((contentId: string) => {
-        return courseProgress?.progress.find((p) => p.contentId === contentId) || null;
-    }, [courseProgress]);
+    // ---------------- Video Playback ----------------
 
-    const isVideoCompleted = useCallback((contentId: string) => {
-        const progress = getVideoProgress(contentId);
-        return progress?.isCompleted || false;
-    }, [getVideoProgress]);
-
-    const getCompletedVideosCount = useCallback(() => {
-        return courseProgress?.progress.filter((p) => p.isCompleted).length || 0;
-    }, [courseProgress]);
-
-    const formatTime = useCallback((seconds: number) => {
-        const minutes = Math.floor(seconds / 60);
-        const remainingSeconds = Math.floor(seconds % 60);
-        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
-    }, []);
-
-    const formatDuration = useCallback((minutes: number) => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
-    }, []);
-
-    const handleProgressClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-        if (!progressRef.current || !videoRef.current || !duration) return;
-        const rect = progressRef.current.getBoundingClientRect();
-        const percent = (e.clientX - rect.left) / rect.width;
-        const newTime = Math.max(0, Math.min(duration, percent * duration));
-        videoRef.current.currentTime = newTime;
-        setCurrentTime(newTime);
-    }, [duration]);
-
-    const skip = useCallback((seconds: number) => {
+    useEffect(() => {
         const video = videoRef.current;
-        if (!video || !duration) return;
-        const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
-        video.currentTime = newTime;
-        setCurrentTime(newTime);
-    }, [duration]);
+        if (!video) return;
+        const onLoadedMetadata = () => {
+            setDuration(video.duration);
+            setVideoLoaded(true);
+            if (currentVideo?._id) {
+                const progress = getVideoProgress(currentVideo._id);
+                if (progress?.watchedDuration) {
+                    video.currentTime = progress.watchedDuration;
+                    setCurrentTime(progress.watchedDuration);
+                }
+            }
+        };
+        const onTimeUpdate = () => setCurrentTime(video.currentTime);
+        const onEnded = () => { setIsPlaying(false); handleVideoComplete(); };
+        video.addEventListener("loadedmetadata", onLoadedMetadata);
+        video.addEventListener("timeupdate", onTimeUpdate);
+        video.addEventListener("ended", onEnded);
+        return () => {
+            video.removeEventListener("loadedmetadata", onLoadedMetadata);
+            video.removeEventListener("timeupdate", onTimeUpdate);
+            video.removeEventListener("ended", onEnded);
+        };
+    }, [currentVideo, courseProgress, getVideoProgress, handleVideoComplete]);
+
+    // Auto play/pause
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video) return;
+
+        if (isPlaying) video.play().catch(console.error);
+        else video.pause();
+    }, [isPlaying]);
+
+    // ---------------- Progress Update (Debounced) ----------------
+    useEffect(() => {
+        if (!videoLoaded || !currentVideo) return;
+        if (progressUpdateTimeoutRef.current)
+            clearTimeout(progressUpdateTimeoutRef.current);
+        progressUpdateTimeoutRef.current = setTimeout(() => {
+            updateVideoProgress(currentTime);
+        }, 3000);
+        return () => {
+            if (progressUpdateTimeoutRef.current)
+                clearTimeout(progressUpdateTimeoutRef.current);
+        };
+    }, [currentTime, currentVideo, videoLoaded, updateVideoProgress]);
+
+    // ---------------- Video Progress Helpers ----------------
+
+    const isVideoCompleted = useCallback(
+        (contentId: string) => getVideoProgress(contentId)?.isCompleted || false,
+        [getVideoProgress]
+    );
+
+    const getCompletedVideosCount = useCallback(
+        () => courseProgress?.progress.filter((p) => p.isCompleted).length || 0,
+        [courseProgress]
+    );
+
+    // ---------------- Video Control Handlers ----------------
+    const togglePlayPause = useCallback(() => setIsPlaying((prev) => !prev), []);
+    const skip = useCallback(
+        (seconds: number) => {
+            const video = videoRef.current;
+            if (!video) return;
+            const newTime = Math.max(0, Math.min(duration, video.currentTime + seconds));
+            video.currentTime = newTime;
+            setCurrentTime(newTime);
+        },
+        [duration]
+    );
 
     const toggleMute = useCallback(() => {
         const video = videoRef.current;
         if (!video) return;
         video.muted = !video.muted;
-        setIsMuted(!isMuted);
-    }, [isMuted]);
+        setIsMuted(video.muted);
+    }, []);
 
     const handleVolumeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const video = videoRef.current;
         if (!video) return;
-        const newVolume = Number(e.target.value);
-        video.volume = newVolume;
-        setVolume(newVolume);
-        setIsMuted(newVolume === 0);
+        const value = Number(e.target.value);
+        video.volume = value;
+        setVolume(value);
+        setIsMuted(value === 0);
     }, []);
 
-    const toggleFullscreen = useCallback(async () => {
-        if (!fullscreenRef.current) return;
-        try {
-            if (!document.fullscreenElement) {
-                await fullscreenRef.current.requestFullscreen();
-            } else {
-                await document.exitFullscreen();
-            }
-        } catch (error) {
-            console.error('Fullscreen error:', error);
-        }
-    }, []);
+    const handleProgressClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            if (!progressRef.current || !videoRef.current || !duration) return;
+            const rect = progressRef.current.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            const newTime = Math.max(0, Math.min(duration, percent * duration));
+            videoRef.current.currentTime = newTime;
+            setCurrentTime(newTime);
+        },
+        [duration]
+    );
 
     const changePlaybackSpeed = useCallback((speed: number) => {
         const video = videoRef.current;
@@ -362,46 +248,66 @@ const EnhancedCoursePlayer = () => {
         setShowSpeedMenu(false);
     }, []);
 
-    // Close speed menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = () => {
-            if (showSpeedMenu) {
-                setShowSpeedMenu(false);
-            }
-        };
-        document.addEventListener('click', handleClickOutside);
-        return () => document.removeEventListener('click', handleClickOutside);
-    }, [showSpeedMenu]);
+    const toggleFullscreen = useCallback(async () => {
+        if (!fullscreenRef.current) return;
+        if (!document.fullscreenElement) await fullscreenRef.current.requestFullscreen();
+        else await document.exitFullscreen();
+    }, []);
 
-    // Loading state
-    if (loading) {
+    // ---------------- Video Navigation ----------------
+
+    const goToPreviousVideo = useCallback(() => {
+        if (currentVideoIndex > 0) setCurrentVideoIndex(currentVideoIndex - 1);
+    }, [currentVideoIndex]);
+
+    const selectVideo = useCallback(
+        (index: number) => {
+            if (!course || index === currentVideoIndex) return;
+            updateVideoProgress(currentTime);
+            setCurrentVideoIndex(index);
+        },
+        [course, currentVideoIndex, currentTime, updateVideoProgress]
+    );
+
+    // ---------------- Utilities ----------------
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, "0")}`;
+    };
+
+    const formatDuration = (minutes: number) => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
+    };
+
+    const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
+
+    // ---------------- Render Loading / Error States ----------------
+
+    if (loading)
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center mx-5 rounded-lg">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 mx-5 rounded-lg">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
                     <p className="text-white text-lg">Loading course...</p>
                 </div>
             </div>
         );
-    }
 
-    // Error state
-    if (error || !course) {
+    if (error || !course)
         return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 flex items-center justify-center mx-5 rounded-lg">
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 mx-5 rounded-lg">
                 <div className="text-center">
                     <AlertCircle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                    <p className="text-white text-lg mb-4">{error || 'Course not found'}</p>
-                    <button onClick={() => window.location.reload()} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+                    <p className="text-white text-lg mb-4">{error || "Course not found"}</p>
+                    <button onClick={() => window.location.reload()} className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors" >
                         Retry
                     </button>
                 </div>
             </div>
         );
-    }
-
-    const currentVideo = course.content[currentVideoIndex];
-    const progressPercentage = duration > 0 ? (currentTime / duration) * 100 : 0;
 
     return (
         <div className="min-h-screen bg-[#151231] mx-5 rounded-lg">
@@ -448,8 +354,14 @@ const EnhancedCoursePlayer = () => {
                         <div className="bg-black/40 backdrop-blur-md rounded-2xl shadow-2xl overflow-hidden border border-white/10">
                             {/* Video Player */}
                             <div ref={fullscreenRef} className="relative aspect-video bg-black group">
-                                <video ref={videoRef} src={currentVideo.videoUrl} className="w-full h-full object-cover" onEnded={handleVideoComplete} muted={isMuted}
-                                    autoPlay={isPlaying} controls={false}
+                                <video
+                                    ref={videoRef}
+                                    src={videoSrc || undefined} // use signed URL
+                                    className="w-full h-full object-cover"
+                                    onEnded={handleVideoComplete}
+                                    muted={isMuted}
+                                    autoPlay={isPlaying}
+                                    controls={false}
                                 />
 
                                 {/* Video Controls Overlay */}
@@ -545,9 +457,9 @@ const EnhancedCoursePlayer = () => {
                             <div className="p-4 bg-gray-800 border-t border-gray-700">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-4">
-                                        {currentVideo._id ? (
+                                        {currentVideo && currentVideo._id ? (
                                             <button
-                                                onClick={markVideoComplete}
+                                                // onClick={markVideoComplete}
                                                 disabled={savingProgress}
                                                 className={`px-6 py-3 rounded-lg flex items-center space-x-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed
                                                 ${isVideoCompleted(currentVideo._id) ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
@@ -577,11 +489,13 @@ const EnhancedCoursePlayer = () => {
 
                             {/* Video Info */}
                             <div className="p-6 bg-gray-800">
-                                <h2 className="text-2xl font-bold text-white mb-2">{currentVideo.title}</h2>
+                                <h2 className="text-2xl font-bold text-white mb-2">
+                                    {currentVideo?.title || "No video selected"}
+                                </h2>
                                 <div className="flex items-center space-x-6 text-sm text-gray-300 mb-4">
                                     <div className="flex items-center space-x-2">
                                         <Clock className="h-4 w-4" />
-                                        <span>{formatDuration(currentVideo.duration)}</span>
+                                        <span>{formatDuration(currentVideo?.duration || 0)}</span>
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <BookOpen className="h-4 w-4" />

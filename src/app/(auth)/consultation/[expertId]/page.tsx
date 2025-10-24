@@ -219,7 +219,6 @@ const BookingPage = () => {
             });
         } catch (error) {
             console.error('Error confirming booking:', error);
-            toast.error('Failed to confirm booking. Please try again.');
         }
     };
 

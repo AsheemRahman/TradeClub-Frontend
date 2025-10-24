@@ -8,6 +8,7 @@ import userApi from '@/app/service/user/userApi';
 import { Calendar } from 'lucide-react';
 import { typeSession } from '@/types/sessionTypes';
 import { useRouter } from 'next/navigation';
+import Swal from 'sweetalert2';
 
 type SessionStatus = 'upcoming' | 'completed' | 'missed';
 
@@ -48,14 +49,44 @@ const UserSessionsPage = () => {
         setCurrentPage(1);
     };
 
+    const handleCancelSession = async (sessionId: string) => {
+        try {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to cancel this session?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, cancel it!',
+                cancelButtonText: 'No, keep it'
+            });
+            if (!result.isConfirmed) return;
+            setLoading(true);
+            const response = await userApi.cancelSession(sessionId);
+            if (!response || !response.status) {
+                throw new Error('Failed to cancel session');
+            }
+            setSessions(prev => prev.map(session =>
+                session._id === sessionId ? { ...session, status: 'canceled' } : session
+            ));
+            Swal.fire('Cancelled!', 'Your session has been cancelled.', 'success');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred while canceling the session');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const getStatusBadge = (status: typeSession['status']) => {
         const statusStyles = {
             upcoming: 'bg-blue-100 text-blue-800 border-blue-200',
             completed: 'bg-green-100 text-green-800 border-green-200',
             missed: 'bg-red-100 text-red-800 border-red-200',
+            canceled: 'bg-red-100 text-red-800 border-red-200',
         };
         return (
-            <span className={`px-3 py-1 rounded-full text-sm font-medium border ${statusStyles[status]}`}>
+            <span className={`px-3 py-1 rounded-lg text-sm font-medium border ${statusStyles[status]}`}>
                 {status.charAt(0).toUpperCase() + status.slice(1)}
             </span>
         );
@@ -80,6 +111,16 @@ const UserSessionsPage = () => {
             dateTime: format(date, 'EEEE, MMMM dd, yyyy'),
         };
     };
+
+    // Sort sessions so upcoming/available are on top
+    const sortedSessions = [...sessions].sort((a, b) => {
+        const statusOrder = { upcoming: 1, completed: 2, missed: 3, canceled: 4 };
+        // Prioritize upcoming sessions that can be joined now
+        const canJoinA = canJoinMeeting(a) ? 0 : 1;
+        const canJoinB = canJoinMeeting(b) ? 0 : 1;
+        if (canJoinA !== canJoinB) return canJoinA - canJoinB;
+        return (statusOrder[a.status] || 5) - (statusOrder[b.status] || 5);
+    });
 
     if (loading && sessions.length === 0) {
         return (
@@ -177,7 +218,7 @@ const UserSessionsPage = () => {
                     </div>
                 ) : (
                     <div className="space-y-6">
-                        {sessions.map((session) => {
+                        {sortedSessions.map((session) => {
                             const timeInfo = formatSessionTime(session);
                             const canJoin = canJoinMeeting(session);
 
@@ -249,7 +290,7 @@ const UserSessionsPage = () => {
                                                             <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                                             </svg>
-                                                            <span>Booked on {format(new Date(session.bookedAt), 'MMM dd, yyyy')}</span>
+                                                            <span>Booked on {format(new Date(session.createdAt), 'MMM dd, yyyy')}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -283,6 +324,13 @@ const UserSessionsPage = () => {
                                                 >
                                                     View Details
                                                 </button> */}
+                                                {session.status === 'upcoming' && new Date(timeInfo.date).getTime() > new Date().getTime() && (
+                                                    <button onClick={() => handleCancelSession(session._id)}
+                                                        className="inline-flex items-center px-4 py-2 border border-red-500 text-sm font-medium rounded-md text-red-600 bg-red-50 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                                                    >
+                                                        Cancel Session
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
 

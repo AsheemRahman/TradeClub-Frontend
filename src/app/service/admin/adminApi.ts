@@ -3,6 +3,7 @@ import { GetUserParams, ICoupon, loginType } from "@/types/types";
 import { toast } from 'react-toastify'
 import adminAxiosInstance from "./adminAxiosInstance";
 import { ADMIN } from "@/lib/constants";
+import { LOGIN, LOGOUT } from "@/lib/routeConstants";
 
 
 export const handleAxiosError = (error: unknown) => {
@@ -18,7 +19,7 @@ export const handleAxiosError = (error: unknown) => {
 
 const loginPost = async (userData: loginType) => {
     try {
-        const response = await adminAxiosInstance.post(`${ADMIN}/login`, { ...userData },)
+        const response = await adminAxiosInstance.post(`${ADMIN}/${LOGIN}`, { ...userData },)
         return response.data
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -27,7 +28,7 @@ const loginPost = async (userData: loginType) => {
 
 const adminLogout = async () => {
     try {
-        const response = await adminAxiosInstance.get(`${ADMIN}/logout`,)
+        const response = await adminAxiosInstance.get(`${ADMIN}/${LOGOUT}`,)
         return response
     } catch (error: unknown) {
         handleAxiosError(error)
@@ -190,6 +191,15 @@ const payouts = async () => {
     }
 };
 
+const getStats = async () => {
+    try {
+        const response = await adminAxiosInstance.get(`${ADMIN}/stats`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 const adminApi = {
     loginPost,
     adminLogout,
@@ -209,7 +219,8 @@ const adminApi = {
     getUser,
     getItem,
     getRevenue,
-    payouts
+    payouts,
+    getStats
 };
 
 export default adminApi;

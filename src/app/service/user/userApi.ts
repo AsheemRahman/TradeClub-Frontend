@@ -131,6 +131,15 @@ const updateSessionStatus = async (id: string, status: string) => {
     }
 };
 
+const cancelSession = async (id: string) => {
+    try {
+        const response = await axiosInstance.patch(`${USER}/cancel-session/${id}`);
+        return response.data;
+    } catch (error) {
+        handleAxiosError(error);
+    }
+};
+
 const userApi = {
     verifyOtp,
     resendOtp,
@@ -144,6 +153,7 @@ const userApi = {
     getSessions,
     getSessionDetails,
     updateSessionStatus,
+    cancelSession
 };
 
 export default userApi;
