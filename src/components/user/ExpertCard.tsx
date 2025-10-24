@@ -100,13 +100,13 @@ export const ExpertCard = ({ expert }: { expert: IExpert }) => {
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                        <button onClick={() => { handleBookSlot(expert.id) }}
+                        <button onClick={() => { handleBookSlot(expert._id) }}
                             className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-300 flex items-center justify-center gap-2 group-hover:shadow-lg"
                         >
                             <Calendar className="w-4 h-4" />
                             Book Session
                         </button>
-                        <button onClick={() => { handleChat(expert.id) }}
+                        <button onClick={() => { handleChat(expert._id) }}
                             className="border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
                         >
                             <MessageCircle className="w-4 h-4" />
