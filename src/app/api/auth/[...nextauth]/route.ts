@@ -27,7 +27,7 @@ const handler = NextAuth({
             if (account && profile) {
                 token.name = profile.name;
                 token.email = profile.email;
-                token.picture = profile.picture;
+                token.picture = profile.image;
             }
             return token;
         },
