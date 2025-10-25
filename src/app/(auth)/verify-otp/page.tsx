@@ -1,10 +1,12 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
+import { Suspense } from "react";
 import OTPVerification from "@/components/shared/otp";
 
 export default function UserOTP() {
     return (
-        <OTPVerification role="user" />
+        <Suspense fallback={<div>Loading chat...</div>}>
+            <OTPVerification role="user" />
+        </Suspense>
     );
 }
