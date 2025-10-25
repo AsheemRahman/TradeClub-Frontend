@@ -130,7 +130,7 @@ export const SubscriptionPlans = () => {
                             ))}
                         </ul>
 
-                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 'bg-gradient-to-r from-cyan-500 to-purple-500 text-white hover:shadow-xl hover:shadow-purple-500/25' `} 
+                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-cyan-500 to-purple-500 text-black hover:shadow-xl hover:shadow-purple-500/25 `} 
                                 onClick={() => handlePurchase(plan._id)} >
                             Get Started
                         </button>
