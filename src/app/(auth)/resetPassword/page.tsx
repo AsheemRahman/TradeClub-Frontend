@@ -1,12 +1,15 @@
 'use client';
-export const dynamic = 'force-dynamic';
 
+import React, { Suspense } from 'react';
 import ResetPasswordPage from "@/components/shared/newPassword";
 
+
 const UserResetPassword = () => {
-    return <>
-        <ResetPasswordPage role='user' />
-    </>
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ResetPasswordPage role='user' />
+        </Suspense>
+    );
 };
 
 export default UserResetPassword;
