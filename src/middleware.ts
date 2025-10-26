@@ -12,8 +12,11 @@ export async function middleware(req: NextRequest) {
     }
 
     const token = req.cookies.get('accessToken')?.value || req.cookies.get('admin-accessToken')?.value
+    console.log("token in frontend middlewarre", token)
     const refreshToken = req.cookies.get('refreshToken')?.value;
+    console.log("refreshToken in frontend middlewarre", refreshToken)
     const adminRefreshToken = req.cookies.get('admin-refreshToken')?.value;
+    console.log("adminRefreshToken in frontend middlewarre", adminRefreshToken)
 
     let role = null;
 

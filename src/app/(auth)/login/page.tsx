@@ -53,7 +53,6 @@ const UserLogin = () => {
             const response = await googleSignup(userData);
             if (response.status) {
                 const { user, expert, accessToken } = response.data;
-                console.log("data from frontend after login api",response.data)
                 if (role === "user") {
                     setUserAuth(user, accessToken);
                     router.replace("/home");
