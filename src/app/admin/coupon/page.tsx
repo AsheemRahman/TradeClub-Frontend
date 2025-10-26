@@ -48,6 +48,15 @@ const CouponManagement: React.FC = () => {
 
     const handleCreateCoupon = async (couponData: Omit<ICoupon, '_id' | 'usedCount' | 'createdAt'>) => {
         try {
+            const isDuplicate = coupons.some(c => c.code.toLowerCase() === couponData.code.toLowerCase());
+            if (isDuplicate) {
+                toast.error("A coupon with this code already exists.");
+                return;
+            }
+            if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
+                toast.error("Discount percentage cannot be greater than 100%.");
+                return;
+            }
             const response = await adminApi.createCoupon(couponData);
             if (response.status && response.coupon) {
                 const newCoupon: ICoupon = response.coupon;
@@ -69,6 +78,15 @@ const CouponManagement: React.FC = () => {
             return;
         }
         try {
+            const isDuplicate = coupons.some(c => c._id !== couponData._id && c.code.toLowerCase() === couponData.code.toLowerCase());
+            if (isDuplicate) {
+                toast.error("Another coupon with this code already exists.");
+                return;
+            }
+            if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
+                toast.error("Discount percentage cannot be greater than 100%.");
+                return;
+            }
             const response = await adminApi.updateCoupon(couponData._id, couponData);
             if (response.status) {
                 setCoupons(coupons.map(c => c._id === response.coupon._id ? response.coupon : c));
