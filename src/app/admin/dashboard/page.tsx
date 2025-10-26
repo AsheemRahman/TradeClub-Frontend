@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { BarChart3, Users, BookOpen, TrendingUp, Calendar, Bell, Settings, IndianRupee } from "lucide-react";
+import { BarChart3, Users, BookOpen, TrendingUp, Calendar, IndianRupee } from "lucide-react";
 
 import courseApi from "@/app/service/admin/courseApi";
 import adminApi from "@/app/service/admin/adminApi";
@@ -86,14 +86,14 @@ export default function Dashboard() {
                                 <p className="text-white/80 mt-1 text-lg">Manage your Chat, Wallet, and Monthly revenue</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
+                        {/* <div className="flex items-center gap-3">
                             <button className="p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
                                 <Bell className="w-5 h-5 text-white" />
                             </button>
                             <button className="p-2 bg-white/20 backdrop-blur-sm rounded-lg hover:bg-white/30 transition-colors">
                                 <Settings className="w-5 h-5 text-white" />
                             </button>
-                        </div>
+                        </div> */}
                     </div>
                 </div>
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
