@@ -42,7 +42,7 @@ const UserProfile = () => {
         const userData = await userApi.getUserProfile();
         if (userData.status) {
             const transformedData = {
-                id: userData.userDetails._id,
+                id: userData.userDetails.id,
                 fullName: userData.userDetails.fullName,
                 email: userData.userDetails.email,
                 phoneNumber: userData.userDetails.phoneNumber,
