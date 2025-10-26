@@ -1,6 +1,6 @@
 "use client"
 
-import { User, Edit3, CreditCard, MessageCircle, Bell, Settings, Award, Eye, EyeOff, Phone, Lock, Check, X, LogOut, Upload, Camera, Trash2 } from 'lucide-react';
+import { User, Edit3, CreditCard, MessageCircle, Bell, Settings, Award, Eye, EyeOff, Phone, Lock, Check, X, LogOut, Camera, Trash2 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'react-toastify';
@@ -304,13 +304,9 @@ const UserProfile = () => {
                         <div className="relative group">
                             <div className="w-28 h-28 bg-gradient-to-br from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center ring-4 ring-purple-500/20 overflow-hidden">
                                 {imagePreview || (editForm.profilePicture && isEditing) ? (
-                                    <Image
-                                        src={imagePreview || editForm.profilePicture}
-                                        alt="Profile Preview"
-                                        className="w-full h-full object-cover"
-                                    />
+                                    <Image src={imagePreview || editForm.profilePicture} alt="Profile Preview" className="w-full h-full object-cover" />
                                 ) : userData.profilePicture ? (
-                                    <Image src={userData.profilePicture} alt="Profile" fill className="object-cover" />
+                                    <Image src={userData.profilePicture} alt="Profile" fill className="object-cover rounded-2xl" />
                                 ) : (
                                     <User className="w-14 h-14 text-white" />
                                 )}
@@ -326,34 +322,19 @@ const UserProfile = () => {
                             {/* Edit Controls */}
                             {isEditing && (
                                 <div className="absolute -bottom-2 -right-2 flex gap-2">
-                                    <button
-                                        className="bg-blue-500 hover:bg-blue-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                                        onClick={handleFileUpload}
-                                        disabled={isUploading}
-                                        title="Upload new photo"
+                                    <button className="bg-blue-500 hover:bg-blue-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                                        onClick={handleFileUpload}  disabled={isUploading} title="Upload new photo"
                                     >
                                         <Camera className="w-4 h-4" />
                                     </button>
 
                                     {(imagePreview || editForm.profilePicture) && (
-                                        <button
-                                            className="bg-red-500 hover:bg-red-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg"
-                                            onClick={handleRemoveImage}
-                                            title="Remove photo"
+                                        <button className="bg-red-500 hover:bg-red-400 text-white p-3 rounded-xl transition-all duration-200 shadow-lg"
+                                            onClick={handleRemoveImage} title="Remove photo"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                         </button>
                                     )}
-                                </div>
-                            )}
-
-                            {/* Upload Instructions on Hover */}
-                            {isEditing && !isUploading && (
-                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 rounded-2xl transition-all duration-200 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                                    <div className="text-white text-center text-xs px-2">
-                                        <Upload className="w-5 h-5 mx-auto mb-1" />
-                                        <p className="font-medium">Change Photo</p>
-                                    </div>
                                 </div>
                             )}
                         </div>
