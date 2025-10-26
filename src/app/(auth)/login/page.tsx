@@ -29,6 +29,7 @@ const UserLogin = () => {
             const response = await LoginPost(formData);
             if (response.status) {
                 const { user, expert, accessToken } = response.data;
+                console.log("Data in frontend after login", response.data)
                 if (formData.role === "user") {
                     setUserAuth(user, accessToken);
                     router.replace("/home");
