@@ -2,41 +2,50 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { TokenPayload } from './types/types';
 
-
 export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
     const { pathname } = url;
 
+    // Redirect non-www to www for consistent cookie access
+    if (req.nextUrl.hostname === 'tradeclub.lol') {
+        url.hostname = 'www.tradeclub.lol';
+        return NextResponse.redirect(url);
+    }
+
+    // Allow login pages
     if (pathname.startsWith('/login') || pathname.startsWith('/admin/login') || pathname.startsWith('/expert/login')) {
         return NextResponse.next();
     }
 
-    const token = req.cookies.get('accessToken')?.value || req.cookies.get('admin-accessToken')?.value
-    console.log("token in frontend middlewarre", token)
+    // Get tokens from cookies
+    const accessToken = req.cookies.get('accessToken')?.value || req.cookies.get('admin-accessToken')?.value;
     const refreshToken = req.cookies.get('refreshToken')?.value;
-    console.log("refreshToken in frontend middlewarre", refreshToken)
     const adminRefreshToken = req.cookies.get('admin-refreshToken')?.value;
-    console.log("adminRefreshToken in frontend middlewarre", adminRefreshToken)
 
-    let role = null;
+    console.log('token in frontend middleware', accessToken);
+    console.log('refreshToken in frontend middleware', refreshToken);
+    console.log('adminRefreshToken in frontend middleware', adminRefreshToken);
 
-    if (token) {
+    // Decode token to get role
+    let role: string | null = null;
+    if (accessToken) {
         try {
-            const decoded = jwt.decode(token) as TokenPayload | null;
-            role = decoded?.role
-        } catch (error) {
-            console.error('Error decoding token:', error);
+            const decoded = jwt.decode(accessToken) as TokenPayload | null;
+            role = decoded?.role || null;
+        } catch (err) {
+            console.error('Error decoding token:', err);
         }
     }
+    console.log('middleware role =>', role);
 
-    console.log("middleware role =>", role);
-
-    if ((!token && refreshToken) || (!token && adminRefreshToken)) {
-        console.log("Access token expired, but refresh token exists. Allowing frontend to refresh.");
+    // If no access token but refresh token exists, allow frontend to refresh
+    if (!accessToken && (refreshToken || adminRefreshToken)) {
+        console.log('Access token missing, but refresh token exists. Frontend can refresh.');
         return NextResponse.next();
     }
 
-    if (!token) {
+    // If no tokens, redirect to login based on route
+    if (!accessToken) {
         if (pathname.startsWith('/expert')) {
             return NextResponse.redirect(new URL('/expert/login', req.url));
         }
