@@ -22,7 +22,7 @@ const ExpertRegister = () => {
 
     const handleRegister = async (formData: IRegister) => {
         try {
-            const payload = { ...formData, role: 'user' };
+            const payload = { ...formData, role: 'expert' };
             const response = await registerPost(payload as RegisterPayload);
             if (response?.email) {
                 toast.success(response.message || "Registration successful!");
