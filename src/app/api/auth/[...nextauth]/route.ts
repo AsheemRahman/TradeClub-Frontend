@@ -1,6 +1,13 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 
+interface GoogleProfile {
+    sub: string;
+    name: string;
+    email: string;
+    picture: string;
+    email_verified: boolean;
+}
 
 const handler = NextAuth({
     providers: [
@@ -25,9 +32,10 @@ const handler = NextAuth({
 
         async jwt({ token, account, profile }) {
             if (account && profile) {
-                token.name = profile.name;
-                token.email = profile.email;
-                token.picture = profile.image;
+                const googleProfile = profile as GoogleProfile;
+                token.name = googleProfile.name;
+                token.email = googleProfile.email;
+                token.picture = googleProfile.picture;
             }
             return token;
         },
