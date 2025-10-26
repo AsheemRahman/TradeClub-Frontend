@@ -49,6 +49,7 @@ const UserLogin = () => {
 
     // handle Google login backend communication
     const handleGoogleSignup = useCallback(async (userData: IGoogleLogin, role: "user" | "expert") => {
+        console.log("Data to sent to backend for google login", userData)
         try {
             const response = await googleSignup(userData);
             if (response.status) {
