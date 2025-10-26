@@ -42,6 +42,13 @@ export default function CategoryManagement() {
         }
     };
 
+    const isDuplicateCategory = (name: string, excludeId?: string) => {
+        return categories.some(cat =>
+            cat.categoryName.toLowerCase() === name.toLowerCase() && cat._id !== excludeId
+        );
+    };
+
+
     const handleAddCategory = async () => {
         if (!formData.categoryName.trim() || formData.categoryName.length < 5) {
             toast.error("Category name must be more than 4")
@@ -49,6 +56,10 @@ export default function CategoryManagement() {
         }
         if (formData.categoryName.length > 20) {
             toast.error("Category name must be less than 20")
+            return;
+        }
+        if (isDuplicateCategory(formData.categoryName.trim())) {
+            toast.error("Category name already exists");
             return;
         }
         try {
@@ -77,6 +88,10 @@ export default function CategoryManagement() {
         }
         if (formData.categoryName.length > 20) {
             toast.error("Category name must be less than 20")
+            return;
+        }
+        if (isDuplicateCategory(formData.categoryName.trim(), formData._id)) {
+            toast.error("Category name already exists");
             return;
         }
         try {
