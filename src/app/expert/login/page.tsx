@@ -5,12 +5,19 @@ import { LoginPost, googleSignup } from "@/app/service/shared/sharedApi";
 import { toast } from "react-toastify";
 import { useExpertStore } from "@/store/expertStore";
 import { IGoogleLogin } from "@/types/types";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 
 
 const ExpertLogin = () => {
 
-    const { setExpertAuth } = useExpertStore();
+    const { setExpertAuth, expert, token: expertToken } = useExpertStore();
+
+    // Redirect logic
+    useEffect(() => {
+        if (expert && expertToken) {
+            window.location.href = "/expert/dashboard";
+        }
+    }, [expert, expertToken]);
 
     const handleLogin = async (formData: { email: string; password: string; role: "user" | "expert" }) => {
         try {
