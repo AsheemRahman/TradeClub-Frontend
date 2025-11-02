@@ -2,7 +2,6 @@
 
 import Head from 'next/head';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 
 import { useState, FormEvent } from 'react';
 import { loginType } from '@/types/types';
@@ -14,8 +13,6 @@ import adminApi from '@/app/service/admin/adminApi';
 const AdminLogin: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState<loginType>({ email: "", password: "" });
-
-    const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -29,7 +26,7 @@ const AdminLogin: React.FC = () => {
             const response = await adminApi.loginPost(formData);
             if (response.success) {
                 toast.success(response.message);
-                router.replace('/admin/dashboard');
+                window.location.href = "/admin/dashboard";
             }
         } catch (error) {
             console.error("error occurred when fetching data", error);
