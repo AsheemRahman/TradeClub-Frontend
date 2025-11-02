@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useCallback } from 'react';
 
-import { Calendar, Bell, Clock, MessageSquare, Settings, Users, BookOpen, ChevronUp, ChevronDown } from 'lucide-react';
+import { Calendar, Clock, MessageSquare, Settings, Users, BookOpen, ChevronUp, ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 import expertApi from '@/app/service/expert/expertApi';
@@ -173,14 +173,14 @@ const ExpertDashboard = () => {
                             </div>
                         </div>
                         <div className="flex space-x-3">
-                            <button className="relative p-2 text-white hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
+                            {/* <button className="relative p-2 text-white hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors" aria-label="Notifications">
                                 <Bell className="w-5 h-5" />
                                 {dashboardStats && dashboardStats.pendingMessages || 0 > 0 && (
                                     <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">
                                         {dashboardStats?.pendingMessages}
                                     </span>
                                 )}
-                            </button>
+                            </button> */}
                             <Button onClick={() => router.push('/expert/profile')}>
                                 Profile
                             </Button>
