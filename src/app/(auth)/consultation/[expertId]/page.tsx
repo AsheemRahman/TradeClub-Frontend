@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect, useCallback } from 'react';
 
 import { Clock, DollarSign, MapPin, Shield, Award, ChevronLeft, ChevronRight, TrendingUp, BarChart3, Check, Star, Calendar, Phone, Mail, User, Users } from 'lucide-react';
-import { BookingDetails, DaySchedule, IExpert, IExpertAvailability, TimeSlot } from '@/types/bookingTypes';
+import { BookingDetails, DaySchedule, IExpertAvailability, IExpertSlot, TimeSlot } from '@/types/bookingTypes';
 
 import userApi from '@/app/service/user/userApi';
 import orderApi from '@/app/service/user/orderApi';
@@ -23,7 +23,7 @@ const BookingPage = () => {
     const router = useRouter();
     const expertId = params.expertId as string;
 
-    const [expert, setExpert] = useState<IExpert | null>(null);
+    const [expert, setExpert] = useState<IExpertSlot | null>(null);
     console.log("expert details", expert)
     const [availability, setAvailability] = useState<IExpertAvailability[]>([]);
     console.log("Avaiablity details", availability)
@@ -195,7 +195,7 @@ const BookingPage = () => {
         }
         try {
             const bookingData = {
-                expertId: expert.id,
+                expertId: expert._id,
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,

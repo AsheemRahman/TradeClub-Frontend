@@ -53,3 +53,23 @@ export interface BookingData {
     availabilityId: string;
     clientDetails: BookingDetails;
 }
+
+
+export interface IExpertSlot {
+    _id: string;
+    fullName: string;
+    profilePicture?: string;
+    isActive: boolean,
+    isVerified: string;
+    experience_level: string;
+    year_of_experience: number;
+    markets_Traded: string;
+    trading_style: string;
+    bio: string;
+    state: string;
+    country: string;
+    rating?: number;
+    reviews?: number;
+    createdAt?: Date,
+    updatedAt?: Date,
+}
