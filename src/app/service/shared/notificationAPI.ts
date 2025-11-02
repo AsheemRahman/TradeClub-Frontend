@@ -50,9 +50,9 @@ export const createNotification = async (data: unknown) => {
     }
 };
 
-export const notifyCourseEnrollment = async (data: unknown) => {
+export const notifyCourseEnrollment = async (courseName: string) => {
     try {
-        const response = await axiosInstance.post(`${NOTIFICATIONS}/enrollment`, data);
+        const response = await axiosInstance.post(`${NOTIFICATIONS}/enrollment`, { courseName });
         return response.data;
     } catch (error) {
         handleAxiosError(error);
