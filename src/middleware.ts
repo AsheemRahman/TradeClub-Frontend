@@ -8,8 +8,9 @@ export async function middleware(req: NextRequest) {
 
     // Redirect non-www to www for consistent cookie access
     if (req.nextUrl.hostname === 'tradeclub.lol') {
-        url.hostname = 'www.tradeclub.lol';
-        return NextResponse.redirect(url);
+        const redirectUrl = new URL(req.url);
+        redirectUrl.hostname = 'www.tradeclub.lol';
+        return NextResponse.redirect(redirectUrl);
     }
 
     // Allow login pages
@@ -22,9 +23,9 @@ export async function middleware(req: NextRequest) {
     const refreshToken = req.cookies.get('refreshToken')?.value;
     const adminRefreshToken = req.cookies.get('admin-refreshToken')?.value;
 
-    console.log('token in frontend middleware', accessToken);
-    console.log('refreshToken in frontend middleware', refreshToken);
-    console.log('adminRefreshToken in frontend middleware', adminRefreshToken);
+    console.log('Access Token:', accessToken);
+    console.log('Refresh Token:', refreshToken);
+    console.log('Admin Refresh Token:', adminRefreshToken);
 
     // Decode token to get role
     let role: string | null = null;
@@ -33,7 +34,7 @@ export async function middleware(req: NextRequest) {
             const decoded = jwt.decode(accessToken) as TokenPayload | null;
             role = decoded?.role || null;
         } catch (err) {
-            console.error('Error decoding token:', err);
+            console.error('Token decode error:', err);
         }
     }
     console.log('middleware role =>', role);
@@ -54,6 +55,14 @@ export async function middleware(req: NextRequest) {
         }
         return NextResponse.redirect(new URL('/login', req.url));
     }
+
+    if (pathname.startsWith('/admin') && role !== 'admin') {
+        return NextResponse.redirect(new URL('/admin/login', req.url));
+    }
+    if (pathname.startsWith('/expert') && role !== 'expert') {
+        return NextResponse.redirect(new URL('/expert/login', req.url));
+    }
+
     return NextResponse.next();
 }
 
