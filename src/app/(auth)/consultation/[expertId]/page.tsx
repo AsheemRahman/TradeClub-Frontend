@@ -193,7 +193,7 @@ const BookingPage = () => {
         }
         try {
             const bookingData = {
-                expertId: expert._id,
+                expertId: expert.id,
                 date: selectedDate,
                 timeSlot: selectedSlot.time,
                 availabilityId: selectedSlot.availabilityId,

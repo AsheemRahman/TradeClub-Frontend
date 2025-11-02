@@ -1,5 +1,5 @@
 export interface IExpert {
-    _id: string;
+    id: string;
     fullName: string;
     profilePicture?: string;
     isActive: boolean,

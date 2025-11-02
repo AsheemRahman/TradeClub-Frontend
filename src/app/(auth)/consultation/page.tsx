@@ -224,7 +224,7 @@ const TradingExpertBookingPage: React.FC = () => {
             <div className="container mx-auto px-4 py-8">
                 <div className="grid gap-8 md:grid-cols-1 lg:grid-cols-2">
                     {filteredExperts.map((expert) => (
-                        <ExpertCard key={expert._id} expert={expert} />
+                        <ExpertCard key={expert.id} expert={expert} />
                     ))}
                 </div>
 
