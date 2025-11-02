@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
-import { TokenPayload } from './types/types';
+import { JWTPayload, jwtVerify } from 'jose';
+
+
+const JWT_SECRET = new TextEncoder().encode(process.env.NEXT_PUBLIC_JWT_SECRET);
 
 export async function middleware(req: NextRequest) {
     const url = req.nextUrl.clone();
@@ -31,8 +33,9 @@ export async function middleware(req: NextRequest) {
     let role: string | null = null;
     if (accessToken) {
         try {
-            const decoded = jwt.decode(accessToken) as TokenPayload | null;
-            role = decoded?.role || null;
+             const { payload } = await jwtVerify(accessToken, JWT_SECRET);
+            const tokenPayload = payload as JWTPayload & { role?: string };
+            role = tokenPayload.role || null;
         } catch (err) {
             console.error('Token decode error:', err);
         }
