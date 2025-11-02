@@ -24,9 +24,7 @@ const BookingPage = () => {
     const expertId = params.expertId as string;
 
     const [expert, setExpert] = useState<IExpertSlot | null>(null);
-    console.log("expert details", expert)
-    const [availability, setAvailability] = useState<IExpertAvailability[]>([]);
-    console.log("Avaiablity details", availability)
+    const [availability, setAvailability] = useState<IExpertAvailability[]>([])
     const [loading, setLoading] = useState(true);
     const [loadingAvailability, setLoadingAvailability] = useState(false);
     const [selectedDate, setSelectedDate] = useState<string>('');
@@ -202,7 +200,6 @@ const BookingPage = () => {
                 clientDetails: data,
                 bookingFor: bookingFor,
             };
-            console.log("Data to sent to backend", bookingData)
             const response = await orderApi.slotBooking(bookingData);
             if (!response.status) {
                 throw new Error('Failed to create booking');
