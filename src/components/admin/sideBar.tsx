@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import adminApi from '@/app/service/admin/adminApi';
 
 import { FaChartPie, FaUserFriends, FaUserTie, FaShoppingCart, FaMoneyBillWave, FaGraduationCap, FaTicketAlt, FaSignOutAlt, FaFolderOpen, FaMoneyCheckAlt } from 'react-icons/fa';
@@ -20,13 +20,12 @@ const menuItems = [
 ];
 
 export default function Sidebar() {
-    const router = useRouter();
     const pathname = usePathname();
 
     const handleLogout = async () => {
         const response = await adminApi.adminLogout();
         if (response?.status) {
-            router.replace('/admin/login');
+            window.location.href = "/admin/login";
         }
     };
 
