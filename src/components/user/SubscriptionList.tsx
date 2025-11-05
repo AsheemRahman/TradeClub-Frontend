@@ -55,18 +55,6 @@ export const SubscriptionPlans = () => {
         const selectedPlan = plans.find(plan => plan._id === planId);
         if (!selectedPlan) return;
 
-        // If user already has this plan
-        if (currentUserPlan && currentUserPlan.subscriptionPlan._id === planId) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Plan Active',
-                text: `You already have the ${selectedPlan.name} plan active. Your remaining calls: ${currentUserPlan.callsRemaining || 0}`,
-                background: '#1F2937',
-                color: '#fff',
-            });
-            // return;
-        }
-
         // If user wants to upgrade
         if (currentUserPlan && currentUserPlan.subscriptionPlan._id !== planId) {
             const currentPlan = plans.find(plan => plan._id === currentUserPlan.subscriptionPlan._id);
