@@ -56,7 +56,7 @@ export const SubscriptionPlans = () => {
         if (!selectedPlan) return;
 
         // If user wants to upgrade
-        if (currentUserPlan && currentUserPlan.subscriptionPlan._id !== planId) {
+        if (currentUserPlan) {
             const currentPlan = plans.find(plan => plan._id === currentUserPlan.subscriptionPlan._id);
             const callsRemaining = currentUserPlan.callsRemaining || 0;
             const newCalls = selectedPlan.accessLevel?.expertCallsPerMonth || 0;
