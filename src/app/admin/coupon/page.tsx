@@ -249,7 +249,7 @@ const CouponManagement: React.FC = () => {
                                 <p className="text-sm font-medium text-black">Avg. Discount</p>
                                 <p className="text-2xl font-bold text-white">
                                     {Math.round(coupons.reduce((sum, c) => sum + c.discountValue, 0) / coupons.length) || 0}
-                                    {coupons[0]?.discountType === 'percentage' ? '%' : '$'}
+                                    {coupons[0]?.discountType === 'percentage' ? '%' : '₹'}
                                 </p>
                             </div>
                         </div>

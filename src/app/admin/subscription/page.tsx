@@ -209,7 +209,7 @@ const SubscriptionManagement: React.FC = () => {
                             <div>
                                 <p className="text-slate-200 text-sm font-medium">Avg. Price</p>
                                 <p className="text-3xl font-bold text-purple-600">
-                                    ${plans.length > 0 ? (plans.reduce((sum, p) => sum + p.price, 0) / plans.length).toFixed(2) : '0.00'}
+                                    ₹ {plans.length > 0 ? (plans.reduce((sum, p) => sum + p.price, 0) / plans.length).toFixed(2) : '0.00'}
                                 </p>
                             </div>
                             <div className="bg-purple-100 p-3 rounded-lg">
