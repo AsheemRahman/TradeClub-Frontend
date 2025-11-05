@@ -5,14 +5,20 @@ import { Award, Shield, Star, Users } from "lucide-react";
 
 import userApi from "@/app/service/user/userApi";
 import { ISubscriptionPlan } from "@/types/subscriptionTypes";
-import { toast } from "react-toastify";
 import orderApi from "@/app/service/user/orderApi";
+import Swal from "sweetalert2";
 
+import { useAuthStore } from "@/store/authStore";
+import { IUserSubscription } from "@/types/types";
 
 export const SubscriptionPlans = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
     const [billingCycle, setBillingCycle] = useState('monthly');
     const [loading, setLoading] = useState(true);
+    const [currentUserPlan, setCurrentUserPlan] = useState<IUserSubscription>();
+    const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
+
+    const { user } = useAuthStore();
 
     useEffect(() => {
         const fetchPlans = async () => {
@@ -28,22 +34,89 @@ export const SubscriptionPlans = () => {
                 setLoading(false);
             }
         };
+
+        const fetchCurrentPlan = async () => {
+            if (!user) return;
+            try {
+                const response = await userApi.checkSubscription();
+                if (response.status && response.subscription) {
+                    setCurrentUserPlan(response.subscription);
+                }
+            } catch (error) {
+                console.error("error while fetching current plan", error);
+            }
+        };
+
         fetchPlans();
-    }, []);
+        fetchCurrentPlan();
+    }, [user]);
 
     const handlePurchase = async (planId: string) => {
+        const selectedPlan = plans.find(plan => plan._id === planId);
+        if (!selectedPlan) return;
+
+        // If user already has this plan
+        if (currentUserPlan && currentUserPlan.subscriptionPlan._id === planId) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Plan Active',
+                text: `You already have the ${selectedPlan.name} plan active. Your remaining calls: ${currentUserPlan.callsRemaining || 0}`,
+                background: '#1F2937',
+                color: '#fff',
+            });
+            return;
+        }
+
+        // If user wants to upgrade
+        if (currentUserPlan && currentUserPlan.subscriptionPlan._id !== planId) {
+            const currentPlan = plans.find(plan => plan._id === currentUserPlan.subscriptionPlan._id);
+            const callsRemaining = currentUserPlan.callsRemaining || 0;
+            const newCalls = selectedPlan.accessLevel?.expertCallsPerMonth || 0;
+
+            const result = await Swal.fire({
+                title: `Upgrade to ${selectedPlan.name}?`,
+                html: `
+                    You currently have <b>${currentPlan?.name || "Existing"}</b> plan with <b>${callsRemaining}</b> call${callsRemaining !== 1 ? 's' : ''} remaining.<br><br>
+                    Purchasing <b>${selectedPlan.name}</b> plan will:<br>
+                    - Add <b>${newCalls}</b> new expert calls to your account<br>
+                    - Your remaining <b>${callsRemaining}</b> call${callsRemaining !== 1 ? 's' : ''} will be carried forward<br>
+                    - Total calls after purchase: <b>${callsRemaining + newCalls}</b>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Continue',
+                cancelButtonText: 'Cancel',
+                background: '#1F2937',
+                color: '#fff',
+                customClass: {
+                    confirmButton: 'bg-blue-600 hover:bg-blue-700 text-white',
+                    cancelButton: 'bg-gray-500 hover:bg-gray-600 text-white',
+                }
+            });
+
+            if (!result.isConfirmed) return;
+        }
+
+        setPurchaseLoading(planId);
         try {
-            await orderApi.SubscriptionPurchase(planId)
+            await orderApi.SubscriptionPurchase(planId);
         } catch (error) {
             console.error('Purchase error:', error);
-            toast.error('Purchase failed. Please try again.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Purchase Failed',
+                text: 'Please try again later.',
+                background: '#1F2937',
+                color: '#fff',
+            });
+        } finally {
+            setPurchaseLoading(null);
         }
     };
 
     if (loading) {
         return <div className="text-center text-white py-10">Loading subscription plans...</div>;
     }
-
 
     return (
         <div className="container mx-auto px-6 mt-8">
@@ -58,51 +131,33 @@ export const SubscriptionPlans = () => {
                 </h2>
                 <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
                     Select the perfect plan to accelerate your trading journey.
-                    All plans include our core features with varying levels of support and advanced tools.
                 </p>
 
-                {/* Billing toggle */}
                 <div className="inline-flex bg-gray-100 rounded-full p-1">
                     <button onClick={() => setBillingCycle('monthly')}
                         className={`px-6 py-2 rounded-full transition-all ${billingCycle === 'monthly'
                             ? 'bg-[#151231] text-gray-100 shadow-sm'
                             : 'text-gray-800'
-                            }`}
-                    >
-                        Monthly
-                    </button>
+                            }`}>Monthly</button>
                     <button onClick={() => setBillingCycle('yearly')}
                         className={`px-6 py-2 rounded-full transition-all relative ${billingCycle === 'yearly'
                             ? 'bg-[#151231] text-gray-100 shadow-sm'
                             : 'text-gray-800'
-                            }`}
-                    >
-                        Yearly
-                        <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-                            Save 17%
-                        </span>
+                            }`}>Yearly
+                        <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">Save 17%</span>
                     </button>
                 </div>
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
                 {plans.map((plan, index) => (
-                    <div key={index}  className={`relative bg-white rounded-3xl p-8 shadow-lg border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2  'border-gray-100 hover:border-gray-200'`}>
-                        {/* {plan.popular && (
-                            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                                <div className="bg-gradient-to-r from-cyan-500 to-purple-500 text-white px-6 py-2 rounded-full text-sm font-semibold">
-                                    Most Popular
-                                </div>
-                            </div>
-                        )} */}
-
+                    <div key={index} className="relative bg-white rounded-3xl p-8 shadow-lg border-2 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 border-gray-100 hover:border-gray-200">
                         <div className="text-center mb-8">
-                            <div className={`inline-flex bg-gradient-to-r w-16 h-16 rounded-2xl items-center justify-center mb-4`}>
+                            <div className="inline-flex bg-gradient-to-r w-16 h-16 rounded-2xl items-center justify-center mb-4">
                                 <Users className="w-8 h-8 text-blue-600" />
                             </div>
 
                             <h3 className="text-2xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-                            {/* <p className="text-gray-600 mb-6">{plan.description}</p> */}
 
                             <div className="mb-6">
                                 <span className="text-5xl font-bold text-gray-900">
@@ -130,9 +185,10 @@ export const SubscriptionPlans = () => {
                             ))}
                         </ul>
 
-                        <button className={`w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-cyan-500 to-purple-500 text-black hover:shadow-xl hover:shadow-purple-500/25 `} 
-                                onClick={() => handlePurchase(plan._id)} >
-                            Get Started
+                        <button onClick={() => handlePurchase(plan._id)} disabled={purchaseLoading === plan._id}
+                            className="w-full py-4 rounded-2xl font-semibold text-lg transition-all duration-300 bg-gradient-to-r from-cyan-500 to-purple-500 text-black hover:shadow-xl hover:shadow-purple-500/25"
+                        >
+                            {purchaseLoading === plan._id ? 'Processing...' : 'Get Started'}
                         </button>
                     </div>
                 ))}

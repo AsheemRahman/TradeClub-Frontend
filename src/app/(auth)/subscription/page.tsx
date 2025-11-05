@@ -35,7 +35,6 @@ const SubscriptionPlansPage = () => {
             try {
                 const response = await userApi.checkSubscription();
                 if (response.status && response.subscription) {
-                    console.log("asheem rahman", response.subscription)
                     setCurrentUserPlan(response.subscription);
                 }
             } catch (error) {
