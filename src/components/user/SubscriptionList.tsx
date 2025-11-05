@@ -13,7 +13,7 @@ import { IUserSubscription } from "@/types/types";
 
 export const SubscriptionPlans = () => {
     const [plans, setPlans] = useState<ISubscriptionPlan[]>([]);
-    const [billingCycle, setBillingCycle] = useState('monthly');
+    const [billingCycle] = useState('monthly');
     const [loading, setLoading] = useState(true);
     const [currentUserPlan, setCurrentUserPlan] = useState<IUserSubscription>();
     const [purchaseLoading, setPurchaseLoading] = useState<string | null>(null);
@@ -121,7 +121,7 @@ export const SubscriptionPlans = () => {
                     Select the perfect plan to accelerate your trading journey.
                 </p>
 
-                <div className="inline-flex bg-gray-100 rounded-full p-1">
+                {/* <div className="inline-flex bg-gray-100 rounded-full p-1">
                     <button onClick={() => setBillingCycle('monthly')}
                         className={`px-6 py-2 rounded-full transition-all ${billingCycle === 'monthly'
                             ? 'bg-[#151231] text-gray-100 shadow-sm'
@@ -134,7 +134,7 @@ export const SubscriptionPlans = () => {
                             }`}>Yearly
                         <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">Save 17%</span>
                     </button>
-                </div>
+                </div> */}
             </div>
 
             <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">

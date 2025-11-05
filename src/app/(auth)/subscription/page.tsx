@@ -52,21 +52,8 @@ const SubscriptionPlansPage = () => {
     const handlePurchase = async (planId: string) => {
         const selectedPlan = plans.find(plan => plan._id === planId);
 
-        // Check if user already has this exact plan
-        if (currentUserPlan && currentUserPlan.subscriptionPlan._id === planId) {
-            Swal.fire({
-                icon: 'info',
-                title: 'Plan Active',
-                text: `You already have the ${selectedPlan?.name || 'this'} plan active. Your current plan will continue until it expires.`,
-                confirmButtonText: 'OK',
-                background: '#1F2937',
-                color: '#fff',
-            });
-            return;
-        }
-
         // Check if user has an existing plan and trying to buy a new one
-        if (currentUserPlan && currentUserPlan.subscriptionPlan._id !== planId) {
+        if (currentUserPlan) {
             const currentPlan = plans.find(plan => plan._id === currentUserPlan.subscriptionPlan._id);
             const callsRemaining = currentUserPlan.callsRemaining || 0;
             const result = await Swal.fire({
