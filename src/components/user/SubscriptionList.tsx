@@ -64,7 +64,7 @@ export const SubscriptionPlans = () => {
                 background: '#1F2937',
                 color: '#fff',
             });
-            return;
+            // return;
         }
 
         // If user wants to upgrade
