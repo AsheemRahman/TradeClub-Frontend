@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, Award, CheckCircle, ArrowRight, Share2, Globe, PlayCircle, Timer, Target, Zap, ShieldCheck, Tags } from 'lucide-react';
+import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, CheckCircle, ArrowRight, Globe, PlayCircle, Timer, Target, Zap, ShieldCheck, Tags } from 'lucide-react';
 import { ICourse, ICategory } from '@/types/courseTypes';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
@@ -157,10 +157,10 @@ const CourseDetailsPage = () => {
                                 </button>
 
 
-                                <button className="px-6 py-4 border-2 border-purple-500/50 text-gray-300 rounded-xl hover:bg-purple-500/10 transition-all duration-300 flex items-center">
+                                {/* <button className="px-6 py-4 border-2 border-purple-500/50 text-gray-300 rounded-xl hover:bg-purple-500/10 transition-all duration-300 flex items-center">
                                     <Share2 className="w-5 h-5 mr-2" />
                                     Share
-                                </button>
+                                </button> */}
                             </div>
                         </div>
 
@@ -194,10 +194,10 @@ const CourseDetailsPage = () => {
                                                 <Globe className="w-4 h-4 mr-3 text-purple-400" />
                                                 Access on mobile and desktop
                                             </div>
-                                            <div className="flex items-center text-gray-300">
+                                            {/* <div className="flex items-center text-gray-300">
                                                 <Award className="w-4 h-4 mr-3 text-purple-400" />
                                                 Certificate of completion
-                                            </div>
+                                            </div> */}
                                         </div>
                                     </div>
                                 </div>
@@ -334,7 +334,7 @@ const CourseDetailsPage = () => {
                                 {[
                                     { icon: ShieldCheck, text: 'Lifetime access', color: 'text-green-400' },
                                     { icon: Globe, text: 'Mobile & desktop access', color: 'text-purple-400' },
-                                    { icon: Award, text: 'Certificate of completion', color: 'text-yellow-400' }
+                                    // { icon: Award, text: 'Certificate of completion', color: 'text-yellow-400' }
                                 ].map((feature, index) => (
                                     <div key={index} className="flex items-center text-gray-300">
                                         <feature.icon className={`w-5 h-5 mr-3 ${feature.color}`} />
