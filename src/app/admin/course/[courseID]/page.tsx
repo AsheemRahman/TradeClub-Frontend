@@ -420,10 +420,10 @@ const AdminCourseDetail = () => {
                                                             <span className="text-gray-400">Order:</span>
                                                             <span className="text-white">{index + 1}</span>
                                                         </div>
-                                                        <div className="flex justify-between">
+                                                        {/* <div className="flex justify-between">
                                                             <span className="text-gray-400">Video URL:</span>
                                                             <span className="text-white truncate max-w-40">{item.videoUrl}</span>
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                 </div>
 
