@@ -46,6 +46,41 @@ const CouponManagement: React.FC = () => {
         setFilteredCoupons(filtered);
     }, [coupons, searchTerm, filterStatus, filterTarget]);
 
+    const validateCoupon = (couponData: Partial<ICoupon>): string | null => {
+        // Required fields
+        if (!couponData.code?.trim()) return "Coupon code is required.";
+        if (!couponData.discountType) return "Discount type is required.";
+        if (couponData.discountValue === undefined || couponData.discountValue <= 0) {
+            return "Discount value must be greater than 0.";
+        }
+        // Percentage-specific validation
+        if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
+            return "Discount percentage cannot be greater than 100%.";
+        }
+        // Expiry date validation
+        if (!couponData.expiresAt) return "Expiry date is required.";
+        const expiryDate = new Date(couponData.expiresAt);
+        if (isNaN(expiryDate.getTime())) return "Invalid expiry date.";
+        if (expiryDate < new Date()) return "Expiry date must be in the future.";
+        // Usage limit validation
+        if (couponData.usageLimit !== undefined && couponData.usageLimit <= 0) {
+            return "Usage limit must be greater than 0.";
+        }
+        // Min purchase validation
+        if (couponData.minPurchaseAmount !== undefined && couponData.minPurchaseAmount < 0) {
+            return "Minimum purchase amount cannot be negative.";
+        }
+        if (
+            couponData.discountType === 'fixed' &&
+            couponData.minPurchaseAmount !== undefined &&
+            couponData.discountValue >= couponData.minPurchaseAmount
+        ) {
+            return "Discount value cannot be greater than or equal to the minimum purchase amount.";
+        }
+        if (!couponData.target) return "Target user group is required.";
+        return null;
+    };
+
     const handleCreateCoupon = async (couponData: Omit<ICoupon, '_id' | 'usedCount' | 'createdAt'>) => {
         try {
             const isDuplicate = coupons.some(c => c.code.toLowerCase() === couponData.code.toLowerCase());
@@ -53,8 +88,9 @@ const CouponManagement: React.FC = () => {
                 toast.error("A coupon with this code already exists.");
                 return;
             }
-            if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
-                toast.error("Discount percentage cannot be greater than 100%.");
+            const validationError = validateCoupon(couponData);
+            if (validationError) {
+                toast.error(validationError);
                 return;
             }
             const response = await adminApi.createCoupon(couponData);
@@ -83,8 +119,9 @@ const CouponManagement: React.FC = () => {
                 toast.error("Another coupon with this code already exists.");
                 return;
             }
-            if (couponData.discountType === 'percentage' && couponData.discountValue > 100) {
-                toast.error("Discount percentage cannot be greater than 100%.");
+            const validationError = validateCoupon(couponData);
+            if (validationError) {
+                toast.error(validationError);
                 return;
             }
             const response = await adminApi.updateCoupon(couponData._id, couponData);
