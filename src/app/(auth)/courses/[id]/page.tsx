@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Play, Lock, Clock, BookOpen, Calendar, Star, Users, CheckCircle, ArrowRight, Globe, PlayCircle, Timer, Target, Zap, ShieldCheck, Tags } from 'lucide-react';
-import { ICourse, ICategory } from '@/types/courseTypes';
+import { ICourse, ICategory, IReview } from '@/types/courseTypes';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'react-toastify';
 import orderApi from '@/app/service/user/orderApi';
@@ -18,6 +18,9 @@ const CourseDetailsPage = () => {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'overview' | 'curriculum' | 'reviews'>('overview');
     const [showAllContent, setShowAllContent] = useState(false);
+
+    const [reviews, setReviews] = useState<IReview[]>([]);
+    const [averageRating, setAverageRating] = useState<number>(0);
 
     const router = useRouter();
     const { user } = useAuthStore();
@@ -36,6 +39,14 @@ const CourseDetailsPage = () => {
                     } else {
                         setIsEnrolled(false);
                     }
+                }
+                const reviewRes = await courseApi.getReviews(params.id);
+                if (reviewRes?.reviews?.length) {
+                    setReviews(reviewRes.reviews);
+                    const avg = reviewRes.reviews.reduce((sum: number, r: IReview) => sum + r.rating, 0) / reviewRes.reviews.length;
+                    setAverageRating(Number(avg.toFixed(1)));
+                } else {
+                    setAverageRating(0);
                 }
                 setCourse(courseRes.course);
                 setCategories(categoriesRes.categories);
@@ -139,12 +150,17 @@ const CourseDetailsPage = () => {
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className="w-5 h-5 text-yellow-400 fill-current" />
+                                        <Star key={i} className={`w-5 h-5 ${i < Math.round(averageRating) ? 'text-yellow-400 fill-current' : 'text-gray-500'}`} />
                                     ))}
-                                    <span className="ml-2 text-white font-semibold">4.9</span>
-                                    <span className="text-gray-400 ml-3">(2,847 reviews)</span>
+                                    <span className="ml-2 text-white font-semibold">
+                                        {averageRating > 0 ? averageRating : 'No rating yet'}
+                                    </span>
+                                    <span className="text-gray-400 ml-3">
+                                        ({reviews.length} {reviews.length === 1 ? 'review' : 'reviews'})
+                                    </span>
                                 </div>
                             </div>
+
 
                             {/* Action Buttons */}
                             <div className="flex flex-wrap gap-4">
@@ -264,9 +280,7 @@ const CourseDetailsPage = () => {
                                     <h2 className="text-3xl font-bold text-white mb-6">Course Content</h2>
                                     <div className="space-y-3">
                                         {course.content.slice(0, showAllContent ? undefined : 5).map((item, index) => (
-                                            <div key={index}
-                                                className="group bg-gray-800/50 hover:bg-gray-700/50 p-6 rounded-xl border border-gray-700/50 hover:border-purple-500/30 transition-all duration-300"
-                                            >
+                                            <div key={index} className="group bg-gray-800/50 hover:bg-gray-700/50 p-6 rounded-xl border border-gray-700/50 hover:border-purple-500/30 transition-all duration-300" >
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-4">
                                                         <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
@@ -315,11 +329,37 @@ const CourseDetailsPage = () => {
                             {activeTab === 'reviews' && (
                                 <div>
                                     <h2 className="text-3xl font-bold text-white mb-6">Customer Reviews</h2>
-                                    <div className="text-center py-12">
-                                        <Star className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                                        <h3 className="text-xl font-semibold text-white mb-2">Reviews Coming Soon</h3>
-                                        <p className="text-gray-400">Customer reviews will be available shortly.</p>
-                                    </div>
+                                    {reviews.length > 0 ? (
+                                        <div className="space-y-6">
+                                            {reviews.map((review, index) => (
+                                                <div key={index} className="bg-gray-800/40 p-6 rounded-xl border border-gray-700/40 hover:border-purple-500/30 transition-all duration-300">
+                                                    <div className="flex items-center mb-3">
+                                                        <Image src={review.user.profilePicture || '/default-avatar.png'} alt={review.user.fullName} width={50} height={50} className="rounded-full" />
+                                                        <div className="ml-4">
+                                                            <h4 className="text-white font-semibold">{review.user.fullName}</h4>
+                                                            <p className="text-gray-400 text-sm">
+                                                                {new Date(review.createdAt).toLocaleDateString()}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="flex items-center mb-2">
+                                                        {[...Array(5)].map((_, i) => (
+                                                            <Star key={i} className={`w-4 h-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} />
+                                                        ))}
+                                                    </div>
+
+                                                    <p className="text-gray-300">{review.comment}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-center py-12">
+                                            <Star className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                                            <h3 className="text-xl font-semibold text-white mb-2">No Reviews Yet</h3>
+                                            <p className="text-gray-400">Be the first to leave a review!</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

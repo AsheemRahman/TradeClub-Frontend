@@ -61,3 +61,11 @@ export interface IPurchasedCourse {
     progress: ICourseProgress;
     purchaseDate: string;
 }
+
+
+export interface IReview {
+    user: { _id: string; fullName: string; profilePicture: string };
+    rating: number;
+    comment: string;
+    createdAt: string;
+}
