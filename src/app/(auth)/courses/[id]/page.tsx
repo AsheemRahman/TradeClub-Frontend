@@ -334,7 +334,7 @@ const CourseDetailsPage = () => {
                                             {reviews.map((review, index) => (
                                                 <div key={index} className="bg-gray-800/40 p-6 rounded-xl border border-gray-700/40 hover:border-purple-500/30 transition-all duration-300">
                                                     <div className="flex items-center mb-3">
-                                                        <Image src={review.user.profilePicture || '/default-avatar.png'} alt={review.user.fullName} width={50} height={50} className="rounded-full" />
+                                                        <Image src={review.user.profilePicture || '/default-avatar.png'} alt={review.user.fullName} width={50} height={50} className="w-12 h-12 rounded-full object-cover bg-gray-700" />
                                                         <div className="ml-4">
                                                             <h4 className="text-white font-semibold">{review.user.fullName}</h4>
                                                             <p className="text-gray-400 text-sm">
